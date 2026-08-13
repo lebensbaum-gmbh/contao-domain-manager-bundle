@@ -1,0 +1,37 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    Lebensbaum\ContaoDomainManagerBundle\:
+        resource: '../src/'
+        exclude:
+            - '../src/ContaoManager/'
+            - '../src/ContaoDomainManagerBundle.php'
+
+    Lebensbaum\ContaoDomainManagerBundle\Security\SecretCipher:
+        arguments:
+            $kernelSecret: '%kernel.secret%'
+
+    Lebensbaum\ContaoDomainManagerBundle\Controller\SyncDomainController:
+        public: true
+        tags:
+            - 'controller.service_arguments'
+
+    Lebensbaum\ContaoDomainManagerBundle\Dca\InstallationCallbacks:
+        public: true
+
+    Lebensbaum\ContaoDomainManagerBundle\Security\Voter\DataContainer\DomainAccessVoter:
+        autoconfigure: false
+        tags:
+            - { name: security.voter, priority: 200 }
+
+    Lebensbaum\ContaoDomainManagerBundle\Security\Voter\DataContainer\InstallationAccessVoter:
+        autoconfigure: false
+        tags:
+            - { name: security.voter, priority: 200 }
+
+    Lebensbaum\ContaoDomainManagerBundle\Security\Voter\DataContainer\SettingsAccessVoter:
+        autoconfigure: false
+        tags:
+            - { name: security.voter, priority: 200 }

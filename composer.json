@@ -1,0 +1,32 @@
+{
+    "name": "lebensbaum/contao-domain-manager-bundle",
+    "description": "Zentrale Verwaltung, Synchronisation und Überwachung mehrerer Contao-Installationen",
+    "type": "contao-bundle",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.3",
+        "ext-openssl": "*",
+        "contao/core-bundle": "^5.7",
+        "symfony/http-client": "^6.4 || ^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Lebensbaum\\ContaoDomainManagerBundle\\": "src/"
+        }
+    },
+    "extra": {
+        "contao-manager-plugin": "Lebensbaum\\ContaoDomainManagerBundle\\ContaoManager\\Plugin"
+    },
+    "keywords": [
+        "contao",
+        "domain-management",
+        "monitoring",
+        "system-information"
+    ],
+    "require-dev": {
+        "contao/manager-plugin": "^2.0"
+    },
+    "conflict": {
+        "contao/manager-plugin": "<2.0 || >=3.0"
+    }
+}

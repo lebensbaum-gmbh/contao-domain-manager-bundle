@@ -1,0 +1,224 @@
+{% extends "@Contao/content_element/_base.html.twig" %}
+
+{% block content %}
+<div class="domain-manager-overview" data-domain-manager-overview>
+    {% if trakked_url %}
+        <div class="domain-manager-global-actions">
+            <a class="domain-manager-trakked-link" href="{{ trakked_url }}" target="_blank" rel="noopener noreferrer">Zu Trakked <span aria-hidden="true">↗</span></a>
+        </div>
+    {% endif %}
+    <div class="domain-manager-list">
+    {% for domain in domains %}
+        <details
+            class="domain-entry"
+            data-dm-domain
+            data-search="{{ domain.search|e('html_attr') }}"
+            {% if domain.sync_result %}open{% endif %}
+        >
+            <summary class="domain-summary" data-search="{{ domain.domain|lower|e('html_attr') }}">
+                {% if domain.thumbnail_path %}
+                    <div class="domain-thumbnail"><img src="{{ domain.thumbnail_path|e('html_attr') }}" alt="" loading="lazy"></div>
+                {% else %}
+                    <div class="domain-thumbnail is-empty" aria-hidden="true"><span>—</span></div>
+                {% endif %}
+
+                <div class="domain-ident">
+                    <strong class="domain-name">{{ domain.domain }}</strong>
+                </div>
+
+                {% if domain.target %}
+                    <span class="domain-target">→ {{ domain.target.domain }}</span>
+                    <span class="domain-version">Contao {{ domain.target.contao_version }}</span>
+                    <span class="domain-php">PHP {{ domain.target.php_version }}</span>
+                {% else %}
+                    <span class="domain-target">Kein aktuelles Ziel festgelegt</span>
+                {% endif %}
+            </summary>
+
+            <div class="domain-details">
+                <div class="domain-sync">
+                    {% if domain.sync_result %}
+                        {% set result = domain.sync_result %}
+                        <div class="domain-sync-message {{ result.status == 'success' ? 'is-success' : (result.status == 'partial' ? 'is-warning' : 'is-error') }}" role="status">
+                            <strong>
+                                {% if result.status == 'success' %}Synchronisation abgeschlossen.
+                                {% elseif result.status == 'partial' %}Synchronisation teilweise abgeschlossen.
+                                {% else %}Die Synchronisation ist fehlgeschlagen.
+                                {% endif %}
+                            </strong>
+
+                            {% if result.status in ['success', 'partial'] %}
+                                <br>{{ result.synced }} synchronisiert, {{ result.skipped }} übersprungen, {{ result.failed }} fehlgeschlagen.
+
+                                {% if result.live_status == 'changed' and result.live_domain %}
+                                    <br>Aktuelles Ziel wurde auf <strong>{{ result.live_domain }}</strong> geändert.
+                                {% elseif result.live_status == 'unchanged' and result.live_domain %}
+                                    <br>Aktuelles Ziel bestätigt: <strong>{{ result.live_domain }}</strong>.
+                                {% elseif result.live_status == 'error' %}
+                                    <br>Das aktuelle Ziel konnte nicht eindeutig ermittelt werden.
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    {% if can_sync %}
+                        <form class="domain-sync-form" action="{{ domain.sync_url }}" method="post">
+                            <input type="hidden" name="REQUEST_TOKEN" value="{{ contao.request_token }}">
+                            <button class="domain-sync-button" type="submit" title="Systeminformationen dieser Hauptdomain aktualisieren">
+                                <span aria-hidden="true">↻</span>
+                                Systemdaten aktualisieren
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+
+                {% if domain.target %}
+                    {% set installation = domain.target %}
+                    <section
+                        class="installation installation-featured is-target"
+                        data-dm-installation
+                        data-search="{{ installation.domain|lower|e('html_attr') }}"
+                        data-contao="{{ installation.contao_version|e('html_attr') }}"
+                        data-php="{{ installation.php_version|e('html_attr') }}"
+                        data-environment="{{ installation.environment|e('html_attr') }}"
+                        data-environment-label="{{ installation.environment_label|e('html_attr') }}"
+                        data-tracked="{{ installation.trakked ? '1' : '0' }}"
+                    >
+                        <div class="target-head">
+                            <div>
+                                <span class="detail-kicker">Aktuelles Ziel</span>
+                                <h3 class="target-domain">
+                                    <a href="{{ installation.frontend_url }}" target="_blank" rel="noopener">{{ installation.domain }}</a>
+                                </h3>
+                            </div>
+
+                            <div class="target-actions">
+                                <div class="target-badges">
+                                    {% if installation.environment_label %}<span class="environment-badge">{{ installation.environment_label }}</span>{% endif %}
+                                    <span class="status-badge is-current">Aktuelles Ziel</span>
+                                    <span class="status-badge {{ installation.trakked ? 'is-tracked' : 'is-untracked' }}">
+                                        {{ installation.trakked ? 'In Trakked' : 'Nicht in Trakked' }}
+                                    </span>
+                                </div>
+
+                                {% if installation.backend_url or installation.manager_url %}
+                                    <div class="detail-actions">
+                                        {% if installation.backend_url %}<a class="detail-action" href="{{ installation.backend_url }}" target="_blank" rel="noopener noreferrer">Contao-Backend <span aria-hidden="true">↗</span></a>{% endif %}
+                                        {% if installation.manager_url %}<a class="detail-action" href="{{ installation.manager_url }}" target="_blank" rel="noopener noreferrer">Contao-Manager <span aria-hidden="true">↗</span></a>{% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="target-column target-technical">
+                            <h4>Technische Daten</h4>
+                            <dl class="detail-list">
+                                {% if installation.contao_version %}<div><dt>Contao-Version</dt><dd>{{ installation.contao_version }}</dd></div>{% endif %}
+                                {% if installation.php_version %}<div><dt>PHP-Version</dt><dd>{{ installation.php_version }}</dd></div>{% endif %}
+                                {% if installation.document_root %}<div class="detail-wide"><dt>DocumentRoot</dt><dd>{{ installation.document_root }}</dd></div>{% endif %}
+                                {% if installation.database_name %}<div><dt>Datenbank</dt><dd>{{ installation.database_name }}</dd></div>{% endif %}
+                            </dl>
+                        </div>
+
+                        <div class="target-column target-information">
+                            <h4>Status & Hinweise</h4>
+                            {% if installation.last_sync_label or installation.sync_status %}
+                                <div class="installation-sync-status {{ installation.sync_status == 'success' ? 'is-success' : 'is-error' }}">
+                                    <strong>{{ installation.sync_status == 'success' ? 'Synchronisation erfolgreich' : 'Synchronisationsfehler' }}</strong>
+                                    {% if installation.last_sync_label %}<span>Letzte erfolgreiche Synchronisation: {{ installation.last_sync_label }}</span>{% endif %}
+                                    {% if installation.sync_message %}<p>{{ installation.sync_message }}</p>{% endif %}
+                                </div>
+                            {% endif %}
+
+                            {% if installation.notes %}
+                                <div class="target-notes">{{ installation.notes|nl2br }}</div>
+                            {% else %}
+                                <p class="no-notes">Keine Bemerkungen hinterlegt.</p>
+                            {% endif %}
+                        </div>
+                    </section>
+                {% else %}
+                    <div class="no-target">Für diese Hauptdomain ist kein aktuelles Ziel festgelegt.</div>
+                {% endif %}
+
+                {% if domain.others %}
+                    <section class="other-installations">
+                        <h3>Weitere Installationen</h3>
+                        <div class="installations-head">
+                            <span>Installation</span><span>Umgebung</span><span>Contao</span><span>PHP</span><span>Status</span>
+                        </div>
+
+                        {% for installation in domain.others %}
+                            <details
+                                class="installation installation-item"
+                                data-dm-installation
+                                data-search="{{ installation.domain|lower|e('html_attr') }}"
+                                data-contao="{{ installation.contao_version|e('html_attr') }}"
+                                data-php="{{ installation.php_version|e('html_attr') }}"
+                                data-environment="{{ installation.environment|e('html_attr') }}"
+                                data-environment-label="{{ installation.environment_label|e('html_attr') }}"
+                                data-tracked="{{ installation.trakked ? '1' : '0' }}"
+                            >
+                                <summary class="installation-row">
+                                    <span class="installation-domain"><a href="{{ installation.frontend_url }}" target="_blank" rel="noopener">{{ installation.domain }}</a></span>
+                                    <span class="installation-environment">{{ installation.environment_label }}</span>
+                                    <span class="installation-contao">{{ installation.contao_version }}</span>
+                                    <span class="installation-php">{{ installation.php_version }}</span>
+                                    <span class="installation-status">
+                                        <span class="status-badge {{ installation.trakked ? 'is-tracked' : 'is-untracked' }}">{{ installation.trakked ? 'Trakked' : 'Nicht in Trakked' }}</span>
+                                        <span class="installation-toggle" aria-hidden="true">›</span>
+                                    </span>
+                                </summary>
+
+                                <div class="installation-detail-body">
+                                    <dl class="installation-detail-list">
+                                        {% if installation.document_root %}<div><dt>DocumentRoot</dt><dd>{{ installation.document_root }}</dd></div>{% endif %}
+                                        {% if installation.database_name %}<div><dt>Datenbank</dt><dd>{{ installation.database_name }}</dd></div>{% endif %}
+                                    </dl>
+
+                                    {% if installation.last_sync_label or installation.sync_status %}
+                                        <div class="installation-sync-status {{ installation.sync_status == 'success' ? 'is-success' : 'is-error' }}">
+                                            <strong>{{ installation.sync_status == 'success' ? 'Synchronisation erfolgreich' : 'Synchronisationsfehler' }}</strong>
+                                            {% if installation.last_sync_label %}<span>Letzte erfolgreiche Synchronisation: {{ installation.last_sync_label }}</span>{% endif %}
+                                            {% if installation.sync_message %}<p>{{ installation.sync_message }}</p>{% endif %}
+                                        </div>
+                                    {% endif %}
+
+                                    <div class="installation-detail-notes">
+                                        <strong>Bemerkungen</strong>
+                                        {% if installation.notes %}<p>{{ installation.notes|nl2br }}</p>{% else %}<p class="no-notes">Keine Bemerkungen hinterlegt.</p>{% endif %}
+                                    </div>
+
+                                    {% if installation.backend_url or installation.manager_url %}
+                                        <div class="installation-detail-actions">
+                                            {% if installation.backend_url %}<a class="detail-action" href="{{ installation.backend_url }}" target="_blank" rel="noopener noreferrer">Contao-Backend <span aria-hidden="true">↗</span></a>{% endif %}
+                                            {% if installation.manager_url %}<a class="detail-action" href="{{ installation.manager_url }}" target="_blank" rel="noopener noreferrer">Contao-Manager <span aria-hidden="true">↗</span></a>{% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </details>
+                        {% endfor %}
+                    </section>
+                {% endif %}
+            </div>
+        </details>
+    {% endfor %}
+    </div>
+</div>
+
+<style>
+.domain-manager-global-actions { display:flex; justify-content:flex-end; margin:0 0 16px; }
+.domain-manager-trakked-link { display:inline-flex; align-items:center; gap:.4em; padding:11px 16px; border-radius:4px; background:#2f654e; color:#fff; font-weight:600; text-decoration:none; }
+.domain-manager-trakked-link:hover, .domain-manager-trakked-link:focus { background:#244f3d; color:#fff; }
+</style>
+
+<script>
+(() => {
+    const url = new URL(window.location.href);
+    ['dm_sync','dm_domain','dm_synced','dm_skipped','dm_failed','dm_live','dm_live_domain'].forEach((parameter) => url.searchParams.delete(parameter));
+    if (url.href !== window.location.href) {
+        window.history.replaceState({}, document.title, url.pathname + (url.search ? url.search : '') + url.hash);
+    }
+})();
+</script>
+{% endblock %}

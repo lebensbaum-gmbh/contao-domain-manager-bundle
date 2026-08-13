@@ -1,0 +1,18 @@
+<?php
+
+declare(strict_types=1);
+
+$GLOBALS['TL_LANG']['tl_domain_manager_settings']['access_legend'] = 'Frontend-Zugriff';
+$GLOBALS['TL_LANG']['tl_domain_manager_settings']['links_legend'] = 'Externe Dienste';
+
+$GLOBALS['TL_LANG']['tl_domain_manager_settings']['sync_member_groups'] = [
+    'Berechtigte Mitgliedergruppen',
+    'Nur angemeldete Frontend-Mitglieder aus mindestens einer dieser Gruppen dürfen „Systemdaten aktualisieren“ ausführen. Ohne Auswahl ist die Synchronisation im Frontend deaktiviert.',
+];
+$GLOBALS['TL_LANG']['tl_domain_manager_settings']['trakked_url'] = [
+    'Trakked-URL',
+    'Ziel des globalen „Zu Trakked“-Buttons. Feld leer lassen, wenn kein Button ausgegeben werden soll.',
+];
+
+$GLOBALS['TL_LANG']['tl_domain_manager_settings']['edit'] = ['Bearbeiten', 'Globale Domain-Manager-Einstellungen bearbeiten.'];
+$GLOBALS['TL_LANG']['tl_domain_manager_settings']['show'] = ['Details', 'Globale Domain-Manager-Einstellungen anzeigen.'];

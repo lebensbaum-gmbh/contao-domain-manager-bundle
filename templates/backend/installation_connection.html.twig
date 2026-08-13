@@ -1,0 +1,54 @@
+{% extends '@Contao/be_main' %}
+
+{% block main_content %}
+    <div class="tl_listing_container">
+        <div style="padding:20px 24px">
+            <p style="margin:0 0 18px"><a href="{{ return_url }}">← Zurück</a></p>
+
+            {% if success %}
+                <div class="tl_confirm" style="margin:0 0 18px">{{ success }}</div>
+            {% endif %}
+            {% if error %}
+                <div class="tl_error" style="margin:0 0 18px">{{ error }}</div>
+            {% endif %}
+
+            <h2 style="margin:0 0 18px">{{ record.domain }}</h2>
+
+            <table class="tl_listing" style="width:100%;max-width:900px;margin:0 0 22px">
+                <tbody>
+                    <tr><td style="width:230px;padding:6px 12px 6px 0"><strong>Hauptdomain</strong></td><td>{{ record.parent_domain ?: '–' }}</td></tr>
+                    <tr><td style="padding:6px 12px 6px 0"><strong>Installations-ID</strong></td><td><code>{{ record.system_id ?: '–' }}</code></td></tr>
+                    <tr><td style="padding:6px 12px 6px 0"><strong>Secret</strong></td><td>{{ record.has_secret ? 'verschlüsselt gespeichert' : 'nicht gespeichert' }}</td></tr>
+                    <tr><td style="padding:6px 12px 6px 0"><strong>Verbindungsstatus</strong></td><td>{{ record.status_label }}</td></tr>
+                    <tr><td style="padding:6px 12px 6px 0"><strong>Letzter Test</strong></td><td>{{ record.last_test }}</td></tr>
+                    <tr><td style="padding:6px 12px 6px 0"><strong>Letzter erfolgreicher Test</strong></td><td>{{ record.last_success }}</td></tr>
+                    <tr><td style="padding:6px 12px 6px 0"><strong>Secret zuletzt geändert</strong></td><td>{{ record.secret_changed }}</td></tr>
+                    {% if record.message %}
+                        <tr><td style="padding:6px 12px 6px 0;vertical-align:top"><strong>Meldung</strong></td><td>{{ record.message|nl2br }}</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+
+            {% if can_test %}
+                <form method="post" action="{{ path('contao_domain_manager_installation_connection', {id: record.id}) }}" style="margin:0 0 28px">
+                    <input type="hidden" name="REQUEST_TOKEN" value="{{ contao.request_token }}">
+                    <button type="submit" name="dm_action" value="test" class="tl_submit"{% if not record.has_secret or not record.system_id %} disabled{% endif %}>Verbindung testen</button>
+                </form>
+            {% endif %}
+
+            {% if can_manage_secret %}
+                <fieldset class="tl_box" style="max-width:900px">
+                    <legend>Secret ersetzen</legend>
+                    <form method="post" action="{{ path('contao_domain_manager_installation_connection', {id: record.id}) }}">
+                        <input type="hidden" name="REQUEST_TOKEN" value="{{ contao.request_token }}">
+                        <div class="widget">
+                            <input type="password" name="dm_secret_plaintext" class="tl_text" maxlength="64" autocomplete="new-password" placeholder="64-stelliges Secret" required>
+                            <p class="tl_help">Das vorhandene Secret wird nicht angezeigt. Hier kann ausschließlich ein neues Secret hinterlegt werden.</p>
+                        </div>
+                        <div style="margin-top:12px"><button type="submit" name="dm_action" value="replace_secret" class="tl_submit">Secret speichern/ersetzen</button></div>
+                    </form>
+                </fieldset>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
