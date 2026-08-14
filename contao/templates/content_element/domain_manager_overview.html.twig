@@ -1,5 +1,17 @@
 {% extends "@Contao/content_element/_base.html.twig" %}
 
+{% use "@Contao/component/_stylesheet.html.twig" %}
+
+{% add "domain_manager_css" to stylesheets %}
+    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager.css')} %}
+        {{ block('stylesheet_component') }}
+    {% endwith %}
+{% endadd %}
+
+{% add "domain_manager_js" to body %}
+    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager.js') }}" defer></script>
+{% endadd %}
+
 {% block content %}
 <div class="domain-manager-overview" data-domain-manager-overview>
     {% if trakked_url %}
@@ -206,19 +218,5 @@
     </div>
 </div>
 
-<style>
-.domain-manager-global-actions { display:flex; justify-content:flex-end; margin:0 0 16px; }
-.domain-manager-trakked-link { display:inline-flex; align-items:center; gap:.4em; padding:11px 16px; border-radius:4px; background:#2f654e; color:#fff; font-weight:600; text-decoration:none; }
-.domain-manager-trakked-link:hover, .domain-manager-trakked-link:focus { background:#244f3d; color:#fff; }
-</style>
 
-<script>
-(() => {
-    const url = new URL(window.location.href);
-    ['dm_sync','dm_domain','dm_synced','dm_skipped','dm_failed','dm_live','dm_live_domain'].forEach((parameter) => url.searchParams.delete(parameter));
-    if (url.href !== window.location.href) {
-        window.history.replaceState({}, document.title, url.pathname + (url.search ? url.search : '') + url.hash);
-    }
-})();
-</script>
 {% endblock %}

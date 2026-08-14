@@ -1,142 +1,155 @@
-# Contao Domain Manager Bundle
+# Contao Domain Manager
 
-Zentrale Verwaltung, Synchronisation und Überwachung mehrerer Contao-Installationen.
+Der **Contao Domain Manager** ermöglicht die zentrale Verwaltung und Synchronisation mehrerer Contao-Installationen in einer eigenen Contao-Installation.
 
-## Version 1.1.0
-
-Der Domain Manager ist ein eigenständiges Contao-Bundle für Contao 5.7. Er benötigt weder den Catalog Manager noch manuelle Laufzeitkonfiguration in Projektdateien.
-
-### Eigene Datenbasis
-
-- `tl_domain_manager_domain`
-- `tl_domain_manager_installation`
-- `tl_domain_manager_settings`
-
-Die Backend-Verwaltung befindet sich unter **Domainverwaltung → Hauptdomains** und **Domainverwaltung → Einstellungen**.
+Hauptdomains und zugehörige Installationen können im Backend verwaltet, mit den jeweiligen Zielsystemen verbunden und deren Systeminformationen zentral aktualisiert werden. Für das Frontend stehen die Inhaltselemente **Domainübersicht** und **Domainfilter** zur Verfügung.
 
 ## Funktionen
 
-- Hauptdomains und zugehörige Contao-Installationen verwalten
-- Contao- und PHP-Versionen über das System-Info-Bundle synchronisieren
-- aktuelles Live-Ziel automatisch ermitteln
-- Synchronisationsstatus, Fehlermeldungen und Zeitpunkte speichern
-- verschlüsselte Secret-Speicherung in der Datenbank
-- Verbindungstest direkt an einer Installation
-- Frontend-Domainübersicht als eigenes Contao-Inhaltselement
-- eigener Domainfilter
-- Screenshots/Thumbnails je Hauptdomain
-- Trakked-Status je Installation
-- optionale, konfigurierbare Trakked-URL
-- konfigurierbare Frontend-Mitgliedergruppen für die Synchronisation
-- eigene Backend-Rechte für Bearbeitung, Verbindungstests, Secrets und Einstellungen
+- Verwaltung von Hauptdomains und zugehörigen Contao-Installationen
+- Verbindungstest zu überwachten Installationen
+- Synchronisation von Systeminformationen
+- Anzeige von Contao- und PHP-Versionen
+- Status- und Zeitinformationen zur letzten Synchronisation
+- Notizen und Screenshots je Installation
+- Rechteverwaltung für Backend-Benutzergruppen
+- Frontend-Inhaltselement **Domainübersicht**
+- Frontend-Inhaltselement **Domainfilter**
+- mitgeliefertes, anpassbares Standard-CSS
 
-## Backend-Benutzerrechte
+## Voraussetzungen
 
-Die Sichtbarkeit der Backend-Module wird über Contaos Standardrecht **Erlaubte Module** gesteuert:
+- Contao `^5.7`
+- PHP `^8.3`
+- PHP-Erweiterung `openssl`
 
-- **Domainverwaltung → Hauptdomains**
-- **Domainverwaltung → Einstellungen**
+Für jede Installation, deren Systeminformationen synchronisiert werden sollen, wird zusätzlich das Paket
 
-Zusätzlich stellt das Bundle folgende Domain-Manager-Rechte bereit:
+`lebensbaum/contao-system-info-bundle`
 
-- Hauptdomains und Installationen bearbeiten
-- Verbindungen testen
-- Secrets ersetzen
-- Domain-Manager-Einstellungen bearbeiten
-
-Administratoren besitzen Vollzugriff.
-
-Ohne **Hauptdomains und Installationen bearbeiten** bleiben Hauptdomains und Installationen für normale Backend-Benutzer lesbar, sofern das Modul freigegeben ist. Detailansichten bleiben verfügbar; Schreib-, Lösch-, Kopier- und Mehrfachbearbeitungsaktionen werden nicht angeboten und zusätzlich serverseitig über Data-Container-Voter abgesichert.
-
-Für die Domain-Manager-Datensätze sind keine zusätzlichen klassischen Tabellen- oder Feldrechte erforderlich.
-
-**Verbindungen testen** und **Secrets ersetzen** sind getrennte Rechte. Das Recht für **Domain-Manager-Einstellungen bearbeiten** steuert die Bearbeitung der Einstellungen unabhängig vom reinen Lesezugriff.
-
-Für die Auswahl von Screenshots über das `fileTree`-Feld benötigt ein Backend-Benutzer Zugriff auf das Modul **Dateiverwaltung** sowie einen passenden Filemount. Dateioperationen können unabhängig davon eingeschränkt werden.
-
-Die Frontend-Aktion **Systemdaten aktualisieren** ist von den Backend-Rechten getrennt und wird über die unter **Domainverwaltung → Einstellungen** gewählten Frontend-Mitgliedergruppen gesteuert.
-
-## Keine manuelle Laufzeitkonfiguration
-
-Für den regulären Betrieb werden keine manuellen Änderungen an folgenden Dateien benötigt:
-
-- `composer.json`
-- `auth.json`
-- `.env.local`
-- `domain-manager-secrets.json`
-
-Installations-IDs und Secrets werden in der Backend-Verwaltung gepflegt. Secrets werden verschlüsselt gespeichert und nicht im Klartext ausgegeben.
+benötigt.
 
 ## Installation
 
-Nach einer Veröffentlichung als Composer-Paket ist der vorgesehene Ablauf:
+### 1. Domain Manager installieren
 
-1. Bundle über den Contao Manager installieren.
-2. Datenbank aktualisieren.
-3. Unter **Domainverwaltung → Einstellungen** Frontend-Mitgliedergruppen und optionale Links konfigurieren.
-4. Hauptdomains und Installationen im Backend anlegen.
-5. Auf den überwachten Installationen das zugehörige System-Info-Bundle installieren und dessen Zugangsdaten in den Installationsdatensatz übernehmen.
-6. Im gewünschten Artikel die Inhaltselemente **Domainübersicht** und optional **Domainfilter** einrichten.
+Installiere auf der zentralen Contao-Installation über den **Contao Manager**:
 
-Für den regulären Anwenderbetrieb sind keine Terminalbefehle erforderlich.
+`lebensbaum/contao-domain-manager-bundle`
 
-## Frontend
+Führe anschließend die von Contao angebotene Datenbankmigration aus.
 
-Das Bundle enthält zwei Inhaltselemente:
+Nach erfolgreicher Installation stehen die Backend-Funktionen des Domain Managers automatisch zur Verfügung.
 
-- **Domainübersicht** (`domain_manager_overview`)
-- **Domainfilter** (`domain_manager_filter`)
+### 2. System-Info auf den Zielinstallationen installieren
 
-Die Domainübersicht liest ausschließlich aus den eigenen Domain-Manager-Tabellen. Der Filter arbeitet clientseitig auf den dort ausgegebenen Installationen.
+Installiere auf jeder Contao-Installation, die überwacht bzw. synchronisiert werden soll, über den **Contao Manager**:
 
-Die Aktion **Systemdaten aktualisieren** wird nur Frontend-Mitgliedern angezeigt, die mindestens einer unter **Domainverwaltung → Einstellungen** ausgewählten Mitgliedergruppe angehören.
+`lebensbaum/contao-system-info-bundle`
 
-Ist in den Einstellungen eine Trakked-URL hinterlegt, wird der globale Button **Zu Trakked ↗** ausgegeben. Bei leerem Feld erscheint kein Button.
+Nach der Installation erscheint im Backend unter **System → System-Info** die Verbindungskonfiguration.
 
-## Catalog Manager
+Das System-Info-Bundle erzeugt automatisch:
 
-Der Catalog Manager ist keine Abhängigkeit dieses Bundles und wird zur Laufzeit nicht verwendet.
+- eine eindeutige Installations-ID
+- ein zufälliges Secret
+- den System-Info-Endpunkt
 
-Frühere Entwicklungsstände nutzten Catalog-Manager-Strukturen. Diese Übergangslogik ist vollständig entfernt. Alte Tabellen wie `domains`, `installations` oder `tl_catalog*` gehören nicht zum Domain Manager und können nach Sicherung und Prüfung separat entfernt werden, sofern keine andere Erweiterung sie benötigt.
+Es müssen keine `.env`-Dateien, Composer-Dateien oder sonstigen Konfigurationsdateien manuell bearbeitet werden.
+
+## Einrichtung
+
+### 1. Zugangsdaten der Zielinstallation übernehmen
+
+Öffne auf der Zielinstallation:
+
+**System → System-Info**
+
+Kopiere dort:
+
+- Installations-ID
+- Secret
+
+### 2. Hauptdomain anlegen
+
+Öffne auf der zentralen Installation den Bereich **Domainverwaltung** und lege eine Hauptdomain an.
+
+### 3. Installation anlegen
+
+Lege unter der Hauptdomain eine Installation an und trage die Verbindungsdaten aus dem System-Info-Bundle ein.
+
+### 4. Verbindung testen
+
+Über **Verbindung testen** kann geprüft werden, ob die zentrale Installation die Zielinstallation erreicht und die Zugangsdaten korrekt sind.
+
+### 5. Systeminformationen synchronisieren
+
+Nach erfolgreichem Verbindungstest können die Systeminformationen synchronisiert werden.
+
+Dabei werden die vom System-Info-Bundle bereitgestellten Informationen automatisch übernommen.
+
+## Frontend-Ausgabe
+
+Nach der Installation stehen in Contao zusätzliche Inhaltselemente zur Verfügung.
+
+### Domainübersicht
+
+Über den Elementtyp **Domainübersicht** kann die zentrale Übersicht der gespeicherten Domains und Installationen im Frontend ausgegeben werden.
+
+### Domainfilter
+
+Optional kann zusätzlich der Elementtyp **Domainfilter** eingesetzt werden, um die ausgegebenen Installationen im Frontend zu filtern.
+
+Beide Elemente können wie normale Contao-Inhaltselemente in Artikeln verwendet werden.
+
+## Gestaltung / CSS
+
+Der Domain Manager liefert ein neutrales Standard-Stylesheet mit.
+
+Die Darstellung kann im eigenen Theme angepasst oder vollständig überschrieben werden.
+
+Die wichtigsten Gestaltungswerte sind über CSS-Variablen definiert. Dadurch lassen sich Farben, Abstände und weitere Eigenschaften ohne Änderung der Bundle-Dateien anpassen.
+
+Änderungen sollten immer im eigenen Contao-Theme erfolgen, damit sie bei späteren Updates des Domain Managers erhalten bleiben.
+
+## Rechteverwaltung
+
+Für Backend-Benutzergruppen können getrennte Rechte vergeben werden, unter anderem für:
+
+- Bearbeiten von Hauptdomains und Installationen
+- Verbindungstests
+- Ersetzen von Secrets
+
+Zusätzlich gelten die üblichen Contao-Rechte, zum Beispiel für die Dateiverwaltung und Filemounts bei der Auswahl von Screenshots.
 
 ## Sicherheit
 
-- Secrets werden mit AES-256-GCM verschlüsselt gespeichert.
-- Der Schlüssel wird aus dem Symfony-/Contao-`kernel.secret` abgeleitet.
-- System-Info-Abfragen werden per HMAC-SHA256 signiert.
-- Verbindungstests verwenden die gespeicherten, verschlüsselten Zugangsdaten.
-- Backend-Aktionen werden über eigene Rechte und serverseitige Voter abgesichert.
-- Die Frontend-Synchronisation ist auf konfigurierte Mitgliedergruppen beschränkt.
+Die Kommunikation zwischen Domain Manager und System-Info erfolgt über die jeweilige Installations-ID und ein Secret.
 
-## Anforderungen
+Secrets sollten vertraulich behandelt und nur den Personen zugänglich gemacht werden, die die Verbindung zwischen den Installationen einrichten oder administrieren.
 
-- PHP `^8.3`
-- Contao `^5.7`
-- OpenSSL-Erweiterung
+Ein Secret kann im System-Info-Bundle jederzeit neu erzeugt werden. Anschließend muss das neue Secret auch im Domain Manager hinterlegt werden.
 
-## Aktuell geprüfter Funktionsstand
+## Lizenz
 
-Erfolgreich getestet wurden:
+Dieses Projekt ist unter der **MIT License** veröffentlicht.
 
-- Anlegen und Bearbeiten von Hauptdomains und Installationen
-- Nur-Lesen-Modus für Hauptdomains, Installationen und Einstellungen
-- Detailansichten ohne Bearbeitungsrecht
-- Ausblenden der Mehrfachbearbeitung im Nur-Lesen-Modus
-- getrennte Rechte für Verbindungstests und Secret-Wechsel
-- Screenshot-Auswahl mit Filemount
-- Frontend-Ausgabe und Domainfilter
-- Synchronisation von Contao-/PHP-Versionen und Statuswerten
-- Live-Erkennung
-- kontrollierter Verbindungsfehler und anschließende Wiederherstellung
-- vollständiger Betrieb ohne Catalog Manager
-- Installation des Bundles auf einer frischen Contao-5.7-Installation
-- Zusammenspiel mit System-Info v1.1.0 auf einer frisch angebundenen Zielinstallation
+Copyright (c) 2026 Lebensbaum GmbH
 
-## Veröffentlichung
+Siehe [LICENSE](LICENSE).
 
-Für eine öffentliche Composer-Verteilung sind organisatorisch noch zu klären:
+## Support und Fehlerberichte
 
-- Lizenzentscheidung (derzeit `proprietary`)
-- öffentliches Git-Repository
-- Registrierung bei Packagist
-- Veröffentlichung bzw. Verfügbarkeit des zugehörigen System-Info-Bundles
+Fehler und technische Probleme können über die GitHub-Issues des Projekts gemeldet werden:
+
+https://github.com/lebensbaum-gmbh/contao-domain-manager-bundle/issues
+
+Quellcode:
+
+https://github.com/lebensbaum-gmbh/contao-domain-manager-bundle
+
+## Weiterentwicklung
+
+Die kostenlose Version des Contao Domain Managers soll eine vollständig nutzbare Basis für die zentrale Verwaltung mehrerer Contao-Installationen bieten.
+
+Weitergehende Funktionen wie automatisiertes Monitoring, Benachrichtigungen, Historien oder zusätzliche Verwaltungsfunktionen können zukünftig separat ergänzt werden.
