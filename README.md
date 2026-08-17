@@ -9,7 +9,7 @@ Hauptdomains und zugehörige Installationen können im Backend verwaltet, mit de
 - Verwaltung von Hauptdomains und zugehörigen Contao-Installationen
 - Verbindungstest zu überwachten Installationen
 - Synchronisation von Systeminformationen
-- Anzeige von Contao- und PHP-Versionen
+- automatische Übernahme von Contao-Version, PHP-Version, Datenbankname und DocumentRoot
 - Status- und Zeitinformationen zur letzten Synchronisation
 - Notizen und Screenshots je Installation
 - Rechteverwaltung für Backend-Benutzergruppen
@@ -57,7 +57,7 @@ Das System-Info-Bundle erzeugt automatisch:
 
 Es müssen keine `.env`-Dateien, Composer-Dateien oder sonstigen Konfigurationsdateien manuell bearbeitet werden.
 
-## Einrichtung
+## Schnellstart: Von der Installation zur fertigen Domainübersicht
 
 ### 1. Zugangsdaten der Zielinstallation übernehmen
 
@@ -76,17 +76,62 @@ Kopiere dort:
 
 ### 3. Installation anlegen
 
-Lege unter der Hauptdomain eine Installation an und trage die Verbindungsdaten aus dem System-Info-Bundle ein.
+Lege unter der Hauptdomain eine Installation an und trage mindestens ein:
+
+- Domain der Installation
+- Installations-ID
+- Secret
+
+Technische Angaben wie Contao-Version, PHP-Version, Datenbankname und DocumentRoot werden bei der Synchronisation automatisch übernommen, sofern die Zielinstallation diese Informationen bereitstellt.
 
 ### 4. Verbindung testen
 
 Über **Verbindung testen** kann geprüft werden, ob die zentrale Installation die Zielinstallation erreicht und die Zugangsdaten korrekt sind.
 
-### 5. Systeminformationen synchronisieren
+### 5. Frontend-Mitgliedergruppe anlegen
 
-Nach erfolgreichem Verbindungstest können die Systeminformationen synchronisiert werden.
+Die Frontend-Synchronisation verwendet Contaos Mitgliederverwaltung. Backend-Benutzergruppen und Frontend-Mitgliedergruppen sind voneinander getrennt.
 
-Dabei werden die vom System-Info-Bundle bereitgestellten Informationen automatisch übernommen.
+Lege unter **Benutzerverwaltung → Mitgliedergruppen** eine Mitgliedergruppe an, zum Beispiel:
+
+`Domainverwaltung`
+
+### 6. Frontend-Mitglied anlegen
+
+Lege unter **Benutzerverwaltung → Mitglieder** ein Mitglied an.
+
+- Login erlauben
+- Benutzername und Passwort vergeben
+- die zuvor angelegte Mitgliedergruppe zuweisen
+
+### 7. Mitgliedergruppe im Domain Manager freigeben
+
+Öffne **Domainverwaltung → Einstellungen** und wähle unter **Berechtigte Mitgliedergruppen** die gewünschte Frontend-Mitgliedergruppe aus.
+
+Nur angemeldete Frontend-Mitglieder aus mindestens einer dort ausgewählten Gruppe sehen die Aktion **Systemdaten aktualisieren**.
+
+### 8. Frontend-Login anlegen
+
+Der Domain Manager bringt kein eigenes Login-System mit. Verwendet wird das Contao-Standardmodul für die Frontend-Anmeldung.
+
+1. Unter **Themes → Frontend-Module** ein Login-Modul anlegen.
+2. Eine Login-Seite in der Seitenstruktur anlegen.
+3. Das Login-Modul über einen Artikel bzw. ein Modul-Inhaltselement auf dieser Seite einbinden.
+4. Optional als Weiterleitungsseite die Seite mit der Domainübersicht festlegen.
+
+### 9. Domainübersicht anlegen
+
+Lege die gewünschte Frontend-Seite an und füge dort das Inhaltselement **Domainübersicht** ein.
+
+Optional kann zusätzlich das Inhaltselement **Domainfilter** verwendet werden.
+
+### 10. Anmelden und synchronisieren
+
+Melde dich im Frontend mit dem zuvor angelegten Mitglied an und öffne die Domainübersicht.
+
+Bei korrekter Einrichtung erscheint die Aktion **Systemdaten aktualisieren**.
+
+Nach erfolgreicher Synchronisation werden die von System-Info gelieferten technischen Informationen übernommen und der Synchronisationsstatus aktualisiert.
 
 ## Frontend-Ausgabe
 
@@ -122,13 +167,17 @@ Für Backend-Benutzergruppen können getrennte Rechte vergeben werden, unter and
 
 Zusätzlich gelten die üblichen Contao-Rechte, zum Beispiel für die Dateiverwaltung und Filemounts bei der Auswahl von Screenshots.
 
+Die Frontend-Aktion **Systemdaten aktualisieren** wird unabhängig von den Backend-Rechten über die unter **Domainverwaltung → Einstellungen** gewählten Frontend-Mitgliedergruppen gesteuert.
+
 ## Sicherheit
 
-Die Kommunikation zwischen Domain Manager und System-Info erfolgt über die jeweilige Installations-ID und ein Secret.
+Die Kommunikation zwischen Domain Manager und System-Info erfolgt über die jeweilige Installations-ID und ein Secret. System-Info-Abfragen werden signiert übertragen.
 
 Secrets sollten vertraulich behandelt und nur den Personen zugänglich gemacht werden, die die Verbindung zwischen den Installationen einrichten oder administrieren.
 
 Ein Secret kann im System-Info-Bundle jederzeit neu erzeugt werden. Anschließend muss das neue Secret auch im Domain Manager hinterlegt werden.
+
+Es werden keine Datenbank-Zugangsdaten wie Benutzername oder Passwort übertragen. Bei der Synchronisation wird lediglich der Datenbankname übernommen.
 
 ## Lizenz
 
