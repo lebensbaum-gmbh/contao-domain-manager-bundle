@@ -21,7 +21,7 @@ final class InstallationSynchronizer
     public function synchronize(int $installationId): array
     {
         $installation = $this->connection->fetchAssociative(
-            'SELECT id, domain, system_id, contao_version, CAST(php_version AS CHAR) AS php_version FROM '.self::TABLE.' WHERE id = ?',
+            'SELECT id, domain, system_id, document_root, contao_version, CAST(php_version AS CHAR) AS php_version, database_name FROM '.self::TABLE.' WHERE id = ?',
             [$installationId]
         );
 
@@ -52,27 +52,39 @@ final class InstallationSynchronizer
 
             $contaoVersion = $this->normalizeContaoVersion($systemInfo['contao_version']);
             $phpVersion = $this->normalizePhpVersion($systemInfo['php_version']);
+            $documentRoot = trim((string) ($systemInfo['document_root'] ?? ''));
+            $databaseName = trim((string) ($systemInfo['database_name'] ?? ''));
             $oldContaoVersion = trim((string) $installation['contao_version']);
             $oldPhpVersion = trim((string) $installation['php_version']);
 
+            $updateData = [
+                'contao_version' => $contaoVersion,
+                'php_version' => $phpVersion,
+                'last_sync' => $timestamp,
+                'sync_status' => 'success',
+                'sync_message' => 'Systeminformationen erfolgreich aktualisiert.',
+                'dm_connection_status' => 'success',
+                'dm_connection_message' => sprintf(
+                    'Verbindung erfolgreich. Contao %s, PHP %s.',
+                    $contaoVersion,
+                    $systemInfo['php_version']
+                ),
+                'dm_last_connection_test' => $timestamp,
+                'dm_last_connection_success' => $timestamp,
+                'tstamp' => $timestamp,
+            ];
+
+            if ('' !== $documentRoot) {
+                $updateData['document_root'] = $documentRoot;
+            }
+
+            if ('' !== $databaseName) {
+                $updateData['database_name'] = $databaseName;
+            }
+
             $this->connection->update(
                 self::TABLE,
-                [
-                    'contao_version' => $contaoVersion,
-                    'php_version' => $phpVersion,
-                    'last_sync' => $timestamp,
-                    'sync_status' => 'success',
-                    'sync_message' => 'Systeminformationen erfolgreich aktualisiert.',
-                    'dm_connection_status' => 'success',
-                    'dm_connection_message' => sprintf(
-                        'Verbindung erfolgreich. Contao %s, PHP %s.',
-                        $contaoVersion,
-                        $systemInfo['php_version']
-                    ),
-                    'dm_last_connection_test' => $timestamp,
-                    'dm_last_connection_success' => $timestamp,
-                    'tstamp' => $timestamp,
-                ],
+                $updateData,
                 ['id' => $installationId]
             );
 
