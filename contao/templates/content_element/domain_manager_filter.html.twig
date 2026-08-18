@@ -18,6 +18,10 @@
     <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager.js') }}" defer></script>
 {% endadd %}
 
+{% add "domain_manager_layout_js" to body %}
+    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-layout.js') }}" defer></script>
+{% endadd %}
+
 {% block content %}
 <aside class="domain-manager-filter" data-domain-manager-filter>
     <h2 class="dm-filter-title">Filter</h2>
