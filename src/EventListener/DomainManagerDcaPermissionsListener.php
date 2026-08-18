@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Lebensbaum\ContaoDomainManagerBundle\EventListener;
 
 use Contao\CoreBundle\DependencyInjection\Attribute\AsHook;
+use Contao\CoreBundle\Routing\ScopeMatcher;
 use Lebensbaum\ContaoDomainManagerBundle\Security\BackendPermissionChecker;
 use Lebensbaum\ContaoDomainManagerBundle\Security\DomainManagerPermissions;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Applies Domain Manager permissions as soon as the DCA is loaded.
@@ -25,12 +27,20 @@ final class DomainManagerDcaPermissionsListener
 
     public function __construct(
         private readonly BackendPermissionChecker $permissionChecker,
+        private readonly RequestStack $requestStack,
+        private readonly ScopeMatcher $scopeMatcher,
     ) {
     }
 
     public function __invoke(string $table): void
     {
         if (!\in_array($table, [self::DOMAIN_TABLE, self::INSTALLATION_TABLE, self::SETTINGS_TABLE], true)) {
+            return;
+        }
+
+        $request = $this->requestStack->getCurrentRequest();
+
+        if (null === $request || !$this->scopeMatcher->isBackendRequest($request)) {
             return;
         }
 
