@@ -1,8 +1,18 @@
 .domain-manager-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(270px, 310px);
-    gap: 24px;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
+    gap: 32px;
     align-items: start;
+    width: 100%;
+    max-width: 1680px;
+    margin-inline: auto;
+    padding-inline: clamp(24px, 3vw, 56px);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+}
+
+.domain-manager-layout,
+.domain-manager-layout * {
+    box-sizing: border-box;
 }
 
 .domain-manager-layout-overview {
@@ -17,6 +27,11 @@
     min-width: 0;
 }
 
+.domain-manager-layout .domain-manager-overview,
+.domain-manager-layout .domain-manager-filter {
+    font-family: inherit;
+}
+
 .domain-manager-layout .domain-manager-filter {
     width: 100%;
 }
@@ -25,6 +40,7 @@
     .domain-manager-layout {
         grid-template-columns: minmax(0, 1fr);
         gap: 18px;
+        padding-inline: clamp(18px, 4vw, 36px);
     }
 
     .domain-manager-layout-filter {
@@ -35,5 +51,11 @@
     .domain-manager-layout-overview {
         grid-column: 1;
         grid-row: 2;
+    }
+}
+
+@media (max-width: 680px) {
+    .domain-manager-layout {
+        padding-inline: 16px;
     }
 }
