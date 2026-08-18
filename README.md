@@ -123,7 +123,7 @@ Der Domain Manager bringt kein eigenes Login-System mit. Verwendet wird das Cont
 
 Lege die gewünschte Frontend-Seite an und füge dort das Inhaltselement **Domainübersicht** ein.
 
-Optional kann zusätzlich das Inhaltselement **Domainfilter** verwendet werden.
+Optional kann zusätzlich das Inhaltselement **Domainfilter** verwendet werden. Wenn beide Elemente auf derselben Seite vorhanden sind, ordnet das mitgelieferte Standardlayout den Filter auf größeren Bildschirmen rechts neben der Domainübersicht an. Auf kleineren Ansichten werden die Elemente untereinander dargestellt.
 
 ### 10. Anmelden und synchronisieren
 
@@ -145,7 +145,7 @@ Nach der Installation stehen in Contao zusätzliche Inhaltselemente zur Verfügu
 
 Optional kann zusätzlich der Elementtyp **Domainfilter** eingesetzt werden, um die ausgegebenen Installationen im Frontend zu filtern.
 
-Beide Elemente können wie normale Contao-Inhaltselemente in Artikeln verwendet werden.
+Beide Elemente können wie normale Contao-Inhaltselemente in Artikeln verwendet werden. Das Standardlayout platziert den Filter auf größeren Bildschirmen rechts neben der Domainübersicht und wechselt bei kleineren Viewports auf eine einspaltige Darstellung.
 
 ## Gestaltung / CSS
 
