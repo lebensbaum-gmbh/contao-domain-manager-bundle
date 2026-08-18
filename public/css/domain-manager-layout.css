@@ -1,0 +1,39 @@
+.domain-manager-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(270px, 310px);
+    gap: 24px;
+    align-items: start;
+}
+
+.domain-manager-layout-overview {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+}
+
+.domain-manager-layout-filter {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+}
+
+.domain-manager-layout .domain-manager-filter {
+    width: 100%;
+}
+
+@media (max-width: 1180px) {
+    .domain-manager-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 18px;
+    }
+
+    .domain-manager-layout-filter {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .domain-manager-layout-overview {
+        grid-column: 1;
+        grid-row: 2;
+    }
+}
