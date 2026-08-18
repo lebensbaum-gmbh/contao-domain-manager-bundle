@@ -110,14 +110,27 @@ Lege unter **Benutzerverwaltung → Mitglieder** ein Mitglied an.
 
 Nur angemeldete Frontend-Mitglieder aus mindestens einer dort ausgewählten Gruppe sehen die Aktion **Systemdaten aktualisieren**.
 
-### 8. Frontend-Login anlegen
+### 8. Frontend-Login und Zugriffsschutz einrichten
 
 Der Domain Manager bringt kein eigenes Login-System mit. Verwendet wird das Contao-Standardmodul für die Frontend-Anmeldung.
 
+Empfohlener Aufbau:
+
 1. Unter **Themes → Frontend-Module** ein Login-Modul anlegen.
-2. Eine Login-Seite in der Seitenstruktur anlegen.
-3. Das Login-Modul über einen Artikel bzw. ein Modul-Inhaltselement auf dieser Seite einbinden.
-4. Optional als Weiterleitungsseite die Seite mit der Domainübersicht festlegen.
+2. Eine eigene, nicht geschützte Login-Seite anlegen und dort das Login-Modul einbinden.
+3. Die Seite mit der Domainübersicht als geschützte Seite konfigurieren und die gewünschte Frontend-Mitgliedergruppe freigeben.
+4. Für die Domainübersicht empfiehlt sich der Alias `index`, wenn sie direkt unter der Hauptdomain erreichbar sein soll.
+5. Eine Seite vom Typ **401 Nicht authentifiziert** anlegen und von dort auf die Login-Seite weiterleiten.
+6. Im Login-Modul als Weiterleitungsseite die Domainübersicht festlegen.
+7. Optional dasselbe Login-Modul zusätzlich auf der geschützten Domainübersicht einbinden. Angemeldete Mitglieder erhalten dort den Logout-Zustand und können sich direkt abmelden.
+
+Damit ergibt sich der übliche Ablauf:
+
+- nicht angemeldet → Aufruf der geschützten Domainübersicht → Weiterleitung zum Login
+- erfolgreiche Anmeldung → Weiterleitung zur Domainübersicht
+- bereits angemeldet → direkter Aufruf der Domainübersicht
+
+Die Gestaltung der Login-Seite und des Logout-Bereichs gehört zum jeweiligen Contao-Theme und wird nicht vom Domain Manager vorgegeben.
 
 ### 9. Domainübersicht anlegen
 
