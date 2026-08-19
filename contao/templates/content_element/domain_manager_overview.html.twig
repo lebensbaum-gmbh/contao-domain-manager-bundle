@@ -127,7 +127,7 @@
                             <dl class="detail-list">
                                 {% if installation.contao_version %}<div><dt>Contao-Version</dt><dd>{{ installation.contao_version }}</dd></div>{% endif %}
                                 {% if installation.php_version %}<div><dt>PHP-Version</dt><dd>{{ installation.php_version }}</dd></div>{% endif %}
-                                {% if installation.document_root %}<div class="detail-wide"><dt>DocumentRoot</dt><dd>{{ installation.document_root }}</dd></div>{% endif %}
+                                {% if installation.document_root %}<div class="detail-wide"><dt>Webroot</dt><dd>{{ installation.document_root }}</dd></div>{% endif %}
                                 {% if installation.database_name %}<div><dt>Datenbank</dt><dd>{{ installation.database_name }}</dd></div>{% endif %}
                             </dl>
                         </div>
@@ -184,7 +184,7 @@
 
                                 <div class="installation-detail-body">
                                     <dl class="installation-detail-list">
-                                        {% if installation.document_root %}<div><dt>DocumentRoot</dt><dd>{{ installation.document_root }}</dd></div>{% endif %}
+                                        {% if installation.document_root %}<div><dt>Webroot</dt><dd>{{ installation.document_root }}</dd></div>{% endif %}
                                         {% if installation.database_name %}<div><dt>Datenbank</dt><dd>{{ installation.database_name }}</dd></div>{% endif %}
                                     </dl>
 
