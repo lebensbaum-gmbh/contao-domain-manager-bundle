@@ -12,6 +12,7 @@ use Contao\CoreBundle\Twig\FragmentTemplate;
 use Contao\CoreBundle\Security\ContaoCorePermissions;
 use Doctrine\DBAL\Connection;
 use Lebensbaum\ContaoDomainManagerBundle\Settings\DomainManagerSettings;
+use Lebensbaum\ContaoDomainManagerBundle\Util\SystemValueNormalizer;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -182,7 +183,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
             'environment' => $environment,
             'environment_label' => $this->environmentLabel($environment),
             'system_id' => trim((string) ($row['system_id'] ?? '')),
-            'document_root' => $this->webrootLabel((string) ($row['document_root'] ?? '')),
+            'document_root' => SystemValueNormalizer::webrootLabel((string) ($row['document_root'] ?? '')),
             'contao_version' => $contaoVersion,
             'php_version' => $phpVersion,
             'database_name' => trim((string) ($row['database_name'] ?? '')),
@@ -199,18 +200,6 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
             'connection_status' => trim((string) ($row['dm_connection_status'] ?? '')),
             'connection_message' => trim((string) ($row['dm_connection_message'] ?? '')),
         ];
-    }
-
-    private function webrootLabel(string $documentRoot): string
-    {
-        $normalized = str_replace('\\', '/', trim($documentRoot));
-        $normalized = rtrim($normalized, '/');
-
-        if ('' === $normalized) {
-            return '';
-        }
-
-        return '/'.basename($normalized);
     }
 
     private function isChecked(mixed $value): bool
