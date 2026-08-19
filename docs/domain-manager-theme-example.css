@@ -1,0 +1,36 @@
+/*
+ * Example overrides for the Contao Domain Manager frontend theme.
+ *
+ * Copy the declarations you need into a stylesheet of your own Contao theme.
+ * Do not edit the bundle CSS directly, because updates can overwrite it.
+ */
+
+body.domainverwaltung-page,
+body.domainverwaltung-login-page,
+body.domainverwaltung-error-page {
+    --dm-theme-primary: #992228;
+    --dm-theme-primary-hover: #741b20;
+    --dm-theme-primary-soft: #f7ecee;
+
+    --dm-theme-page: #f8f6f6;
+    --dm-theme-surface: #ffffff;
+    --dm-theme-surface-soft: #faf7f8;
+
+    --dm-theme-text: #2b2b2b;
+    --dm-theme-muted: #6b6b6b;
+
+    --dm-theme-border: #ded7d9;
+    --dm-theme-border-light: #eee8ea;
+
+    --dm-theme-success: #26734d;
+    --dm-theme-success-soft: #edf8f2;
+    --dm-theme-warning: #956515;
+    --dm-theme-warning-soft: #fff8e6;
+    --dm-theme-error: #a43c3c;
+    --dm-theme-error-soft: #fff0f0;
+
+    --dm-theme-radius: 10px;
+    --dm-theme-shadow: 0 1px 3px rgba(0, 0, 0, .06);
+    --dm-theme-content-width: 1500px;
+    --dm-theme-font-family: Arial, sans-serif;
+}
