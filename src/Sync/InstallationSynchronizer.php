@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lebensbaum\ContaoDomainManagerBundle\Sync;
 
 use Doctrine\DBAL\Connection;
+use Lebensbaum\ContaoDomainManagerBundle\Util\SystemValueNormalizer;
 use RuntimeException;
 use Throwable;
 
@@ -50,8 +51,8 @@ final class InstallationSynchronizer
 
             $systemInfo = $this->systemInfoClient->fetch($domain, $systemId);
 
-            $contaoVersion = $this->normalizeContaoVersion($systemInfo['contao_version']);
-            $phpVersion = $this->normalizePhpVersion($systemInfo['php_version']);
+            $contaoVersion = SystemValueNormalizer::contaoVersion($systemInfo['contao_version']);
+            $phpVersion = SystemValueNormalizer::phpVersion($systemInfo['php_version']);
             $documentRoot = trim((string) ($systemInfo['document_root'] ?? ''));
             $databaseName = trim((string) ($systemInfo['database_name'] ?? ''));
             $oldContaoVersion = trim((string) $installation['contao_version']);
@@ -117,31 +118,6 @@ final class InstallationSynchronizer
 
             throw $exception;
         }
-    }
-
-    private function normalizeContaoVersion(?string $version): string
-    {
-        $version = null !== $version ? trim($version) : '';
-
-        if ('' === $version) {
-            throw new RuntimeException('Die Contao-Version konnte nicht ermittelt werden.');
-        }
-
-        return preg_replace('/\Av(?=\d)/i', '', $version) ?? $version;
-    }
-
-    private function normalizePhpVersion(string $version): string
-    {
-        $version = trim($version);
-
-        if (1 !== preg_match('/\A(\d+)\.(\d+)/', $version, $matches)) {
-            throw new RuntimeException(sprintf(
-                'Die PHP-Version „%s“ konnte nicht verarbeitet werden.',
-                $version
-            ));
-        }
-
-        return $matches[1].'.'.$matches[2];
     }
 
     private function normalizeErrorMessage(string $message): string
