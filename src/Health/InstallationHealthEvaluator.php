@@ -166,7 +166,7 @@ final class InstallationHealthEvaluator
                     sprintf(
                         'Contao %s erhält nur noch Sicherheitsupdates (bis %s).',
                         $branch,
-                        date('d.m.Y', $securityUntil)
+                        gmdate('d.m.Y', $securityUntil)
                     )
                 );
             }
@@ -215,7 +215,7 @@ final class InstallationHealthEvaluator
                     sprintf(
                         'PHP %s erhält nur noch Sicherheitsupdates (bis %s).',
                         $branch,
-                        date('d.m.Y', $securityUntil)
+                        gmdate('d.m.Y', $securityUntil)
                     )
                 );
             }
