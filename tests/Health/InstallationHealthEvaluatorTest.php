@@ -146,10 +146,12 @@ final class InstallationHealthEvaluatorTest extends TestCase
 
     public function testContaoLtsAutomaticallyChangesToSecurityOnly(): void
     {
+        $now = 1_803_902_400; // 01.03.2027, 12:00 UTC
         $health = $this->evaluator()->evaluate($this->healthyInstallation([
             'contao_version' => '5.3.47',
             'php_version' => '8.5',
-        ]), 30, 1_804_070_400); // 01.03.2027, 12:00 UTC
+            'last_sync' => $now - 86400,
+        ]), 30, $now);
 
         self::assertSame(InstallationHealthEvaluator::STATUS_WARNING, $health['status']);
         self::assertContains('Contao 5.3 erhält nur noch Sicherheitsupdates (bis 14.02.2028).', $health['messages']);
@@ -157,10 +159,12 @@ final class InstallationHealthEvaluatorTest extends TestCase
 
     public function testContaoLtsAutomaticallyBecomesEol(): void
     {
+        $now = 1_835_524_800; // 01.03.2028, 12:00 UTC
         $health = $this->evaluator()->evaluate($this->healthyInstallation([
             'contao_version' => '5.3.47',
             'php_version' => '8.5',
-        ]), 30, 1_835_438_400); // 01.03.2028, 12:00 UTC
+            'last_sync' => $now - 86400,
+        ]), 30, $now);
 
         self::assertSame(InstallationHealthEvaluator::STATUS_ERROR, $health['status']);
         self::assertContains('Contao 5.3 wird nicht mehr unterstützt.', $health['messages']);
