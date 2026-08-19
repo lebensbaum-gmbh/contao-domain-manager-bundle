@@ -14,6 +14,11 @@
             "Lebensbaum\\ContaoDomainManagerBundle\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Lebensbaum\\ContaoDomainManagerBundle\\Tests\\": "tests/"
+        }
+    },
     "extra": {
         "contao-manager-plugin": "Lebensbaum\\ContaoDomainManagerBundle\\ContaoManager\\Plugin"
     },
@@ -29,9 +34,13 @@
         "source": "https://github.com/lebensbaum-gmbh/contao-domain-manager-bundle"
     },
     "require-dev": {
-        "contao/manager-plugin": "^2.0"
+        "contao/manager-plugin": "^2.0",
+        "phpunit/phpunit": "^11.5"
     },
     "conflict": {
         "contao/manager-plugin": "<2.0 || >=3.0"
+    },
+    "scripts": {
+        "test": "phpunit --colors=always"
     }
 }

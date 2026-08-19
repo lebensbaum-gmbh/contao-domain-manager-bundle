@@ -48,4 +48,7 @@ jobs:
         run: composer update --prefer-dist --no-interaction --no-progress
 
       - name: Lint PHP files
-        run: find src contao -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+        run: find src contao tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Run unit tests
+        run: composer test
