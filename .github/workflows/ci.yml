@@ -38,6 +38,12 @@ jobs:
       - name: Validate composer.json
         run: composer validate --strict
 
+      - name: Configure Composer plugins
+        run: |
+          composer config allow-plugins.contao/manager-plugin true
+          composer config allow-plugins.contao-components/installer true
+          composer config allow-plugins.php-http/discovery false
+
       - name: Install dependencies
         run: composer update --prefer-dist --no-interaction --no-progress
 
