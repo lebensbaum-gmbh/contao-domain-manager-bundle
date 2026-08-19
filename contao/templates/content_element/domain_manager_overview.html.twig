@@ -8,6 +8,12 @@
     {% endwith %}
 {% endadd %}
 
+{% add "domain_manager_health_css" to stylesheets %}
+    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-health.css')} %}
+        {{ block('stylesheet_component') }}
+    {% endwith %}
+{% endadd %}
+
 {% add "domain_manager_js" to body %}
     <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager.js') }}" defer></script>
 {% endadd %}
@@ -36,6 +42,10 @@
 
                 <div class="domain-ident">
                     <strong class="domain-name">{{ domain.domain }}</strong>
+                    <span class="health-badge is-{{ domain.health.status }}">
+                        <span class="health-dot" aria-hidden="true"></span>
+                        {{ domain.health.label }}{% if domain.health.issue_count > 0 %} · {{ domain.health.issue_count }}{% endif %}
+                    </span>
                 </div>
 
                 {% if domain.target %}
@@ -106,6 +116,10 @@
 
                             <div class="target-actions">
                                 <div class="target-badges">
+                                    <span class="health-badge is-{{ installation.health.status }}">
+                                        <span class="health-dot" aria-hidden="true"></span>
+                                        {{ installation.health.label }}{% if installation.health.issue_count > 0 %} · {{ installation.health.issue_count }}{% endif %}
+                                    </span>
                                     {% if installation.environment_label %}<span class="environment-badge">{{ installation.environment_label }}</span>{% endif %}
                                     <span class="status-badge is-current">Aktuelles Ziel</span>
                                     <span class="status-badge {{ installation.trakked ? 'is-tracked' : 'is-untracked' }}">
@@ -134,13 +148,20 @@
 
                         <div class="target-column target-information">
                             <h4>Status & Hinweise</h4>
-                            {% if installation.last_sync_label or installation.sync_status %}
-                                <div class="installation-sync-status {{ installation.sync_status == 'success' ? 'is-success' : 'is-error' }}">
-                                    <strong>{{ installation.sync_status == 'success' ? 'Synchronisation erfolgreich' : 'Synchronisationsfehler' }}</strong>
-                                    {% if installation.last_sync_label %}<span>Letzte erfolgreiche Synchronisation: {{ installation.last_sync_label }}</span>{% endif %}
-                                    {% if installation.sync_message %}<p>{{ installation.sync_message }}</p>{% endif %}
+                            <div class="installation-health is-{{ installation.health.status }}">
+                                <div class="installation-health-head">
+                                    <strong>{{ installation.health.label == 'OK' ? 'Keine Auffälligkeiten' : installation.health.label }}</strong>
+                                    {% if installation.health.issue_count > 0 %}<span>{{ installation.health.issue_count }} {{ installation.health.issue_count == 1 ? 'Punkt' : 'Punkte' }}</span>{% endif %}
                                 </div>
-                            {% endif %}
+                                {% if installation.health.messages %}
+                                    <ul>
+                                        {% for message in installation.health.messages %}<li>{{ message }}</li>{% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <p>Die gespeicherten Systemdaten sind unauffällig.</p>
+                                {% endif %}
+                                {% if installation.last_sync_label %}<p class="health-meta">Letzte erfolgreiche Synchronisation: {{ installation.last_sync_label }}</p>{% endif %}
+                            </div>
 
                             {% if installation.notes %}
                                 <div class="target-notes">{{ installation.notes|nl2br }}</div>
@@ -177,6 +198,10 @@
                                     <span class="installation-contao">{{ installation.contao_version }}</span>
                                     <span class="installation-php">{{ installation.php_version }}</span>
                                     <span class="installation-status">
+                                        <span class="health-badge is-{{ installation.health.status }}">
+                                            <span class="health-dot" aria-hidden="true"></span>
+                                            {{ installation.health.label }}{% if installation.health.issue_count > 0 %} · {{ installation.health.issue_count }}{% endif %}
+                                        </span>
                                         <span class="status-badge {{ installation.trakked ? 'is-tracked' : 'is-untracked' }}">{{ installation.trakked ? 'Trakked' : 'Nicht in Trakked' }}</span>
                                         <span class="installation-toggle" aria-hidden="true">›</span>
                                     </span>
@@ -188,13 +213,20 @@
                                         {% if installation.database_name %}<div><dt>Datenbank</dt><dd>{{ installation.database_name }}</dd></div>{% endif %}
                                     </dl>
 
-                                    {% if installation.last_sync_label or installation.sync_status %}
-                                        <div class="installation-sync-status {{ installation.sync_status == 'success' ? 'is-success' : 'is-error' }}">
-                                            <strong>{{ installation.sync_status == 'success' ? 'Synchronisation erfolgreich' : 'Synchronisationsfehler' }}</strong>
-                                            {% if installation.last_sync_label %}<span>Letzte erfolgreiche Synchronisation: {{ installation.last_sync_label }}</span>{% endif %}
-                                            {% if installation.sync_message %}<p>{{ installation.sync_message }}</p>{% endif %}
+                                    <div class="installation-health is-{{ installation.health.status }}">
+                                        <div class="installation-health-head">
+                                            <strong>{{ installation.health.label == 'OK' ? 'Keine Auffälligkeiten' : installation.health.label }}</strong>
+                                            {% if installation.health.issue_count > 0 %}<span>{{ installation.health.issue_count }} {{ installation.health.issue_count == 1 ? 'Punkt' : 'Punkte' }}</span>{% endif %}
                                         </div>
-                                    {% endif %}
+                                        {% if installation.health.messages %}
+                                            <ul>
+                                                {% for message in installation.health.messages %}<li>{{ message }}</li>{% endfor %}
+                                            </ul>
+                                        {% else %}
+                                            <p>Die gespeicherten Systemdaten sind unauffällig.</p>
+                                        {% endif %}
+                                        {% if installation.last_sync_label %}<p class="health-meta">Letzte erfolgreiche Synchronisation: {{ installation.last_sync_label }}</p>{% endif %}
+                                    </div>
 
                                     <div class="installation-detail-notes">
                                         <strong>Bemerkungen</strong>
@@ -217,6 +249,5 @@
     {% endfor %}
     </div>
 </div>
-
 
 {% endblock %}
