@@ -1,0 +1,136 @@
+.domain-manager-overview .domain-ident {
+    display: grid;
+    gap: 6px;
+    justify-items: start;
+}
+
+.domain-manager-overview .health-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 24px;
+    padding: 3px 8px;
+    border: 1px solid var(--dm-border);
+    border-radius: 999px;
+    background: var(--dm-background-soft);
+    color: var(--dm-muted);
+    font-size: .75rem;
+    font-weight: 700;
+    line-height: 1.1;
+    white-space: nowrap;
+}
+
+.domain-manager-overview .health-dot {
+    width: 7px;
+    height: 7px;
+    flex: 0 0 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.domain-manager-overview .health-badge.is-ok {
+    border-color: color-mix(in srgb, var(--dm-success) 25%, transparent);
+    background: var(--dm-success-soft);
+    color: var(--dm-success);
+}
+
+.domain-manager-overview .health-badge.is-warning {
+    border-color: color-mix(in srgb, var(--dm-warning) 30%, transparent);
+    background: var(--dm-warning-soft);
+    color: var(--dm-warning);
+}
+
+.domain-manager-overview .health-badge.is-error {
+    border-color: color-mix(in srgb, var(--dm-error) 30%, transparent);
+    background: var(--dm-error-soft);
+    color: var(--dm-error);
+}
+
+.domain-manager-overview .installation-health {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--dm-border);
+    border-radius: 6px;
+    background: var(--dm-background-soft);
+    color: var(--dm-muted);
+    font-size: .9rem;
+    line-height: 1.45;
+}
+
+.domain-manager-overview .installation-health.is-ok {
+    border-color: color-mix(in srgb, var(--dm-success) 25%, transparent);
+    background: var(--dm-success-soft);
+    color: var(--dm-success);
+}
+
+.domain-manager-overview .installation-health.is-warning {
+    border-color: color-mix(in srgb, var(--dm-warning) 30%, transparent);
+    background: var(--dm-warning-soft);
+    color: var(--dm-warning);
+}
+
+.domain-manager-overview .installation-health.is-error {
+    border-color: color-mix(in srgb, var(--dm-error) 30%, transparent);
+    background: var(--dm-error-soft);
+    color: var(--dm-error);
+}
+
+.domain-manager-overview .installation-health-head {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.domain-manager-overview .installation-health-head > span {
+    font-size: .78rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.domain-manager-overview .installation-health ul {
+    margin: 8px 0 0;
+    padding-left: 20px;
+}
+
+.domain-manager-overview .installation-health li + li {
+    margin-top: 4px;
+}
+
+.domain-manager-overview .installation-health p {
+    margin: 8px 0 0;
+}
+
+.domain-manager-overview .installation-health .health-meta {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid currentColor;
+    opacity: .82;
+    font-size: .82rem;
+}
+
+.domain-manager-overview .target-information > .target-notes,
+.domain-manager-overview .target-information > .no-notes {
+    margin-top: 14px;
+}
+
+.domain-manager-overview .installation-status {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.domain-manager-overview .installation-toggle {
+    margin-left: auto;
+}
+
+@media (max-width: 680px) {
+    .domain-manager-overview .health-badge {
+        white-space: normal;
+    }
+
+    .domain-manager-overview .installation-health-head {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 3px;
+    }
+}
