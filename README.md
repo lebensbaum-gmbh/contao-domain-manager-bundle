@@ -2,7 +2,7 @@
 
 Der **Contao Domain Manager** ermöglicht die zentrale Verwaltung und Synchronisation mehrerer Contao-Installationen in einer eigenen Contao-Installation.
 
-Hauptdomains und zugehörige Installationen können im Backend verwaltet, mit den jeweiligen Zielsystemen verbunden und deren Systeminformationen zentral aktualisiert werden. Für das Frontend stehen die Inhaltselemente **Domainübersicht** und **Domainfilter** zur Verfügung.
+Hauptdomains und zugehörige Installationen können im Backend verwaltet, mit den jeweiligen Zielsystemen verbunden und deren Systeminformationen zentral aktualisiert werden. Für das Frontend stehen die eigenen Inhaltselemente **Domainübersicht** und **Domainfilter** zur Verfügung.
 
 ## Funktionen
 
@@ -10,12 +10,15 @@ Hauptdomains und zugehörige Installationen können im Backend verwaltet, mit de
 - Verbindungstest zu überwachten Installationen
 - Synchronisation von Systeminformationen
 - automatische Übernahme von Contao-Version, PHP-Version, Datenbankname und DocumentRoot
+- kompakte Anzeige des Webroots im Frontend, z. B. `/public` oder `/web`
 - Status- und Zeitinformationen zur letzten Synchronisation
 - Notizen und Screenshots je Installation
 - Rechteverwaltung für Backend-Benutzergruppen
 - Frontend-Inhaltselement **Domainübersicht**
 - Frontend-Inhaltselement **Domainfilter**
-- mitgeliefertes, anpassbares Standard-CSS
+- mitgeliefertes responsives Standardlayout
+- mitgeliefertes Seitentheme für Domainübersicht, Login und Fehlerseite
+- anpassbare CSS-Variablen für Farben, Schrift, Breite und weitere Gestaltungswerte
 
 ## Voraussetzungen
 
@@ -59,6 +62,8 @@ Es müssen keine `.env`-Dateien, Composer-Dateien oder sonstigen Konfigurationsd
 
 ## Schnellstart: Von der Installation zur fertigen Domainübersicht
 
+Der folgende Aufbau wurde mit einer frischen Contao-Installation getestet.
+
 ### 1. Zugangsdaten der Zielinstallation übernehmen
 
 Öffne auf der Zielinstallation:
@@ -84,9 +89,13 @@ Lege unter der Hauptdomain eine Installation an und trage mindestens ein:
 
 Technische Angaben wie Contao-Version, PHP-Version, Datenbankname und DocumentRoot werden bei der Synchronisation automatisch übernommen, sofern die Zielinstallation diese Informationen bereitstellt.
 
+Der vollständige DocumentRoot bleibt intern gespeichert. In der Frontend-Domainübersicht wird daraus bewusst nur der relevante Webroot angezeigt, zum Beispiel `/public` oder `/web`.
+
 ### 4. Verbindung testen
 
 Über **Verbindung testen** kann geprüft werden, ob die zentrale Installation die Zielinstallation erreicht und die Zugangsdaten korrekt sind.
+
+Der Verbindungstest prüft die Erreichbarkeit. Die technischen Systemdaten werden bei der späteren Synchronisation aktualisiert.
 
 ### 5. Frontend-Mitgliedergruppe anlegen
 
@@ -110,35 +119,97 @@ Lege unter **Benutzerverwaltung → Mitglieder** ein Mitglied an.
 
 Nur angemeldete Frontend-Mitglieder aus mindestens einer dort ausgewählten Gruppe sehen die Aktion **Systemdaten aktualisieren**.
 
-### 8. Frontend-Login und Zugriffsschutz einrichten
+### 8. Theme und Seitenlayout anlegen
 
-Der Domain Manager bringt kein eigenes Login-System mit. Verwendet wird das Contao-Standardmodul für die Frontend-Anmeldung.
+Eine vollständig neue Contao-Installation benötigt zunächst ein Theme und ein Seitenlayout.
+
+1. Unter **Themes** ein Theme anlegen, zum Beispiel `Domainverwaltung`.
+2. Darin ein Seitenlayout anlegen.
+3. Im Seitenlayout unter **Eingebundene Elemente** das Contao-Modul **Artikel [Artikel]** der **Hauptspalte** zuweisen.
+4. Beim **Startpunkt einer Website** die Option zur Layout-Zuweisung aktivieren und das neue Seitenlayout auswählen.
+
+Das Login-Modul sollte nicht global im Seitenlayout eingebunden werden. Es wird gezielt als Inhaltselement vom Typ **Modul** in den jeweiligen Artikeln verwendet.
+
+### 9. Empfohlene Seitenstruktur anlegen
 
 Empfohlener Aufbau:
 
-1. Unter **Themes → Frontend-Module** ein Login-Modul anlegen.
-2. Eine eigene, nicht geschützte Login-Seite anlegen und dort das Login-Modul einbinden.
-3. Die Seite mit der Domainübersicht als geschützte Seite konfigurieren und die gewünschte Frontend-Mitgliedergruppe freigeben.
-4. Für die Domainübersicht empfiehlt sich der Alias `index`, wenn sie direkt unter der Hauptdomain erreichbar sein soll.
-5. Eine Seite vom Typ **401 Nicht authentifiziert** anlegen und von dort auf die Login-Seite weiterleiten.
-6. Im Login-Modul als Weiterleitungsseite die Domainübersicht festlegen.
-7. Optional dasselbe Login-Modul zusätzlich auf der geschützten Domainübersicht einbinden. Angemeldete Mitglieder erhalten dort den Logout-Zustand und können sich direkt abmelden.
+```text
+Domainverwaltung           Startpunkt einer Website
+├── Domainübersicht        Reguläre Seite, Alias: index, geschützt
+├── Login                  Reguläre Seite, Alias: login, ungeschützt
+├── 401 – Nicht authentifiziert
+│                          Seitentyp: 401 Nicht authentifiziert
+│                          Auto-Weiterleitung auf Login
+└── 403 – Zugriff verweigert
+                           Seitentyp: 403 Zugriff verweigert
+                           eigene Hinweisseite
+```
+
+Für die Seite **Domainübersicht**:
+
+- Alias `index`, wenn sie direkt unter der Hauptdomain erreichbar sein soll
+- Seite schützen
+- die gewünschte Frontend-Mitgliedergruppe freigeben
+- CSS-Klasse `domainverwaltung-page`
+
+Für die Seite **Login**:
+
+- nicht schützen
+- CSS-Klasse `domainverwaltung-login-page`
+
+Für die Seite **401 – Nicht authentifiziert**:
+
+- nicht schützen
+- Auto-Weiterleitung auf die Login-Seite aktivieren
+- eine eigene CSS-Klasse ist bei reiner Weiterleitung nicht erforderlich
+
+Für die Seite **403 – Zugriff verweigert**:
+
+- nicht schützen
+- keine Auto-Weiterleitung erforderlich
+- CSS-Klasse `domainverwaltung-error-page`
+- optional einen Artikel mit einem kurzen Hinweis für angemeldete, aber nicht berechtigte Mitglieder anlegen
 
 Damit ergibt sich der übliche Ablauf:
 
-- nicht angemeldet → Aufruf der geschützten Domainübersicht → Weiterleitung zum Login
-- erfolgreiche Anmeldung → Weiterleitung zur Domainübersicht
-- bereits angemeldet → direkter Aufruf der Domainübersicht
+- nicht angemeldet → geschützte Domainübersicht → 401 → Login
+- erfolgreiche Anmeldung → Domainübersicht
+- angemeldet, aber nicht berechtigt → 403
+- angemeldet und berechtigt → direkter Zugriff auf die Domainübersicht
 
-Die Gestaltung der Login-Seite und des Logout-Bereichs gehört zum jeweiligen Contao-Theme und wird nicht vom Domain Manager vorgegeben.
+### 10. Frontend-Login anlegen
 
-### 9. Domainübersicht anlegen
+Unter **Themes → Frontend-Module** ein Contao-Modul vom Typ **Login-Formular** anlegen.
 
-Lege die gewünschte Frontend-Seite an und füge dort das Inhaltselement **Domainübersicht** ein.
+Empfohlene Einstellungen:
 
-Optional kann zusätzlich das Inhaltselement **Domainfilter** verwendet werden. Wenn beide Elemente auf derselben Seite vorhanden sind, ordnet das mitgelieferte Standardlayout den Filter auf größeren Bildschirmen rechts neben der Domainübersicht an. Auf kleineren Ansichten werden die Elemente untereinander dargestellt.
+- Weiterleitungsseite: **Domainübersicht**
+- CSS-Klasse: `domainverwaltung-login`
 
-### 10. Anmelden und synchronisieren
+Auf der Seite **Login** wird das Login-Modul über ein Inhaltselement vom Typ **Modul** in den Artikel eingebunden.
+
+Dasselbe Login-Modul kann zusätzlich auf der geschützten Domainübersicht eingebunden werden. Im angemeldeten Zustand zeigt Contao dort die Login-Information sowie die Abmeldefunktion an. Das mitgelieferte Seitentheme formatiert diesen Bereich als kompakte Account-Leiste.
+
+### 11. Domainübersicht und Domainfilter einfügen
+
+Die beiden Domain-Manager-Elemente sind **eigene Contao-Inhaltselementtypen** und keine Textelemente.
+
+Beim Anlegen eines neuen Inhaltselements steht die Gruppe **Domainverwaltung** zur Verfügung mit:
+
+- **Domainübersicht** – technischer Typ `domain_manager_overview`
+- **Domainfilter** – technischer Typ `domain_manager_filter`
+
+Empfohlene Reihenfolge im Artikel der Domainübersicht:
+
+1. Überschrift, z. B. `Domainübersicht`
+2. Inhaltselement **Modul** mit dem Login-Modul
+3. Inhaltselement **Domainfilter**
+4. Inhaltselement **Domainübersicht**
+
+Wenn Domainfilter und Domainübersicht auf derselben Seite vorhanden sind, platziert das mitgelieferte Layout den Filter auf größeren Bildschirmen rechts neben der Übersicht. Auf kleineren Ansichten werden die Elemente untereinander dargestellt.
+
+### 12. Anmelden und synchronisieren
 
 Melde dich im Frontend mit dem zuvor angelegten Mitglied an und öffne die Domainübersicht.
 
@@ -148,27 +219,107 @@ Nach erfolgreicher Synchronisation werden die von System-Info gelieferten techni
 
 ## Frontend-Ausgabe
 
-Nach der Installation stehen in Contao zusätzliche Inhaltselemente zur Verfügung.
-
 ### Domainübersicht
 
 Über den Elementtyp **Domainübersicht** kann die zentrale Übersicht der gespeicherten Domains und Installationen im Frontend ausgegeben werden.
 
+Die Hauptdomains werden als aufklappbare Einträge dargestellt. Das aktuelle Ziel, Contao-Version und PHP-Version sind bereits in der kompakten Ansicht sichtbar. Weitere technische Informationen erscheinen im aufgeklappten Bereich.
+
 ### Domainfilter
 
-Optional kann zusätzlich der Elementtyp **Domainfilter** eingesetzt werden, um die ausgegebenen Installationen im Frontend zu filtern.
+Der Elementtyp **Domainfilter** filtert die ausgegebenen Installationen unter anderem nach:
 
-Beide Elemente können wie normale Contao-Inhaltselemente in Artikeln verwendet werden. Das Standardlayout platziert den Filter auf größeren Bildschirmen rechts neben der Domainübersicht und wechselt bei kleineren Viewports auf eine einspaltige Darstellung.
+- Suchbegriff
+- aktuellem Ziel
+- Trakked-Status
+- Contao-Version
+- PHP-Version
+- Umgebung
+
+Beide Elemente können wie normale Contao-Inhaltselemente in Artikeln verwendet werden.
 
 ## Gestaltung / CSS
 
-Der Domain Manager liefert ein neutrales Standard-Stylesheet mit.
+Der Domain Manager liefert mehrere Stylesheets mit:
 
-Die Darstellung kann im eigenen Theme angepasst oder vollständig überschrieben werden.
+- Komponenten-Styling für Domainübersicht und Domainfilter
+- responsives Layout für Übersicht und Filter
+- ein neutrales Seitentheme für Domainübersicht, Login und Fehlerseite
 
-Die wichtigsten Gestaltungswerte sind über CSS-Variablen definiert. Dadurch lassen sich Farben, Abstände und weitere Eigenschaften ohne Änderung der Bundle-Dateien anpassen.
+Das Seitentheme wird vom Bundle automatisch bereitgestellt. Es wirkt gezielt auf die dokumentierten CSS-Klassen und verändert nicht pauschal das Styling anderer Contao-Seiten.
 
-Änderungen sollten immer im eigenen Contao-Theme erfolgen, damit sie bei späteren Updates des Domain Managers erhalten bleiben.
+### Empfohlene CSS-Klassen
+
+```text
+Domainübersicht-Seite:  domainverwaltung-page
+Login-Seite:            domainverwaltung-login-page
+403-Seite:              domainverwaltung-error-page
+Login-Modul:            domainverwaltung-login
+```
+
+### Eigene Farben und Gestaltung
+
+Die wichtigsten Gestaltungswerte sind über CSS-Custom-Properties definiert. Bundle-Dateien sollten nicht direkt geändert werden, da solche Änderungen bei einem Update überschrieben würden.
+
+Lege stattdessen im eigenen Contao-Theme ein eigenes Stylesheet an und überschreibe dort nur die gewünschten Variablen.
+
+Beispiel:
+
+```css
+body.domainverwaltung-page,
+body.domainverwaltung-login-page,
+body.domainverwaltung-error-page {
+    --dm-theme-primary: #992228;
+    --dm-theme-primary-hover: #741b20;
+    --dm-theme-primary-soft: #f7ecee;
+
+    --dm-theme-page: #f8f6f6;
+    --dm-theme-surface: #ffffff;
+    --dm-theme-surface-soft: #faf7f8;
+
+    --dm-theme-text: #2b2b2b;
+    --dm-theme-muted: #6b6b6b;
+
+    --dm-theme-border: #ded7d9;
+    --dm-theme-border-light: #eee8ea;
+
+    --dm-theme-radius: 10px;
+    --dm-theme-content-width: 1500px;
+    --dm-theme-font-family: Arial, sans-serif;
+}
+```
+
+Verfügbare Variablen umfassen unter anderem:
+
+```text
+--dm-theme-primary
+--dm-theme-primary-hover
+--dm-theme-primary-soft
+
+--dm-theme-page
+--dm-theme-surface
+--dm-theme-surface-soft
+
+--dm-theme-text
+--dm-theme-muted
+
+--dm-theme-border
+--dm-theme-border-light
+
+--dm-theme-success
+--dm-theme-success-soft
+--dm-theme-warning
+--dm-theme-warning-soft
+--dm-theme-error
+--dm-theme-error-soft
+
+--dm-theme-radius
+--dm-theme-shadow
+--dm-theme-content-width
+--dm-theme-font-family
+```
+
+Dadurch kann die Oberfläche an ein vorhandenes Corporate Design angepasst werden, ohne die Bundle-Dateien selbst zu verändern.
 
 ## Rechteverwaltung
 
@@ -191,6 +342,8 @@ Secrets sollten vertraulich behandelt und nur den Personen zugänglich gemacht w
 Ein Secret kann im System-Info-Bundle jederzeit neu erzeugt werden. Anschließend muss das neue Secret auch im Domain Manager hinterlegt werden.
 
 Es werden keine Datenbank-Zugangsdaten wie Benutzername oder Passwort übertragen. Bei der Synchronisation wird lediglich der Datenbankname übernommen.
+
+Der vollständige serverseitige DocumentRoot kann intern gespeichert werden. In der Frontend-Domainübersicht wird für die tägliche Arbeit nur der Webroot wie `/public` oder `/web` ausgegeben.
 
 ## Lizenz
 
