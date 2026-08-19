@@ -10,6 +10,42 @@ final class InstallationHealthEvaluator
     public const STATUS_WARNING = 'warning';
     public const STATUS_ERROR = 'error';
 
+    /** @var array<string, array{active_until:string, security_until:string}> */
+    private const CONTAO_SUPPORT = [
+        '5.3' => [
+            'active_until' => '2027-02-14 23:59:59 UTC',
+            'security_until' => '2028-02-14 23:59:59 UTC',
+        ],
+        '5.7' => [
+            'active_until' => '2029-02-14 23:59:59 UTC',
+            'security_until' => '2030-02-14 23:59:59 UTC',
+        ],
+        '6.0' => [
+            'active_until' => '2027-02-14 23:59:59 UTC',
+            'security_until' => '2027-02-14 23:59:59 UTC',
+        ],
+    ];
+
+    /** @var array<string, array{active_until:string, security_until:string}> */
+    private const PHP_SUPPORT = [
+        '8.2' => [
+            'active_until' => '2024-12-31 23:59:59 UTC',
+            'security_until' => '2026-12-31 23:59:59 UTC',
+        ],
+        '8.3' => [
+            'active_until' => '2025-12-31 23:59:59 UTC',
+            'security_until' => '2027-12-31 23:59:59 UTC',
+        ],
+        '8.4' => [
+            'active_until' => '2026-12-31 23:59:59 UTC',
+            'security_until' => '2028-12-31 23:59:59 UTC',
+        ],
+        '8.5' => [
+            'active_until' => '2027-12-31 23:59:59 UTC',
+            'security_until' => '2029-12-31 23:59:59 UTC',
+        ],
+    ];
+
     /**
      * @param array<string, mixed> $installation
      * @return array{status:string,label:string,messages:list<string>,issue_count:int}
@@ -26,6 +62,8 @@ final class InstallationHealthEvaluator
         $systemId = trim((string) ($installation['system_id'] ?? ''));
         $lastSync = (int) ($installation['last_sync'] ?? 0);
         $webroot = strtolower(str_replace('\\', '/', trim((string) ($installation['document_root'] ?? ''))));
+        $contaoVersion = trim((string) ($installation['contao_version'] ?? ''));
+        $phpVersion = trim((string) ($installation['php_version'] ?? ''));
 
         if ('error' === $syncStatus) {
             $this->addIssue($status, $messages, self::STATUS_ERROR, 'Die letzte Synchronisation ist fehlgeschlagen.');
@@ -57,6 +95,9 @@ final class InstallationHealthEvaluator
         if ('/web' === rtrim($webroot, '/')) {
             $this->addIssue($status, $messages, self::STATUS_WARNING, 'Der Webroot verwendet noch das veraltete Verzeichnis /web.');
         }
+
+        $this->evaluateContaoVersion($contaoVersion, $now, $status, $messages);
+        $this->evaluatePhpVersion($phpVersion, $now, $status, $messages);
 
         return [
             'status' => $status,
@@ -94,6 +135,113 @@ final class InstallationHealthEvaluator
             'messages' => $messages,
             'issue_count' => $issueCount,
         ];
+    }
+
+    /** @param list<string> $messages */
+    private function evaluateContaoVersion(string $version, int $now, string &$status, array &$messages): void
+    {
+        $branch = $this->versionBranch($version);
+
+        if (null === $branch) {
+            return;
+        }
+
+        if (isset(self::CONTAO_SUPPORT[$branch])) {
+            $support = self::CONTAO_SUPPORT[$branch];
+            $activeUntil = strtotime($support['active_until']);
+            $securityUntil = strtotime($support['security_until']);
+
+            if (false !== $securityUntil && $now > $securityUntil) {
+                $this->addIssue(
+                    $status,
+                    $messages,
+                    self::STATUS_ERROR,
+                    sprintf('Contao %s wird nicht mehr unterstützt.', $branch)
+                );
+            } elseif (false !== $activeUntil && $now > $activeUntil) {
+                $this->addIssue(
+                    $status,
+                    $messages,
+                    self::STATUS_WARNING,
+                    sprintf(
+                        'Contao %s erhält nur noch Sicherheitsupdates (bis %s).',
+                        $branch,
+                        date('d.m.Y', $securityUntil)
+                    )
+                );
+            }
+
+            return;
+        }
+
+        [$major, $minor] = array_map('intval', explode('.', $branch, 2));
+
+        if ($major < 5 || (5 === $major && $minor < 7 && 3 !== $minor)) {
+            $this->addIssue(
+                $status,
+                $messages,
+                self::STATUS_ERROR,
+                sprintf('Contao %s wird nicht mehr unterstützt.', $branch)
+            );
+        }
+    }
+
+    /** @param list<string> $messages */
+    private function evaluatePhpVersion(string $version, int $now, string &$status, array &$messages): void
+    {
+        $branch = $this->versionBranch($version);
+
+        if (null === $branch) {
+            return;
+        }
+
+        if (isset(self::PHP_SUPPORT[$branch])) {
+            $support = self::PHP_SUPPORT[$branch];
+            $activeUntil = strtotime($support['active_until']);
+            $securityUntil = strtotime($support['security_until']);
+
+            if (false !== $securityUntil && $now > $securityUntil) {
+                $this->addIssue(
+                    $status,
+                    $messages,
+                    self::STATUS_ERROR,
+                    sprintf('PHP %s wird nicht mehr unterstützt.', $branch)
+                );
+            } elseif (false !== $activeUntil && $now > $activeUntil) {
+                $this->addIssue(
+                    $status,
+                    $messages,
+                    self::STATUS_WARNING,
+                    sprintf(
+                        'PHP %s erhält nur noch Sicherheitsupdates (bis %s).',
+                        $branch,
+                        date('d.m.Y', $securityUntil)
+                    )
+                );
+            }
+
+            return;
+        }
+
+        [$major, $minor] = array_map('intval', explode('.', $branch, 2));
+
+        if ($major < 8 || (8 === $major && $minor <= 1)) {
+            $this->addIssue(
+                $status,
+                $messages,
+                self::STATUS_ERROR,
+                sprintf('PHP %s wird nicht mehr unterstützt.', $branch)
+            );
+        }
+    }
+
+    private function versionBranch(string $version): ?string
+    {
+        if (1 !== preg_match('/\A[vV]?(\d+)\.(\d+)/', trim($version), $matches)) {
+            return null;
+        }
+
+        return $matches[1].'.'.$matches[2];
     }
 
     /** @param list<string> $messages */
