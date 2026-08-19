@@ -183,7 +183,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
     private function normalizeInstallation(array $row): array
     {
         $domain = trim((string) ($row['domain'] ?? ''));
-        $environment = trim((string) ($row['environment'] ?? ''));
+        $environment = $this->normalizeEnvironment((string) ($row['environment'] ?? ''));
         $contaoVersion = trim((string) ($row['contao_version'] ?? ''));
         $phpVersion = trim((string) ($row['php_version'] ?? ''));
         $backendUrl = $this->safeUrl((string) ($row['backend_url'] ?? ''));
@@ -226,13 +226,26 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
         return in_array($normalized, ['1', 'true', 'yes', 'ja', 'on'], true);
     }
 
+    private function normalizeEnvironment(string $value): string
+    {
+        $normalized = strtolower(trim($value));
+
+        return match ($normalized) {
+            'production', 'prod', 'live' => 'live',
+            'mirror' => 'mirror',
+            'test', 'testing' => 'test',
+            'dev', 'development' => 'dev',
+            default => $normalized,
+        };
+    }
+
     private function environmentLabel(string $value): string
     {
-        return match (strtolower($value)) {
-            'live', 'production', 'prod' => 'Live',
+        return match ($value) {
+            'live' => 'Live',
             'mirror' => 'Mirror',
-            'test', 'testing' => 'Test',
-            'dev', 'development' => 'Entwicklung',
+            'test' => 'Test',
+            'dev' => 'Entwicklung',
             default => '' !== $value ? ucfirst($value) : '',
         };
     }
