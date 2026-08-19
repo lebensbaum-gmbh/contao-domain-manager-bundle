@@ -11,6 +11,7 @@ use Contao\CoreBundle\DependencyInjection\Attribute\AsContentElement;
 use Contao\CoreBundle\Twig\FragmentTemplate;
 use Contao\CoreBundle\Security\ContaoCorePermissions;
 use Doctrine\DBAL\Connection;
+use Lebensbaum\ContaoDomainManagerBundle\Health\InstallationHealthEvaluator;
 use Lebensbaum\ContaoDomainManagerBundle\Settings\DomainManagerSettings;
 use Lebensbaum\ContaoDomainManagerBundle\Util\SystemValueNormalizer;
 use Symfony\Component\HttpFoundation\Request;
@@ -32,6 +33,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
         private readonly UrlGeneratorInterface $router,
         private readonly DomainManagerSettings $settings,
         private readonly AuthorizationCheckerInterface $authorizationChecker,
+        private readonly InstallationHealthEvaluator $healthEvaluator,
     ) {
     }
 
@@ -44,6 +46,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
         $allContaoVersions = [];
         $allPhpVersions = [];
         $allEnvironments = [];
+        $staleSyncDays = $this->settings->getStaleSyncDays();
         $syncMemberGroupIds = $this->settings->getSyncMemberGroupIds();
         $canSync = [] !== $syncMemberGroupIds
             && $this->authorizationChecker->isGranted(
@@ -73,6 +76,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
 
             foreach ($installationRows as $installationRow) {
                 $installation = $this->normalizeInstallation($installationRow);
+                $installation['health'] = $this->healthEvaluator->evaluate($installation, $staleSyncDays);
                 $installations[] = $installation;
 
                 if ('' !== $installation['contao_version']) {
@@ -101,6 +105,14 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
                 static fn (array $installation): bool => null === $targetInstallation
                     || $installation['id'] !== $targetInstallation['id']
             ));
+
+            $domainHealth = $this->healthEvaluator->summarize(
+                array_map(
+                    static fn (array $installation): array => $installation['health'],
+                    $installations
+                ),
+                null !== $targetInstallation
+            );
 
             $syncResult = null;
             if ($request->query->getInt('dm_domain') === $domainId) {
@@ -136,6 +148,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
                 'target' => $targetInstallation,
                 'others' => $otherInstallations,
                 'installations' => $installations,
+                'health' => $domainHealth,
                 'search' => strtolower(implode(' ', array_filter($searchTerms))),
                 'sync_url' => $this->router->generate(
                     'contao_domain_manager_sync_domain',
