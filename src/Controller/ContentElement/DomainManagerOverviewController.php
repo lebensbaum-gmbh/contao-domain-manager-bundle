@@ -210,7 +210,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
             return '';
         }
 
-        return basename($normalized);
+        return '/'.basename($normalized);
     }
 
     private function isChecked(mixed $value): bool
