@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 $GLOBALS['TL_PERMISSIONS'][] = 'domain_manager_permissions';
+$GLOBALS['TL_CSS'][] = 'bundles/contaodomainmanager/css/domain-manager-page.css';
 
 $GLOBALS['BE_MOD']['domain_manager'] ??= [];
 $GLOBALS['BE_MOD']['domain_manager']['domain_manager_domains'] = [
