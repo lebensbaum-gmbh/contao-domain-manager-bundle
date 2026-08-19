@@ -262,8 +262,8 @@ body.domainverwaltung-error-page a:focus-visible {
 
 /* Compact account bar on the protected overview page. */
 body.domainverwaltung-page .domainverwaltung-login.logout {
-    margin: 0 0 26px;
-    padding: 12px 14px;
+    margin: 0 0 20px;
+    padding: 9px 12px;
     border: 1px solid var(--dm-theme-border);
     border-radius: var(--dm-theme-radius);
     background: var(--dm-theme-surface);
@@ -273,7 +273,7 @@ body.domainverwaltung-page .domainverwaltung-login.logout {
 body.domainverwaltung-page .domainverwaltung-login.logout .formbody {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 14px;
+    gap: 10px;
     align-items: center;
 }
 
@@ -281,6 +281,8 @@ body.domainverwaltung-page .domainverwaltung-login.logout .login_info {
     padding: 0;
     border: 0;
     background: transparent;
+    font-size: .84rem;
+    line-height: 1.35;
 }
 
 body.domainverwaltung-page .domainverwaltung-login.logout .widget-submit {
@@ -288,16 +290,54 @@ body.domainverwaltung-page .domainverwaltung-login.logout .widget-submit {
 }
 
 body.domainverwaltung-page .domainverwaltung-login.logout .submit {
-    min-height: 36px;
-    padding: 7px 12px;
+    min-height: 34px;
+    padding: 6px 11px;
     background: var(--dm-theme-surface);
     color: var(--dm-theme-primary);
+    font-size: .9rem;
 }
 
 body.domainverwaltung-page .domainverwaltung-login.logout .submit:hover,
 body.domainverwaltung-page .domainverwaltung-login.logout .submit:focus-visible {
     background: var(--dm-theme-primary);
     color: #fff;
+}
+
+/* Make the domain accordion visibly interactive. */
+body.domainverwaltung-page .domain-entry {
+    transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+
+body.domainverwaltung-page .domain-entry:hover,
+body.domainverwaltung-page .domain-entry:focus-within {
+    border-color: color-mix(in srgb, var(--dm-theme-primary) 32%, var(--dm-theme-border));
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .08);
+}
+
+body.domainverwaltung-page .domain-summary {
+    position: relative;
+    padding-right: 48px;
+}
+
+body.domainverwaltung-page .domain-summary::after {
+    content: '›';
+    position: absolute;
+    top: 50%;
+    right: 18px;
+    color: var(--dm-theme-muted);
+    font-size: 1.5rem;
+    line-height: 1;
+    transform: translateY(-50%);
+    transition: color .15s ease, transform .15s ease;
+}
+
+body.domainverwaltung-page .domain-entry:hover > .domain-summary::after,
+body.domainverwaltung-page .domain-entry:focus-within > .domain-summary::after {
+    color: var(--dm-theme-primary);
+}
+
+body.domainverwaltung-page .domain-entry[open] > .domain-summary::after {
+    transform: translateY(-50%) rotate(90deg);
 }
 
 @media (max-width: 680px) {
