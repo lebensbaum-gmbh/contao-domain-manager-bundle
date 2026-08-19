@@ -38,7 +38,7 @@ $GLOBALS['TL_DCA']['tl_domain_manager_settings'] = [
         ],
     ],
     'palettes' => [
-        'default' => '{access_legend},sync_member_groups;{links_legend},trakked_url',
+        'default' => '{access_legend},sync_member_groups;{health_legend},stale_sync_days;{links_legend},trakked_url',
     ],
     'fields' => [
         'id' => [
@@ -56,6 +56,18 @@ $GLOBALS['TL_DCA']['tl_domain_manager_settings'] = [
                 'tl_class' => 'clr',
             ],
             'sql' => 'blob NULL',
+        ],
+        'stale_sync_days' => [
+            'exclude' => false,
+            'inputType' => 'text',
+            'default' => 30,
+            'eval' => [
+                'rgxp' => 'digit',
+                'minval' => 1,
+                'maxval' => 3650,
+                'tl_class' => 'w50',
+            ],
+            'sql' => "int(10) unsigned NOT NULL default 30",
         ],
         'trakked_url' => [
             'exclude' => false,
