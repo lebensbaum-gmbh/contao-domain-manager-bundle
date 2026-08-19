@@ -11,6 +11,7 @@ use Throwable;
 final class DomainManagerSettings
 {
     private const TABLE = 'tl_domain_manager_settings';
+    private const DEFAULT_STALE_SYNC_DAYS = 30;
 
     public function __construct(private readonly Connection $connection)
     {
@@ -40,6 +41,23 @@ final class DomainManagerSettings
         }
 
         return array_values($ids);
+    }
+
+    public function getStaleSyncDays(): int
+    {
+        $value = $this->getValue('stale_sync_days');
+
+        if (!is_numeric($value)) {
+            return self::DEFAULT_STALE_SYNC_DAYS;
+        }
+
+        $days = (int) $value;
+
+        if ($days < 1 || $days > 3650) {
+            return self::DEFAULT_STALE_SYNC_DAYS;
+        }
+
+        return $days;
     }
 
     public function getTrakkedUrl(): string
