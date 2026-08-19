@@ -1,0 +1,329 @@
+:root {
+    --dm-theme-primary: #315f7d;
+    --dm-theme-primary-hover: #274c64;
+    --dm-theme-primary-soft: #edf4f8;
+    --dm-theme-page: #f4f7f9;
+    --dm-theme-surface: #fff;
+    --dm-theme-surface-soft: #f7f9fa;
+    --dm-theme-text: #2d3338;
+    --dm-theme-muted: #68727a;
+    --dm-theme-border: #d9dfe3;
+    --dm-theme-border-light: #e8ecef;
+    --dm-theme-success: #26734d;
+    --dm-theme-success-soft: #edf8f2;
+    --dm-theme-warning: #956515;
+    --dm-theme-warning-soft: #fff8e6;
+    --dm-theme-error: #a43c3c;
+    --dm-theme-error-soft: #fff0f0;
+    --dm-theme-radius: 8px;
+    --dm-theme-shadow: 0 1px 3px rgba(0, 0, 0, .06);
+    --dm-theme-content-width: 1480px;
+    --dm-theme-font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+}
+
+body.domainverwaltung-page,
+body.domainverwaltung-login-page,
+body.domainverwaltung-error-page {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--dm-theme-page);
+    color: var(--dm-theme-text);
+    font-family: var(--dm-theme-font-family);
+    line-height: 1.5;
+}
+
+body.domainverwaltung-page *,
+body.domainverwaltung-login-page *,
+body.domainverwaltung-error-page * {
+    box-sizing: border-box;
+}
+
+body.domainverwaltung-page #wrapper,
+body.domainverwaltung-login-page #wrapper,
+body.domainverwaltung-error-page #wrapper,
+body.domainverwaltung-page #container,
+body.domainverwaltung-login-page #container,
+body.domainverwaltung-error-page #container {
+    min-height: 100vh;
+}
+
+body.domainverwaltung-page #main,
+body.domainverwaltung-login-page #main,
+body.domainverwaltung-error-page #main {
+    width: 100%;
+}
+
+body.domainverwaltung-page #main > .inside,
+body.domainverwaltung-login-page #main > .inside,
+body.domainverwaltung-error-page #main > .inside {
+    width: calc(100% - 48px);
+    max-width: var(--dm-theme-content-width);
+    margin-inline: auto;
+    padding-block: clamp(36px, 5vw, 68px);
+}
+
+body.domainverwaltung-login-page #main > .inside,
+body.domainverwaltung-error-page #main > .inside {
+    max-width: 580px;
+    padding-block: clamp(56px, 9vw, 110px);
+}
+
+body.domainverwaltung-page h1,
+body.domainverwaltung-login-page h1,
+body.domainverwaltung-error-page h1 {
+    margin: 0 0 24px;
+    color: var(--dm-theme-primary);
+    font-family: inherit;
+    font-size: clamp(1.9rem, 3vw, 2.65rem);
+    font-weight: 650;
+    letter-spacing: -.025em;
+    line-height: 1.12;
+}
+
+body.domainverwaltung-login-page .mod_article,
+body.domainverwaltung-error-page .mod_article {
+    padding: clamp(24px, 5vw, 38px);
+    border: 1px solid var(--dm-theme-border);
+    border-radius: calc(var(--dm-theme-radius) + 2px);
+    background: var(--dm-theme-surface);
+    box-shadow: var(--dm-theme-shadow);
+}
+
+body.domainverwaltung-error-page .mod_article p {
+    margin: 0 0 1em;
+    color: var(--dm-theme-muted);
+}
+
+body.domainverwaltung-error-page .mod_article p:last-child {
+    margin-bottom: 0;
+}
+
+body.domainverwaltung-page a,
+body.domainverwaltung-login-page a,
+body.domainverwaltung-error-page a {
+    color: var(--dm-theme-primary);
+}
+
+body.domainverwaltung-page a:hover,
+body.domainverwaltung-page a:focus-visible,
+body.domainverwaltung-login-page a:hover,
+body.domainverwaltung-login-page a:focus-visible,
+body.domainverwaltung-error-page a:hover,
+body.domainverwaltung-error-page a:focus-visible {
+    color: var(--dm-theme-primary-hover);
+}
+
+/* Map the public theme variables to the component variables. */
+.domainverwaltung-page .domain-manager-overview,
+.domainverwaltung-page .domain-manager-filter {
+    --dm-accent: var(--dm-theme-primary);
+    --dm-accent-hover: var(--dm-theme-primary-hover);
+    --dm-accent-soft: var(--dm-theme-primary-soft);
+    --dm-text: var(--dm-theme-text);
+    --dm-muted: var(--dm-theme-muted);
+    --dm-border: var(--dm-theme-border);
+    --dm-border-light: var(--dm-theme-border-light);
+    --dm-background: var(--dm-theme-surface);
+    --dm-background-soft: var(--dm-theme-surface-soft);
+    --dm-success: var(--dm-theme-success);
+    --dm-success-soft: var(--dm-theme-success-soft);
+    --dm-warning: var(--dm-theme-warning);
+    --dm-warning-soft: var(--dm-theme-warning-soft);
+    --dm-error: var(--dm-theme-error);
+    --dm-error-soft: var(--dm-theme-error-soft);
+    --dm-radius: var(--dm-theme-radius);
+    --dm-shadow: var(--dm-theme-shadow);
+}
+
+.domainverwaltung-page .domain-manager-layout {
+    width: 100%;
+    max-width: none;
+    padding-inline: 0;
+    font-family: var(--dm-theme-font-family);
+}
+
+/* Contao login module */
+.domainverwaltung-login {
+    color: var(--dm-theme-text);
+    font-family: var(--dm-theme-font-family);
+}
+
+.domainverwaltung-login form,
+.domainverwaltung-login .formbody,
+.domainverwaltung-login .widget,
+.domainverwaltung-login fieldset {
+    margin: 0;
+}
+
+.domainverwaltung-login .formbody {
+    display: grid;
+    gap: 18px;
+}
+
+.domainverwaltung-login .widget-text,
+.domainverwaltung-login .widget-password {
+    display: grid;
+    gap: 7px;
+}
+
+.domainverwaltung-login label {
+    color: var(--dm-theme-text);
+    font-size: .9rem;
+    font-weight: 650;
+}
+
+.domainverwaltung-login input.text,
+.domainverwaltung-login input.password {
+    width: 100%;
+    min-height: 44px;
+    padding: 9px 12px;
+    border: 1px solid var(--dm-theme-border);
+    border-radius: 6px;
+    outline: 0;
+    background: var(--dm-theme-surface);
+    color: var(--dm-theme-text);
+    font: inherit;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.domainverwaltung-login input.text:focus,
+.domainverwaltung-login input.password:focus {
+    border-color: var(--dm-theme-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--dm-theme-primary) 16%, transparent);
+}
+
+.domainverwaltung-login .checkbox_container {
+    padding: 0;
+    border: 0;
+}
+
+.domainverwaltung-login .checkbox_container span {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.domainverwaltung-login input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var(--dm-theme-primary);
+}
+
+.domainverwaltung-login .widget-submit {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.domainverwaltung-login .submit {
+    min-height: 40px;
+    padding: 8px 15px;
+    border: 1px solid var(--dm-theme-primary);
+    border-radius: 6px;
+    background: var(--dm-theme-primary);
+    color: #fff;
+    font: inherit;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease;
+}
+
+.domainverwaltung-login .submit:hover,
+.domainverwaltung-login .submit:focus-visible {
+    border-color: var(--dm-theme-primary-hover);
+    background: var(--dm-theme-primary-hover);
+}
+
+.domainverwaltung-login .error {
+    margin: 0;
+    padding: 11px 13px;
+    border: 1px solid color-mix(in srgb, var(--dm-theme-error) 30%, transparent);
+    border-radius: 6px;
+    background: var(--dm-theme-error-soft);
+    color: var(--dm-theme-error);
+}
+
+.domainverwaltung-login .login_info {
+    margin: 0;
+    padding: 12px 14px;
+    border: 1px solid var(--dm-theme-border-light);
+    border-radius: 6px;
+    background: var(--dm-theme-surface-soft);
+    color: var(--dm-theme-muted);
+    font-size: .9rem;
+    line-height: 1.45;
+}
+
+.domainverwaltung-login .password-reset {
+    font-size: .9rem;
+}
+
+/* Compact account bar on the protected overview page. */
+body.domainverwaltung-page .domainverwaltung-login.logout {
+    margin: 0 0 26px;
+    padding: 12px 14px;
+    border: 1px solid var(--dm-theme-border);
+    border-radius: var(--dm-theme-radius);
+    background: var(--dm-theme-surface);
+    box-shadow: var(--dm-theme-shadow);
+}
+
+body.domainverwaltung-page .domainverwaltung-login.logout .formbody {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: center;
+}
+
+body.domainverwaltung-page .domainverwaltung-login.logout .login_info {
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+body.domainverwaltung-page .domainverwaltung-login.logout .widget-submit {
+    justify-content: flex-end;
+}
+
+body.domainverwaltung-page .domainverwaltung-login.logout .submit {
+    min-height: 36px;
+    padding: 7px 12px;
+    background: var(--dm-theme-surface);
+    color: var(--dm-theme-primary);
+}
+
+body.domainverwaltung-page .domainverwaltung-login.logout .submit:hover,
+body.domainverwaltung-page .domainverwaltung-login.logout .submit:focus-visible {
+    background: var(--dm-theme-primary);
+    color: #fff;
+}
+
+@media (max-width: 680px) {
+    body.domainverwaltung-page #main > .inside,
+    body.domainverwaltung-login-page #main > .inside,
+    body.domainverwaltung-error-page #main > .inside {
+        width: calc(100% - 28px);
+        padding-block: 28px 42px;
+    }
+
+    body.domainverwaltung-login-page #main > .inside,
+    body.domainverwaltung-error-page #main > .inside {
+        padding-block: 36px;
+    }
+
+    body.domainverwaltung-login-page .mod_article,
+    body.domainverwaltung-error-page .mod_article {
+        padding: 22px 18px;
+    }
+
+    body.domainverwaltung-page .domainverwaltung-login.logout .formbody {
+        grid-template-columns: 1fr;
+    }
+
+    body.domainverwaltung-page .domainverwaltung-login.logout .widget-submit,
+    body.domainverwaltung-page .domainverwaltung-login.logout .submit {
+        width: 100%;
+    }
+}
