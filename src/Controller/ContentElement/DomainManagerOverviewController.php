@@ -182,7 +182,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
             'environment' => $environment,
             'environment_label' => $this->environmentLabel($environment),
             'system_id' => trim((string) ($row['system_id'] ?? '')),
-            'document_root' => trim((string) ($row['document_root'] ?? '')),
+            'document_root' => $this->webrootLabel((string) ($row['document_root'] ?? '')),
             'contao_version' => $contaoVersion,
             'php_version' => $phpVersion,
             'database_name' => trim((string) ($row['database_name'] ?? '')),
@@ -199,6 +199,18 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
             'connection_status' => trim((string) ($row['dm_connection_status'] ?? '')),
             'connection_message' => trim((string) ($row['dm_connection_message'] ?? '')),
         ];
+    }
+
+    private function webrootLabel(string $documentRoot): string
+    {
+        $normalized = str_replace('\\', '/', trim($documentRoot));
+        $normalized = rtrim($normalized, '/');
+
+        if ('' === $normalized) {
+            return '';
+        }
+
+        return basename($normalized);
     }
 
     private function isChecked(mixed $value): bool
