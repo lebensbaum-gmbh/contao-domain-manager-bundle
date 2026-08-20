@@ -5,8 +5,15 @@
         <div style="padding:20px 24px;max-width:1100px">
             <p style="margin:0 0 18px;color:var(--text-color, #555)">
                 Der Assistent prüft, welche Bausteine der empfohlenen Domainverwaltung bereits vorhanden sind.
-                In diesem ersten Schritt werden noch keine Daten verändert.
+                Vorhandene Bausteine werden wiederverwendet; es sollen keine Duplikate erzeugt werden.
             </p>
+
+            {% if success %}
+                <div class="tl_confirm" style="margin:0 0 18px">{{ success }}</div>
+            {% endif %}
+            {% if error %}
+                <div class="tl_error" style="margin:0 0 18px">{{ error }}</div>
+            {% endif %}
 
             {% if setup.complete %}
                 <div class="tl_confirm" style="margin:0 0 20px">
@@ -14,7 +21,7 @@
                 </div>
             {% else %}
                 <div class="tl_info" style="margin:0 0 20px">
-                    {{ setup.found }} von {{ setup.total }} Bausteinen wurden erkannt. Fehlende Bausteine können im nächsten Schritt automatisch eingerichtet werden.
+                    {{ setup.found }} von {{ setup.total }} Bausteinen wurden erkannt. Fehlende Bausteine können gezielt ergänzt werden.
                 </div>
             {% endif %}
 
@@ -44,12 +51,34 @@
                 </tbody>
             </table>
 
-            <div class="tl_box" style="padding:16px 18px;max-width:900px">
-                <strong>Nächster Ausbauschritt</strong>
-                <p style="margin:8px 0 0">
-                    Der Assistent wird fehlende Bausteine gezielt anlegen bzw. vorhandene Bausteine wiederverwenden. Ein erneuter Aufruf darf keine Duplikate erzeugen.
-                </p>
-            </div>
+            {% if repairable %}
+                <div class="tl_box" style="padding:16px 18px;max-width:900px">
+                    <strong>Fehlende Einrichtung ergänzen</strong>
+                    <p style="margin:8px 0 14px">
+                        In dieser Installation fehlt nur die 403-Seite. Der Assistent kann sie jetzt unter dem vorhandenen Startpunkt anlegen und mit einem Standardhinweis versehen.
+                    </p>
+                    <form method="post">
+                        <input type="hidden" name="REQUEST_TOKEN" value="{{ contao.request_token }}">
+                        <button type="submit" name="dm_setup_action" value="repair_missing" class="tl_submit">
+                            Fehlende 403-Seite anlegen
+                        </button>
+                    </form>
+                </div>
+            {% elseif not setup.complete %}
+                <div class="tl_box" style="padding:16px 18px;max-width:900px">
+                    <strong>Automatische Ersteinrichtung</strong>
+                    <p style="margin:8px 0 0">
+                        Die vollständige automatische Einrichtung weiterer fehlender Bausteine wird im nächsten Ausbauschritt ergänzt. Dieser Zwischenstand verändert keine unvollständige Neuinstallation.
+                    </p>
+                </div>
+            {% else %}
+                <div class="tl_box" style="padding:16px 18px;max-width:900px">
+                    <strong>Einrichtung vollständig</strong>
+                    <p style="margin:8px 0 0">
+                        Alle aktuell geprüften Bausteine sind vorhanden. Ein erneuter Aufruf erzeugt keine Duplikate.
+                    </p>
+                </div>
+            {% endif %}
         </div>
     </div>
 {% endblock %}
