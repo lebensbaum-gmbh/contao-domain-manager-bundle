@@ -158,6 +158,15 @@
         const getChecked = (selector) => Array.from(filter.querySelectorAll(selector + ':checked')).map((input) => input.value);
         const normalize = (value) => String(value || '').toLocaleLowerCase('de-DE').trim();
 
+        const getHealthStatus = (installation) => {
+            const badge = installation.querySelector('.health-badge');
+            if (!badge) return '';
+            if (badge.classList.contains('is-error')) return 'error';
+            if (badge.classList.contains('is-warning')) return 'warning';
+            if (badge.classList.contains('is-ok')) return 'ok';
+            return '';
+        };
+
         const matchesInstallation = (installation, selected, term, domainSearchMatches) => {
             if (!installation) return false;
 
@@ -165,7 +174,9 @@
             const php = installation.dataset.php || '';
             const environment = installation.dataset.environment || '';
             const trakked = installation.dataset.tracked || '0';
+            const health = getHealthStatus(installation);
 
+            if (selected.health.length && !selected.health.includes(health)) return false;
             if (selected.contao.length && !selected.contao.includes(contao)) return false;
             if (selected.php.length && !selected.php.includes(php)) return false;
             if (selected.environment.length && !selected.environment.includes(environment)) return false;
@@ -181,6 +192,7 @@
             if (!overview) return;
 
             const selected = {
+                health: getChecked('[data-dm-filter-health]'),
                 contao: getChecked('[data-dm-filter-contao]'),
                 php: getChecked('[data-dm-filter-php]'),
                 environment: getChecked('[data-dm-filter-environment]'),
@@ -189,7 +201,8 @@
             const term = normalize(search ? search.value : '');
             const onlyCurrent = Boolean(currentOnly && currentOnly.checked);
             const hasTechnicalFilter = Boolean(
-                selected.contao.length
+                selected.health.length
+                || selected.contao.length
                 || selected.php.length
                 || selected.environment.length
                 || selected.trakked.length
