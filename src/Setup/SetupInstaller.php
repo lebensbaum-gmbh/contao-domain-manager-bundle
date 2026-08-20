@@ -185,18 +185,21 @@ final class SetupInstaller
 
     private function createLayout(int $themeId, int $timestamp, array &$created): int
     {
-        $this->connection->insert('tl_layout', [
-            'pid' => $themeId,
-            'tstamp' => $timestamp,
-            'name' => self::LAYOUT_NAME,
-            'type' => 'default',
-            'rows' => '1rw',
-            'cols' => '1cl',
-            'modules' => serialize([
-                ['mod' => 0, 'col' => 'main', 'enable' => 1],
-            ]),
-            'template' => 'fe_page',
-        ]);
+        $this->connection->executeStatement(
+            'INSERT INTO `tl_layout` (`pid`, `tstamp`, `name`, `type`, `rows`, `cols`, `modules`, `template`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [
+                $themeId,
+                $timestamp,
+                self::LAYOUT_NAME,
+                'default',
+                '1rw',
+                '1cl',
+                serialize([
+                    ['mod' => 0, 'col' => 'main', 'enable' => 1],
+                ]),
+                'fe_page',
+            ]
+        );
         $id = $this->lastInsertId('Seitenlayout');
         $created[] = 'Seitenlayout';
 
