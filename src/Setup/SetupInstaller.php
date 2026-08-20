@@ -111,7 +111,7 @@ final class SetupInstaller
                 'content_id' => $contentId,
             ];
         } catch (Throwable $exception) {
-            if ($this->connection->isTransactionActive()) {
+            if ($this->connection->getTransactionNestingLevel() > 0) {
                 $this->connection->rollBack();
             }
 
