@@ -9,9 +9,14 @@ Hauptdomains und zugehörige Installationen können im Backend verwaltet, mit de
 - Verwaltung von Hauptdomains und zugehörigen Contao-Installationen
 - Verbindungstest zu überwachten Installationen
 - Synchronisation von Systeminformationen
+- Sammelsynchronisation aller Hauptdomains
 - automatische Übernahme von Contao-Version, PHP-Version, Datenbankname und DocumentRoot
 - kompakte Anzeige des Webroots im Frontend, z. B. `/public` oder `/web`
+- Statussystem mit **OK**, **Hinweis** und **Fehler**
+- Hinweise bei veralteter Synchronisation, fehlender System-Info-Konfiguration und `/web` als Webroot
+- automatische Bewertung der Supportphase von Contao- und PHP-Versionen
 - Status- und Zeitinformationen zur letzten Synchronisation
+- Statusfilter für **OK**, **Hinweis** und **Fehler**
 - Notizen und Screenshots je Installation
 - Rechteverwaltung für Backend-Benutzergruppen
 - Frontend-Inhaltselement **Domainübersicht**
@@ -117,7 +122,9 @@ Lege unter **Benutzerverwaltung → Mitglieder** ein Mitglied an.
 
 Öffne **Domainverwaltung → Einstellungen** und wähle unter **Berechtigte Mitgliedergruppen** die gewünschte Frontend-Mitgliedergruppe aus.
 
-Nur angemeldete Frontend-Mitglieder aus mindestens einer dort ausgewählten Gruppe sehen die Aktion **Systemdaten aktualisieren**.
+Nur angemeldete Frontend-Mitglieder aus mindestens einer dort ausgewählten Gruppe sehen die Aktionen **Systemdaten aktualisieren** und **Alle Systemdaten aktualisieren**.
+
+Unter **Status & Warnungen** kann außerdem festgelegt werden, nach wie vielen Tagen eine nicht aktualisierte Installation als Hinweis markiert werden soll. Standard sind 30 Tage.
 
 ### 8. Theme und Seitenlayout anlegen
 
@@ -213,9 +220,25 @@ Wenn Domainfilter und Domainübersicht auf derselben Seite vorhanden sind, platz
 
 Melde dich im Frontend mit dem zuvor angelegten Mitglied an und öffne die Domainübersicht.
 
-Bei korrekter Einrichtung erscheint die Aktion **Systemdaten aktualisieren**.
+Bei korrekter Einrichtung erscheinen die Aktionen **Systemdaten aktualisieren** je Hauptdomain sowie **Alle Systemdaten aktualisieren** für die Sammelsynchronisation.
 
-Nach erfolgreicher Synchronisation werden die von System-Info gelieferten technischen Informationen übernommen und der Synchronisationsstatus aktualisiert.
+Nach erfolgreicher Synchronisation werden die von System-Info gelieferten technischen Informationen übernommen und der Synchronisationsstatus aktualisiert. Bei der Sammelsynchronisation werden alle Hauptdomains nacheinander verarbeitet; ein Fehler bei einer Installation oder Hauptdomain verhindert nicht die Aktualisierung der übrigen Einträge.
+
+## Status & Warnungen
+
+Der Domain Manager bewertet gespeicherte Installationen mit den Zuständen **OK**, **Hinweis** oder **Fehler**. Die Hauptdomain übernimmt dabei jeweils den schlechtesten Status ihrer Installationen.
+
+Typische Bewertungen sind:
+
+- **Fehler** bei fehlgeschlagener Synchronisation oder fehlgeschlagenem Verbindungstest
+- **Hinweis** bei noch nicht getesteter bzw. unvollständig konfigurierter Verbindung
+- **Hinweis** bei fehlender oder ungültiger System-Info-Installations-ID
+- **Hinweis** bei noch nie erfolgter bzw. zu lange zurückliegender erfolgreicher Synchronisation
+- **Hinweis** bei `/web` als veraltetem Webroot
+- **Hinweis** während einer reinen Security-Supportphase einer Contao- oder PHP-Version
+- **Fehler**, sobald eine bekannte Contao- oder PHP-Version ihr Supportende erreicht hat
+
+Die Supportbewertung verwendet hinterlegte Supportzeiträume und wechselt automatisch zwischen aktivem Support, Security-Support und Supportende. Eine Installation muss dafür nicht neu gespeichert werden.
 
 ## Frontend-Ausgabe
 
@@ -223,7 +246,7 @@ Nach erfolgreicher Synchronisation werden die von System-Info gelieferten techni
 
 Über den Elementtyp **Domainübersicht** kann die zentrale Übersicht der gespeicherten Domains und Installationen im Frontend ausgegeben werden.
 
-Die Hauptdomains werden als aufklappbare Einträge dargestellt. Das aktuelle Ziel, Contao-Version und PHP-Version sind bereits in der kompakten Ansicht sichtbar. Weitere technische Informationen erscheinen im aufgeklappten Bereich.
+Die Hauptdomains werden als aufklappbare Einträge dargestellt. Das aktuelle Ziel, Contao-Version, PHP-Version und der jeweilige Status sind bereits in der kompakten Ansicht sichtbar. Weitere technische Informationen und konkrete Statushinweise erscheinen im aufgeklappten Bereich.
 
 ### Domainfilter
 
@@ -232,9 +255,12 @@ Der Elementtyp **Domainfilter** filtert die ausgegebenen Installationen unter an
 - Suchbegriff
 - aktuellem Ziel
 - Trakked-Status
+- Status **OK**, **Hinweis** oder **Fehler**
 - Contao-Version
 - PHP-Version
 - Umgebung
+
+Mehrere Filter können kombiniert werden. Eine Hauptdomain bleibt sichtbar, sobald mindestens eine ihrer berücksichtigten Installationen zu den gewählten Filtern passt.
 
 Beide Elemente können wie normale Contao-Inhaltselemente in Artikeln verwendet werden.
 
@@ -331,7 +357,7 @@ Für Backend-Benutzergruppen können getrennte Rechte vergeben werden, unter and
 
 Zusätzlich gelten die üblichen Contao-Rechte, zum Beispiel für die Dateiverwaltung und Filemounts bei der Auswahl von Screenshots.
 
-Die Frontend-Aktion **Systemdaten aktualisieren** wird unabhängig von den Backend-Rechten über die unter **Domainverwaltung → Einstellungen** gewählten Frontend-Mitgliedergruppen gesteuert.
+Die Frontend-Aktionen zur Einzel- und Sammelsynchronisation werden unabhängig von den Backend-Rechten über die unter **Domainverwaltung → Einstellungen** gewählten Frontend-Mitgliedergruppen gesteuert.
 
 ## Sicherheit
 
@@ -367,4 +393,4 @@ https://github.com/lebensbaum-gmbh/contao-domain-manager-bundle
 
 Die kostenlose Version des Contao Domain Managers soll eine vollständig nutzbare Basis für die zentrale Verwaltung mehrerer Contao-Installationen bieten.
 
-Weitergehende Funktionen wie automatisiertes Monitoring, Benachrichtigungen, Historien oder zusätzliche Verwaltungsfunktionen können zukünftig separat ergänzt werden.
+Weitergehende Funktionen wie automatische Benachrichtigungen, Historien, zeitgesteuerte Prüfungen oder zusätzliche Verwaltungsfunktionen können zukünftig separat ergänzt werden.
