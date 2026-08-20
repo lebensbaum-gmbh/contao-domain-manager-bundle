@@ -1,0 +1,55 @@
+{% extends '@Contao/be_main' %}
+
+{% block main_content %}
+    <div class="tl_listing_container">
+        <div style="padding:20px 24px;max-width:1100px">
+            <p style="margin:0 0 18px;color:var(--text-color, #555)">
+                Der Assistent prüft, welche Bausteine der empfohlenen Domainverwaltung bereits vorhanden sind.
+                In diesem ersten Schritt werden noch keine Daten verändert.
+            </p>
+
+            {% if setup.complete %}
+                <div class="tl_confirm" style="margin:0 0 20px">
+                    Die empfohlene Grundstruktur ist vollständig vorhanden.
+                </div>
+            {% else %}
+                <div class="tl_info" style="margin:0 0 20px">
+                    {{ setup.found }} von {{ setup.total }} Bausteinen wurden erkannt. Fehlende Bausteine können im nächsten Schritt automatisch eingerichtet werden.
+                </div>
+            {% endif %}
+
+            <table class="tl_listing" style="width:100%;margin:0 0 24px">
+                <thead>
+                    <tr>
+                        <th style="padding:9px 12px;text-align:left">Baustein</th>
+                        <th style="padding:9px 12px;text-align:left">Erwartet</th>
+                        <th style="padding:9px 12px;text-align:left;width:160px">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in setup.items %}
+                        <tr>
+                            <td style="padding:9px 12px"><strong>{{ item.label }}</strong></td>
+                            <td style="padding:9px 12px">{{ item.expected }}</td>
+                            <td style="padding:9px 12px">
+                                {% if item.found %}
+                                    <span style="color:#26734d;font-weight:600">✓ vorhanden</span>
+                                    {% if item.id %}<small style="color:#777"> (ID {{ item.id }})</small>{% endif %}
+                                {% else %}
+                                    <span style="color:#956515;font-weight:600">○ fehlt</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="tl_box" style="padding:16px 18px;max-width:900px">
+                <strong>Nächster Ausbauschritt</strong>
+                <p style="margin:8px 0 0">
+                    Der Assistent wird fehlende Bausteine gezielt anlegen bzw. vorhandene Bausteine wiederverwenden. Ein erneuter Aufruf darf keine Duplikate erzeugen.
+                </p>
+            </div>
+        </div>
+    </div>
+{% endblock %}
