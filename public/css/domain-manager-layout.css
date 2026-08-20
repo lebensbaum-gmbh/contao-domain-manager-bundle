@@ -1,3 +1,43 @@
+/* Standalone application layout for the protected Domain Manager page. */
+body.domainverwaltung-page #wrapper,
+body.domainverwaltung-page #container {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+}
+
+body.domainverwaltung-page #container {
+    display: block;
+}
+
+body.domainverwaltung-page #main {
+    float: none;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+}
+
+body.domainverwaltung-page #left,
+body.domainverwaltung-page #right {
+    display: none;
+}
+
+body.domainverwaltung-page #main > .inside {
+    width: min(calc(100% - 40px), 1480px);
+    max-width: none;
+    margin: 0 auto;
+    padding: 24px 0 48px;
+}
+
+body.domainverwaltung-page #main > .inside > .mod_article {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+}
+
 .domain-manager-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
@@ -36,11 +76,20 @@
     width: 100%;
 }
 
+body.domainverwaltung-page .domain-manager-layout {
+    max-width: none;
+    padding-inline: 0;
+}
+
 @media (max-width: 1180px) {
     .domain-manager-layout {
         grid-template-columns: minmax(0, 1fr);
         gap: 18px;
         padding-inline: clamp(18px, 4vw, 36px);
+    }
+
+    body.domainverwaltung-page .domain-manager-layout {
+        padding-inline: 0;
     }
 
     .domain-manager-layout-filter {
@@ -55,7 +104,16 @@
 }
 
 @media (max-width: 680px) {
+    body.domainverwaltung-page #main > .inside {
+        width: calc(100% - 28px);
+        padding: 20px 0 36px;
+    }
+
     .domain-manager-layout {
         padding-inline: 16px;
+    }
+
+    body.domainverwaltung-page .domain-manager-layout {
+        padding-inline: 0;
     }
 }
