@@ -42,18 +42,31 @@ final class SetupController extends AbstractBackendController
             $flashBag = $request->getSession()->getFlashBag();
             $action = trim((string) $request->request->get('dm_setup_action', ''));
 
-            if ('repair_missing' !== $action) {
+            if ('complete_setup' !== $action) {
                 $flashBag->add('domain_manager_setup_error', 'Unbekannte Aktion.');
             } else {
                 try {
-                    $result = $this->setupInstaller->repairMissingError403();
+                    $hostname = trim((string) $request->request->get('dm_setup_hostname', $request->getHost()));
+                    $result = $this->setupInstaller->completeSetup($hostname);
 
-                    $flashBag->add(
-                        'domain_manager_setup_success',
-                        $result['created']
-                            ? 'Die fehlende 403-Seite wurde einschließlich Artikel und Inhalt angelegt.'
-                            : 'Die 403-Seite war bereits vorhanden; es wurden keine Duplikate erzeugt.'
-                    );
+                    if ([] === $result['created']) {
+                        $flashBag->add(
+                            'domain_manager_setup_success',
+                            'Die empfohlene Grundstruktur war bereits vollständig. Es wurden keine Duplikate erzeugt.'
+                        );
+                    } else {
+                        $message = sprintf(
+                            '%d Baustein%s wurden ergänzt.',
+                            count($result['created']),
+                            1 === count($result['created']) ? '' : 'e'
+                        );
+
+                        if ($result['complete']) {
+                            $message .= ' Die empfohlene Grundstruktur ist jetzt vollständig.';
+                        }
+
+                        $flashBag->add('domain_manager_setup_success', $message);
+                    }
                 } catch (Throwable $exception) {
                     $flashBag->add('domain_manager_setup_error', $exception->getMessage());
                 }
@@ -73,7 +86,8 @@ final class SetupController extends AbstractBackendController
             'title' => 'Domain Manager – Ersteinrichtung',
             'headline' => 'Ersteinrichtung',
             'setup' => $setup,
-            'repairable' => ['error_403_page'] === $setup['missing'],
+            'default_hostname' => $request->getHost(),
+            'needs_hostname' => in_array('root_page', $setup['missing'], true),
             'success' => $successMessages[0] ?? null,
             'error' => $errorMessages[0] ?? null,
         ]);
