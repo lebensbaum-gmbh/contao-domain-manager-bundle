@@ -1,4 +1,16 @@
 (() => {
+    const globalSyncParameters = [
+        'dm_sync_all',
+        'dm_all_domains',
+        'dm_all_success',
+        'dm_all_partial',
+        'dm_all_domain_failed',
+        'dm_all_synced',
+        'dm_all_skipped',
+        'dm_all_failed',
+        'dm_all_live_errors',
+    ];
+
     const cleanOverviewQueryParameters = () => {
         const overview = document.querySelector('[data-domain-manager-overview]');
         if (!overview) {
@@ -6,12 +18,123 @@
         }
 
         const url = new URL(window.location.href);
-        ['dm_sync', 'dm_domain', 'dm_synced', 'dm_skipped', 'dm_failed', 'dm_live', 'dm_live_domain']
-            .forEach((parameter) => url.searchParams.delete(parameter));
+        [
+            'dm_sync',
+            'dm_domain',
+            'dm_synced',
+            'dm_skipped',
+            'dm_failed',
+            'dm_live',
+            'dm_live_domain',
+            ...globalSyncParameters,
+        ].forEach((parameter) => url.searchParams.delete(parameter));
 
         if (url.href !== window.location.href) {
             window.history.replaceState({}, document.title, url.pathname + (url.search ? url.search : '') + url.hash);
         }
+    };
+
+    const initializeGlobalSync = () => {
+        const overview = document.querySelector('[data-domain-manager-overview]');
+        if (!overview || overview.dataset.dmGlobalSyncInitialized === '1') {
+            return;
+        }
+
+        const firstDomainForm = overview.querySelector('.domain-sync-form');
+        if (!firstDomainForm) {
+            return;
+        }
+
+        overview.dataset.dmGlobalSyncInitialized = '1';
+
+        let actions = overview.querySelector('.domain-manager-global-actions');
+        if (!actions) {
+            actions = document.createElement('div');
+            actions.className = 'domain-manager-global-actions';
+            overview.prepend(actions);
+        }
+
+        const tokenInput = firstDomainForm.querySelector('input[name="REQUEST_TOKEN"]');
+        const form = document.createElement('form');
+        form.className = 'domain-sync-all-form';
+        form.method = 'post';
+
+        const action = new URL(firstDomainForm.action, window.location.href);
+        action.pathname = action.pathname.replace(/\/\d+\/?$/, '');
+        form.action = action.toString();
+
+        if (tokenInput) {
+            const tokenClone = tokenInput.cloneNode(true);
+            form.appendChild(tokenClone);
+        }
+
+        const button = document.createElement('button');
+        button.className = 'domain-sync-button domain-sync-all-button';
+        button.type = 'submit';
+        button.title = 'Systeminformationen aller Hauptdomains aktualisieren';
+        button.innerHTML = '<span aria-hidden="true">↻</span> Alle Systemdaten aktualisieren';
+        form.appendChild(button);
+
+        form.addEventListener('submit', (event) => {
+            if (!window.confirm('Systemdaten aller Hauptdomains aktualisieren?')) {
+                event.preventDefault();
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = 'Aktualisierung läuft …';
+        });
+
+        actions.prepend(form);
+
+        const url = new URL(window.location.href);
+        const status = url.searchParams.get('dm_sync_all');
+        if (!status) {
+            return;
+        }
+
+        const message = document.createElement('div');
+        message.className = 'domain-sync-all-message ' + (
+            status === 'success' ? 'is-success' : (status === 'partial' ? 'is-warning' : 'is-error')
+        );
+        message.setAttribute('role', 'status');
+
+        if (status === 'error') {
+            message.innerHTML = '<strong>Die Sammelsynchronisation ist fehlgeschlagen.</strong>';
+        } else {
+            const domains = Number(url.searchParams.get('dm_all_domains') || 0);
+            const success = Number(url.searchParams.get('dm_all_success') || 0);
+            const partial = Number(url.searchParams.get('dm_all_partial') || 0);
+            const domainFailed = Number(url.searchParams.get('dm_all_domain_failed') || 0);
+            const synced = Number(url.searchParams.get('dm_all_synced') || 0);
+            const skipped = Number(url.searchParams.get('dm_all_skipped') || 0);
+            const failed = Number(url.searchParams.get('dm_all_failed') || 0);
+            const liveErrors = Number(url.searchParams.get('dm_all_live_errors') || 0);
+
+            const heading = status === 'success'
+                ? 'Sammelsynchronisation abgeschlossen.'
+                : 'Sammelsynchronisation teilweise abgeschlossen.';
+
+            const lines = [
+                `${domains} Hauptdomains verarbeitet: ${success} erfolgreich, ${partial} teilweise, ${domainFailed} fehlgeschlagen.`,
+                `${synced} Installationen synchronisiert, ${skipped} übersprungen, ${failed} fehlgeschlagen.`,
+            ];
+
+            if (liveErrors > 0) {
+                lines.push(`${liveErrors} Zielermittlungen konnten nicht abgeschlossen werden.`);
+            }
+
+            const strong = document.createElement('strong');
+            strong.textContent = heading;
+            message.appendChild(strong);
+
+            lines.forEach((line) => {
+                message.appendChild(document.createElement('br'));
+                message.appendChild(document.createTextNode(line));
+            });
+        }
+
+        actions.insertAdjacentElement('afterend', message);
     };
 
     const initializeFilter = () => {
@@ -168,6 +291,7 @@
     };
 
     const initialize = () => {
+        initializeGlobalSync();
         cleanOverviewQueryParameters();
         initializeFilter();
     };
