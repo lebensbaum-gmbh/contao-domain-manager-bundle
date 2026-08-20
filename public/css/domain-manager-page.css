@@ -62,7 +62,13 @@ body.domainverwaltung-error-page #main > .inside {
     padding-block: clamp(36px, 5vw, 68px);
 }
 
-body.domainverwaltung-login-page #main > .inside,
+body.domainverwaltung-login-page #main > .inside {
+    width: min(calc(100vw - 40px), 680px);
+    max-width: 680px;
+    margin-inline: auto;
+    padding-block: clamp(56px, 9vw, 110px);
+}
+
 body.domainverwaltung-error-page #main > .inside {
     max-width: 580px;
     padding-block: clamp(56px, 9vw, 110px);
@@ -87,6 +93,12 @@ body.domainverwaltung-error-page .mod_article {
     border-radius: calc(var(--dm-theme-radius) + 2px);
     background: var(--dm-theme-surface);
     box-shadow: var(--dm-theme-shadow);
+}
+
+body.domainverwaltung-login-page .domainverwaltung-login {
+    width: 100%;
+    max-width: 480px;
+    margin-inline: auto;
 }
 
 body.domainverwaltung-error-page .mod_article p {
