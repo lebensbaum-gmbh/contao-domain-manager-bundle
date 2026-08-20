@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lebensbaum\ContaoDomainManagerBundle\Setup;
 
+use Contao\StringUtil;
 use Doctrine\DBAL\Connection;
 use Throwable;
 
@@ -20,6 +21,7 @@ final class SetupInspector
      *     found: int,
      *     total: int,
      *     missing: list<string>,
+     *     frontend_access: array{ready:bool,member_id:int|null,username:string|null},
      *     items: list<array{key:string,label:string,expected:string,found:bool,id:int|null}>
      * }
      */
@@ -200,14 +202,65 @@ final class SetupInspector
         ));
         $found = count($items) - count($missing);
         $total = count($items);
+        $frontendAccess = $this->findFrontendAccess($memberGroupId);
 
         return [
             'complete' => [] === $missing,
             'found' => $found,
             'total' => $total,
             'missing' => $missing,
+            'frontend_access' => $frontendAccess,
             'items' => $items,
         ];
+    }
+
+    /** @return array{ready:bool,member_id:int|null,username:string|null} */
+    private function findFrontendAccess(?int $memberGroupId): array
+    {
+        if (null === $memberGroupId) {
+            return ['ready' => false, 'member_id' => null, 'username' => null];
+        }
+
+        try {
+            $members = $this->connection->fetchAllAssociative(
+                'SELECT id, username, groups, login, disable, start, stop FROM tl_member ORDER BY id'
+            );
+        } catch (Throwable) {
+            return ['ready' => false, 'member_id' => null, 'username' => null];
+        }
+
+        $now = time();
+
+        foreach ($members as $member) {
+            if (1 !== (int) ($member['login'] ?? 0) || 1 === (int) ($member['disable'] ?? 0)) {
+                continue;
+            }
+
+            $start = trim((string) ($member['start'] ?? ''));
+            $stop = trim((string) ($member['stop'] ?? ''));
+
+            if ('' !== $start && (int) $start > $now) {
+                continue;
+            }
+
+            if ('' !== $stop && (int) $stop <= $now) {
+                continue;
+            }
+
+            $groups = array_map('intval', StringUtil::deserialize($member['groups'] ?? null, true));
+
+            if (!in_array($memberGroupId, $groups, true)) {
+                continue;
+            }
+
+            return [
+                'ready' => true,
+                'member_id' => (int) $member['id'],
+                'username' => null !== $member['username'] ? (string) $member['username'] : null,
+            ];
+        }
+
+        return ['ready' => false, 'member_id' => null, 'username' => null];
     }
 
     /** @return array{key:string,label:string,expected:string,found:bool,id:int|null} */
