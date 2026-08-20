@@ -1,4 +1,11 @@
 /* Final page-shell overrides for the protected Domain Manager application page. */
+body.domainverwaltung-page {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
 body.domainverwaltung-page #wrapper {
     width: 100% !important;
     max-width: none !important;
