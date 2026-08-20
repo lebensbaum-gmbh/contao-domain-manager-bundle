@@ -33,7 +33,7 @@ final class SetupController extends AbstractBackendController
             throw new AccessDeniedHttpException('Die Ersteinrichtung steht nur Administratoren zur Verfügung.');
         }
 
-        return $this->render('backend/setup.html.twig', [
+        return $this->render('@ContaoDomainManager/backend/setup.html.twig', [
             'title' => 'Domain Manager – Ersteinrichtung',
             'headline' => 'Ersteinrichtung',
             'setup' => $this->setupInspector->inspect(),
