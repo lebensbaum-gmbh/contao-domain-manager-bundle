@@ -12,3 +12,8 @@ $GLOBALS['TL_LANG']['MOD']['domain_manager_settings'] = [
     'Einstellungen',
     'Globale Einstellungen für Frontend-Synchronisation und externe Dienste.',
 ];
+
+$GLOBALS['TL_LANG']['MOD']['domain_manager_setup'] = [
+    'Ersteinrichtung',
+    'Empfohlene Domainverwaltungs-Struktur prüfen und automatisch einrichten.',
+];
