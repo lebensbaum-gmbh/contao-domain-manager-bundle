@@ -5,14 +5,14 @@
         <div style="padding:20px 24px;max-width:1100px">
             <p style="margin:0 0 18px;color:var(--text-color, #555)">
                 Der Assistent prüft, welche Bausteine der empfohlenen Domainverwaltung bereits vorhanden sind.
-                Vorhandene Bausteine werden wiederverwendet; es sollen keine Duplikate erzeugt werden.
+                Vorhandene Bausteine werden wiederverwendet; angelegt wird nur, was fehlt.
             </p>
 
             {% if success %}
-                <div class="tl_confirm" style="margin:0 0 18px">{{ success }}</div>
+                <div class="tl_confirm" style="margin:0 0 20px">{{ success }}</div>
             {% endif %}
             {% if error %}
-                <div class="tl_error" style="margin:0 0 18px">{{ error }}</div>
+                <div class="tl_error" style="margin:0 0 20px">{{ error }}</div>
             {% endif %}
 
             {% if setup.complete %}
@@ -21,7 +21,7 @@
                 </div>
             {% else %}
                 <div class="tl_info" style="margin:0 0 20px">
-                    {{ setup.found }} von {{ setup.total }} Bausteinen wurden erkannt. Fehlende Bausteine können gezielt ergänzt werden.
+                    {{ setup.found }} von {{ setup.total }} Bausteinen wurden erkannt. Die fehlenden Bausteine können automatisch ergänzt werden.
                 </div>
             {% endif %}
 
@@ -51,31 +51,50 @@
                 </tbody>
             </table>
 
-            {% if repairable %}
+            {% if not setup.complete %}
                 <div class="tl_box" style="padding:16px 18px;max-width:900px">
                     <strong>Fehlende Einrichtung ergänzen</strong>
                     <p style="margin:8px 0 14px">
-                        In dieser Installation fehlt nur die 403-Seite. Der Assistent kann sie jetzt unter dem vorhandenen Startpunkt anlegen und mit einem Standardhinweis versehen.
+                        Der Assistent legt fehlende Bausteine in einer Transaktion an und verwendet bereits vorhandene Bausteine weiter.
+                        Ein erneuter Aufruf erzeugt keine Duplikate.
                     </p>
+
                     <form method="post">
                         <input type="hidden" name="REQUEST_TOKEN" value="{{ contao.request_token }}">
-                        <button type="submit" name="dm_setup_action" value="repair_missing" class="tl_submit">
-                            Fehlende 403-Seite anlegen
-                        </button>
+                        <input type="hidden" name="dm_setup_action" value="complete_setup">
+
+                        {% if needs_hostname %}
+                            <div class="widget" style="max-width:520px;margin:0 0 14px">
+                                <label for="dm_setup_hostname" style="display:block;font-weight:600;margin:0 0 5px">Hostname der Domainverwaltung</label>
+                                <input
+                                    type="text"
+                                    id="dm_setup_hostname"
+                                    name="dm_setup_hostname"
+                                    class="tl_text"
+                                    value="{{ default_hostname }}"
+                                    maxlength="255"
+                                    required
+                                >
+                                <p class="tl_help" style="margin-top:5px">
+                                    Der Hostname wird nur beim Anlegen eines neuen Startpunkts verwendet. Empfohlen ist eine eigene (Sub-)Domain für die Domainverwaltung.
+                                </p>
+                            </div>
+                        {% else %}
+                            <input type="hidden" name="dm_setup_hostname" value="{{ default_hostname }}">
+                        {% endif %}
+
+                        <button
+                            type="submit"
+                            class="tl_submit"
+                            onclick="return confirm('Fehlende Bausteine der Domainverwaltung automatisch ergänzen?')"
+                        >Einrichtung vervollständigen</button>
                     </form>
-                </div>
-            {% elseif not setup.complete %}
-                <div class="tl_box" style="padding:16px 18px;max-width:900px">
-                    <strong>Automatische Ersteinrichtung</strong>
-                    <p style="margin:8px 0 0">
-                        Die vollständige automatische Einrichtung weiterer fehlender Bausteine wird im nächsten Ausbauschritt ergänzt. Dieser Zwischenstand verändert keine unvollständige Neuinstallation.
-                    </p>
                 </div>
             {% else %}
                 <div class="tl_box" style="padding:16px 18px;max-width:900px">
                     <strong>Einrichtung vollständig</strong>
                     <p style="margin:8px 0 0">
-                        Alle aktuell geprüften Bausteine sind vorhanden. Ein erneuter Aufruf erzeugt keine Duplikate.
+                        Theme, Seitenstruktur, Login und Domain-Manager-Inhaltselemente wurden erkannt. Für den Frontend-Zugang muss nur noch mindestens ein Mitglied der freigegebenen Mitgliedergruppe zugewiesen sein.
                     </p>
                 </div>
             {% endif %}
