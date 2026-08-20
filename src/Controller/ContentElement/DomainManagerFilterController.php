@@ -41,7 +41,7 @@ final class DomainManagerFilterController extends AbstractContentElementControll
         foreach ($rows as $row) {
             $contaoVersion = trim((string) ($row['contao_version'] ?? ''));
             $phpVersion = trim((string) ($row['php_version'] ?? ''));
-            $environment = trim((string) ($row['environment'] ?? ''));
+            $environment = $this->normalizeEnvironment((string) ($row['environment'] ?? ''));
 
             if ('' !== $contaoVersion) {
                 $contaoVersions[$contaoVersion] = true;
@@ -73,14 +73,27 @@ final class DomainManagerFilterController extends AbstractContentElementControll
         return $response;
     }
 
+    private function normalizeEnvironment(string $value): string
+    {
+        $normalized = strtolower(trim($value));
+
+        return match ($normalized) {
+            'production', 'prod', 'live' => 'live',
+            'mirror' => 'mirror',
+            'test', 'testing' => 'test',
+            'dev', 'development' => 'dev',
+            default => $normalized,
+        };
+    }
+
     private function environmentLabel(string $value): string
     {
-        return match (strtolower($value)) {
-            'live', 'production', 'prod' => 'Live',
+        return match ($value) {
+            'live' => 'Live',
             'mirror' => 'Mirror',
-            'test', 'testing' => 'Test',
-            'dev', 'development' => 'Entwicklung',
-            default => ucfirst($value),
+            'test' => 'Test',
+            'dev' => 'Entwicklung',
+            default => '' !== $value ? ucfirst($value) : '',
         };
     }
 }
