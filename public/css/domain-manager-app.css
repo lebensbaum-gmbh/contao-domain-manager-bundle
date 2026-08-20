@@ -1,0 +1,69 @@
+/* Final page-shell overrides for the protected Domain Manager application page. */
+body.domainverwaltung-page #wrapper,
+body.domainverwaltung-page #container,
+body.domainverwaltung-page #main {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+body.domainverwaltung-page #wrapper {
+    min-height: 100vh;
+}
+
+body.domainverwaltung-page #container {
+    display: block !important;
+    min-height: 0 !important;
+}
+
+body.domainverwaltung-page #main {
+    float: none !important;
+}
+
+body.domainverwaltung-page #left,
+body.domainverwaltung-page #right {
+    display: none !important;
+}
+
+/* Neutralize empty/fixed theme header and footer dimensions without preventing custom content. */
+body.domainverwaltung-page #header,
+body.domainverwaltung-page #footer {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+body.domainverwaltung-page #main > .inside {
+    width: min(calc(100vw - 48px), var(--dm-theme-content-width, 1480px)) !important;
+    max-width: var(--dm-theme-content-width, 1480px) !important;
+    margin: 0 auto !important;
+    padding: 24px 0 48px !important;
+}
+
+body.domainverwaltung-page #main > .inside > .mod_article {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+body.domainverwaltung-page .domain-manager-layout {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding-inline: 0 !important;
+}
+
+body.domainverwaltung-page h1 {
+    margin-bottom: 18px;
+}
+
+@media (max-width: 680px) {
+    body.domainverwaltung-page #main > .inside {
+        width: calc(100vw - 28px) !important;
+        padding: 18px 0 36px !important;
+    }
+}
