@@ -9,17 +9,23 @@ use Contao\CoreBundle\Event\MenuEvent;
 use Lebensbaum\ContaoDomainManagerBundle\Controller\Backend\SetupController;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 #[AsEventListener(ContaoCoreEvents::BACKEND_MENU_BUILD, priority: -255)]
 final class BackendMenuListener
 {
     public function __construct(
         private readonly RequestStack $requestStack,
+        private readonly AuthorizationCheckerInterface $authorizationChecker,
     ) {
     }
 
     public function __invoke(MenuEvent $event): void
     {
+        if (!$this->authorizationChecker->isGranted('ROLE_ADMIN')) {
+            return;
+        }
+
         $tree = $event->getTree();
 
         if ('mainMenu' !== $tree->getName()) {
