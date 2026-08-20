@@ -1,0 +1,54 @@
+.domain-manager-overview .domain-manager-global-actions {
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.domain-sync-all-form {
+    margin: 0;
+}
+
+.domain-manager-overview .domain-sync-all-button {
+    border-color: var(--dm-accent);
+    background: var(--dm-accent);
+    color: #fff;
+}
+
+.domain-manager-overview .domain-sync-all-button:hover,
+.domain-manager-overview .domain-sync-all-button:focus-visible {
+    border-color: var(--dm-accent-hover);
+    background: var(--dm-accent-hover);
+    color: #fff;
+}
+
+.domain-manager-overview .domain-sync-all-button:disabled {
+    cursor: wait;
+    opacity: .7;
+}
+
+.domain-sync-all-message {
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    border: 1px solid var(--dm-border);
+    border-radius: 6px;
+    background: var(--dm-background-soft);
+    color: var(--dm-muted);
+}
+
+.domain-sync-all-message.is-success {
+    border-color: color-mix(in srgb, var(--dm-success) 32%, transparent);
+    background: var(--dm-success-soft);
+    color: var(--dm-success);
+}
+
+.domain-sync-all-message.is-warning {
+    border-color: color-mix(in srgb, var(--dm-warning) 32%, transparent);
+    background: var(--dm-warning-soft);
+    color: var(--dm-warning);
+}
+
+.domain-sync-all-message.is-error {
+    border-color: color-mix(in srgb, var(--dm-error) 32%, transparent);
+    background: var(--dm-error-soft);
+    color: var(--dm-error);
+}
