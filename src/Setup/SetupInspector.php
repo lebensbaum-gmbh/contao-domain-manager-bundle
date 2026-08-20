@@ -19,6 +19,7 @@ final class SetupInspector
      *     complete: bool,
      *     found: int,
      *     total: int,
+     *     missing: list<string>,
      *     items: list<array{key:string,label:string,expected:string,found:bool,id:int|null}>
      * }
      */
@@ -125,16 +126,21 @@ final class SetupInspector
             ),
         ];
 
-        $found = count(array_filter(
-            $items,
-            static fn (array $item): bool => $item['found']
+        $missing = array_values(array_map(
+            static fn (array $item): string => $item['key'],
+            array_filter(
+                $items,
+                static fn (array $item): bool => !$item['found']
+            )
         ));
+        $found = count($items) - count($missing);
         $total = count($items);
 
         return [
-            'complete' => $found === $total,
+            'complete' => [] === $missing,
             'found' => $found,
             'total' => $total,
+            'missing' => $missing,
             'items' => $items,
         ];
     }
