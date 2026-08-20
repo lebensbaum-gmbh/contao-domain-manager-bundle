@@ -116,12 +116,16 @@
                 : 'Sammelsynchronisation teilweise abgeschlossen.';
 
             const lines = [
-                `${domains} Hauptdomains verarbeitet: ${success} erfolgreich, ${partial} teilweise, ${domainFailed} fehlgeschlagen.`,
-                `${synced} Installationen synchronisiert, ${skipped} übersprungen, ${failed} fehlgeschlagen.`,
+                `${domains} ${domains === 1 ? 'Hauptdomain' : 'Hauptdomains'} verarbeitet: ${success} erfolgreich, ${partial} teilweise, ${domainFailed} fehlgeschlagen.`,
+                `${synced} ${synced === 1 ? 'Installation' : 'Installationen'} synchronisiert, ${skipped} übersprungen, ${failed} fehlgeschlagen.`,
             ];
 
             if (liveErrors > 0) {
-                lines.push(`${liveErrors} Zielermittlungen konnten nicht abgeschlossen werden.`);
+                lines.push(
+                    liveErrors === 1
+                        ? '1 Zielermittlung konnte nicht abgeschlossen werden.'
+                        : `${liveErrors} Zielermittlungen konnten nicht abgeschlossen werden.`
+                );
             }
 
             const strong = document.createElement('strong');
