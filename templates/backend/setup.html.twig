@@ -25,6 +25,25 @@
                 </div>
             {% endif %}
 
+            {% if setup.complete and not setup.frontend_access.ready %}
+                <div class="tl_info" style="margin:0 0 20px;padding:14px 16px">
+                    <strong>Nächster manueller Schritt: Frontend-Mitglied anlegen</strong>
+                    <p style="margin:7px 0 0">
+                        Legen Sie im Backend unter „Mitglieder“ ein Frontend-Mitglied an, aktivieren Sie die Anmeldung und weisen Sie das Mitglied der Mitgliedergruppe „Domainverwaltung“ zu.
+                        Erst danach ist die Anmeldung an der Domainübersicht möglich.
+                    </p>
+                </div>
+            {% elseif setup.complete and setup.frontend_access.ready %}
+                <div class="tl_confirm" style="margin:0 0 20px;padding:14px 16px">
+                    <strong>Frontend-Zugang vorbereitet.</strong>
+                    {% if setup.frontend_access.username %}
+                        Das aktive Mitglied „{{ setup.frontend_access.username }}“ ist der Mitgliedergruppe „Domainverwaltung“ zugeordnet.
+                    {% else %}
+                        Mindestens ein aktives Mitglied ist der Mitgliedergruppe „Domainverwaltung“ zugeordnet.
+                    {% endif %}
+                </div>
+            {% endif %}
+
             <table class="tl_listing" style="width:100%;margin:0 0 24px">
                 <thead>
                     <tr>
@@ -94,7 +113,12 @@
                 <div class="tl_box" style="padding:16px 18px;max-width:900px">
                     <strong>Einrichtung vollständig</strong>
                     <p style="margin:8px 0 0">
-                        Theme, Seitenstruktur, Login und Domain-Manager-Inhaltselemente wurden erkannt. Für den Frontend-Zugang muss nur noch mindestens ein Mitglied der freigegebenen Mitgliedergruppe zugewiesen sein.
+                        Theme, Seitenstruktur, Login und Domain-Manager-Inhaltselemente wurden erkannt.
+                        {% if setup.frontend_access.ready %}
+                            Der Frontend-Zugang ist ebenfalls vorbereitet.
+                        {% else %}
+                            Für den Frontend-Zugang fehlt nur noch ein aktives Mitglied in der Mitgliedergruppe „Domainverwaltung“.
+                        {% endif %}
                     </p>
                 </div>
             {% endif %}
