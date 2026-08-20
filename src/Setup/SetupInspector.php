@@ -35,23 +35,35 @@ final class SetupInspector
             $this->item(
                 'theme',
                 'Theme',
-                'Domainverwaltung',
-                'SELECT id FROM tl_theme WHERE name = ? ORDER BY id LIMIT 1',
-                ['Domainverwaltung']
+                'Theme des zugewiesenen Seitenlayouts',
+                "SELECT t.id
+                 FROM tl_page overview
+                 INNER JOIN tl_page root ON root.id = overview.pid AND root.type = 'root'
+                 INNER JOIN tl_layout l ON l.id = root.layout
+                 INNER JOIN tl_theme t ON t.id = l.pid
+                 WHERE overview.type = 'regular' AND overview.alias = 'index'
+                 ORDER BY overview.id LIMIT 1"
             ),
             $this->item(
                 'layout',
                 'Seitenlayout',
-                'Domainverwaltung',
-                'SELECT id FROM tl_layout WHERE name = ? ORDER BY id LIMIT 1',
-                ['Domainverwaltung']
+                'Am Startpunkt zugewiesenes Seitenlayout',
+                "SELECT l.id
+                 FROM tl_page overview
+                 INNER JOIN tl_page root ON root.id = overview.pid AND root.type = 'root'
+                 INNER JOIN tl_layout l ON l.id = root.layout
+                 WHERE overview.type = 'regular' AND overview.alias = 'index'
+                 ORDER BY overview.id LIMIT 1"
             ),
             $this->item(
                 'root_page',
                 'Startpunkt einer Website',
-                'Domainverwaltung',
-                "SELECT id FROM tl_page WHERE type = 'root' AND title = ? ORDER BY id LIMIT 1",
-                ['Domainverwaltung']
+                'Startpunkt der Domainübersicht',
+                "SELECT root.id
+                 FROM tl_page overview
+                 INNER JOIN tl_page root ON root.id = overview.pid AND root.type = 'root'
+                 WHERE overview.type = 'regular' AND overview.alias = 'index'
+                 ORDER BY overview.id LIMIT 1"
             ),
             $this->item(
                 'overview_page',
@@ -68,21 +80,36 @@ final class SetupInspector
             $this->item(
                 'error_401_page',
                 '401 – Nicht authentifiziert',
-                'Seitentyp 401',
-                "SELECT id FROM tl_page WHERE type = 'error_401' ORDER BY id LIMIT 1"
+                'Seitentyp 401 unter demselben Startpunkt',
+                "SELECT error_page.id
+                 FROM tl_page overview
+                 INNER JOIN tl_page root ON root.id = overview.pid AND root.type = 'root'
+                 INNER JOIN tl_page error_page ON error_page.pid = root.id AND error_page.type = 'error_401'
+                 WHERE overview.type = 'regular' AND overview.alias = 'index'
+                 ORDER BY error_page.id LIMIT 1"
             ),
             $this->item(
                 'error_403_page',
                 '403 – Zugriff verweigert',
-                'Seitentyp 403',
-                "SELECT id FROM tl_page WHERE type = 'error_403' ORDER BY id LIMIT 1"
+                'Seitentyp 403 unter demselben Startpunkt',
+                "SELECT error_page.id
+                 FROM tl_page overview
+                 INNER JOIN tl_page root ON root.id = overview.pid AND root.type = 'root'
+                 INNER JOIN tl_page error_page ON error_page.pid = root.id AND error_page.type = 'error_403'
+                 WHERE overview.type = 'regular' AND overview.alias = 'index'
+                 ORDER BY error_page.id LIMIT 1"
             ),
             $this->item(
                 'login_module',
                 'Login-Modul',
-                'Domainverwaltung – Login',
-                "SELECT id FROM tl_module WHERE type = 'login' AND name = ? ORDER BY id LIMIT 1",
-                ['Domainverwaltung – Login']
+                'Login-Formular auf der Login-Seite',
+                "SELECT m.id
+                 FROM tl_page p
+                 INNER JOIN tl_article a ON a.pid = p.id
+                 INNER JOIN tl_content c ON c.pid = a.id AND c.ptable = 'tl_article' AND c.type = 'module'
+                 INNER JOIN tl_module m ON m.id = c.module AND m.type = 'login'
+                 WHERE p.type = 'regular' AND p.alias = 'login'
+                 ORDER BY c.id LIMIT 1"
             ),
             $this->item(
                 'filter_element',
