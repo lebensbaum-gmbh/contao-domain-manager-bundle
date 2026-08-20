@@ -38,10 +38,10 @@ Für jede überwachte Zielinstallation wird zusätzlich benötigt:
 
 Der Domain Manager sollte bevorzugt in einer **eigenen, separaten Contao-Installation** betrieben werden. Dadurch bleibt die Verwaltungsoberfläche von normalen Websites getrennt und der Ersteinrichtungs-Assistent kann eine dafür optimierte Seitenstruktur anlegen.
 
-Beispiel:
+Beispiel für eine eigene Subdomain:
 
 ```text
-domainverwaltung.example.de
+domainverwaltung.<ihre-domain.tld>
 ```
 
 Der DocumentRoot der Contao-Installation sollte auf `/public` zeigen.
