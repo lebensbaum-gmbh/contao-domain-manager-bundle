@@ -1,24 +1,28 @@
 /* Final page-shell overrides for the protected Domain Manager application page. */
-body.domainverwaltung-page #wrapper,
-body.domainverwaltung-page #container,
-body.domainverwaltung-page #main {
+body.domainverwaltung-page #wrapper {
     width: 100% !important;
     max-width: none !important;
+    min-height: 100vh;
     margin: 0 !important;
     padding: 0 !important;
 }
 
-body.domainverwaltung-page #wrapper {
-    min-height: 100vh;
-}
-
+/* The application container itself owns the page width and centering. */
 body.domainverwaltung-page #container {
     display: block !important;
+    width: min(calc(100vw - 48px), var(--dm-theme-content-width, 1480px)) !important;
+    max-width: var(--dm-theme-content-width, 1480px) !important;
     min-height: 0 !important;
+    margin-inline: auto !important;
+    padding: 0 !important;
 }
 
 body.domainverwaltung-page #main {
     float: none !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 body.domainverwaltung-page #left,
@@ -26,7 +30,7 @@ body.domainverwaltung-page #right {
     display: none !important;
 }
 
-/* Neutralize empty/fixed theme header and footer dimensions without preventing custom content. */
+/* Neutralize fixed theme header and footer dimensions without preventing custom content. */
 body.domainverwaltung-page #header,
 body.domainverwaltung-page #footer {
     width: 100% !important;
@@ -37,10 +41,10 @@ body.domainverwaltung-page #footer {
 }
 
 body.domainverwaltung-page #main > .inside {
-    width: min(calc(100vw - 48px), var(--dm-theme-content-width, 1480px)) !important;
-    max-width: var(--dm-theme-content-width, 1480px) !important;
-    margin: 0 auto !important;
-    padding: 24px 0 48px !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 12px 0 48px !important;
 }
 
 body.domainverwaltung-page #main > .inside > .mod_article {
@@ -58,12 +62,15 @@ body.domainverwaltung-page .domain-manager-layout {
 }
 
 body.domainverwaltung-page h1 {
-    margin-bottom: 18px;
+    margin-bottom: 16px;
 }
 
 @media (max-width: 680px) {
-    body.domainverwaltung-page #main > .inside {
+    body.domainverwaltung-page #container {
         width: calc(100vw - 28px) !important;
-        padding: 18px 0 36px !important;
+    }
+
+    body.domainverwaltung-page #main > .inside {
+        padding: 10px 0 36px !important;
     }
 }
