@@ -8,8 +8,6 @@
     margin-inline: auto;
     padding-inline: clamp(24px, 3vw, 56px);
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-    outline: 6px solid red;
-    outline-offset: -6px;
 }
 
 .domain-manager-layout,
