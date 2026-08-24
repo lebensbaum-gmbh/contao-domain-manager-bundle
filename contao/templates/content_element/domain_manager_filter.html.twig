@@ -9,7 +9,7 @@
 {% endadd %}
 
 {% add "domain_manager_layout_css" to stylesheets %}
-    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-layout.css') ~ '?v=1.5.1-compact-2'} %}
+    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-layout.css') ~ '?v=1.5.1-compact-3'} %}
         {{ block('stylesheet_component') }}
     {% endwith %}
 {% endadd %}
@@ -19,7 +19,7 @@
 {% endadd %}
 
 {% add "domain_manager_layout_js" to body %}
-    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-layout.js') ~ '?v=1.5.1-compact-1' }}" defer></script>
+    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-layout.js') ~ '?v=1.5.1-compact-3' }}" defer></script>
 {% endadd %}
 
 {% block content %}
