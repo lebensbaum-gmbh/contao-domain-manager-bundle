@@ -74,11 +74,11 @@ body.domainverwaltung-page .domain-manager-layout {
 }
 
 /* Narrow layouts and touch-first devices get the full-width overview.
-   The width breakpoint stays conservative for normal desktop windows,
-   while tablets such as iPads are handled by their input capabilities. */
+   The !important on the grid tracks is intentional: some host themes apply their
+   own grid-template-columns to generic layout wrappers at tablet widths. */
 @media (max-width: 1180px), (hover: none) and (pointer: coarse) {
     .domain-manager-layout {
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: minmax(0, 1fr) !important;
         gap: 18px;
         padding-inline: clamp(18px, 4vw, 36px);
     }
