@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Contao\DC_Table;
+use Lebensbaum\ContaoDomainManagerBundle\Dca\SettingsCallbacks;
 
 $GLOBALS['TL_DCA']['tl_domain_manager_settings'] = [
     'config' => [
@@ -69,6 +70,7 @@ $GLOBALS['TL_DCA']['tl_domain_manager_settings'] = [
         'auto_sync_last_attempt' => [
             'exclude' => false,
             'inputType' => 'text',
+            'load_callback' => [[SettingsCallbacks::class, 'normalizeOptionalTimestamp']],
             'eval' => [
                 'readonly' => true,
                 'rgxp' => 'datim',
@@ -79,6 +81,7 @@ $GLOBALS['TL_DCA']['tl_domain_manager_settings'] = [
         'auto_sync_last_success' => [
             'exclude' => false,
             'inputType' => 'text',
+            'load_callback' => [[SettingsCallbacks::class, 'normalizeOptionalTimestamp']],
             'eval' => [
                 'readonly' => true,
                 'rgxp' => 'datim',
