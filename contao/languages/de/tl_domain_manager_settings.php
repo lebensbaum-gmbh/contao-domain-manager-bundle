@@ -42,6 +42,17 @@ $GLOBALS['TL_LANG']['tl_domain_manager_settings']['auto_sync_message'] = [
     'Meldung der automatischen Synchronisation',
     'Zusammenfassung des letzten automatischen Synchronisationslaufs.',
 ];
+$GLOBALS['TL_LANG']['tl_domain_manager_settings']['cron_panel'] = [
+    'title' => 'Server-Cronjob',
+    'description' => 'Für die zuverlässige automatische Synchronisation muss das Contao-Cronjob-Framework regelmäßig über die Kommandozeile gestartet werden. Der Domain Manager kann diesen Server-Cronjob nicht selbst beim Hoster anlegen.',
+    'command' => 'Empfohlener Befehl',
+    'schedule' => 'Den Server-Cronjob möglichst jede Minute ausführen. Contao entscheidet selbst, welche Aufgaben tatsächlich fällig sind.',
+    'hoster_hint' => 'Der passende PHP-Pfad bzw. die PHP-Version hängt vom Hoster ab. „php“ im Beispiel gegebenenfalls durch den dort vorgegebenen PHP-Befehl ersetzen.',
+    'disabled' => 'Automatische Synchronisation ist deaktiviert.',
+    'not_confirmed' => 'Noch kein automatischer CLI-Lauf bestätigt. Bitte den Server-Cronjob einrichten und testen.',
+    'confirmed' => 'Automatische CLI-Ausführung zuletzt bestätigt: %s.',
+    'overdue' => 'Kein fälliger automatischer Lauf seit %s erkannt. Bitte den Server-Cronjob prüfen.',
+];
 $GLOBALS['TL_LANG']['tl_domain_manager_settings']['sync_member_groups'] = [
     'Berechtigte Mitgliedergruppen',
     'Nur angemeldete Frontend-Mitglieder aus mindestens einer dieser Gruppen dürfen „Systemdaten aktualisieren“ ausführen. Ohne Auswahl ist die Synchronisation im Frontend deaktiviert.',
