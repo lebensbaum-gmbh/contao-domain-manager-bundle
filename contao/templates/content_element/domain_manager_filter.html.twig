@@ -61,17 +61,21 @@
         </label>
     </div>
 
-    <div class="dm-filter-section">
-        <h3 class="dm-filter-heading">Trakked</h3>
-        <label class="dm-filter-check">
-            <input type="checkbox" value="1" data-dm-filter-trakked>
-            <span>In Trakked</span>
-        </label>
-        <label class="dm-filter-check">
-            <input type="checkbox" value="0" data-dm-filter-trakked>
-            <span>Nicht in Trakked</span>
-        </label>
-    </div>
+    {% if external_services %}
+        <div class="dm-filter-section">
+            <h3 class="dm-filter-heading">Externe Dienste</h3>
+            {% for service in external_services %}
+                <label class="dm-filter-check">
+                    <input type="checkbox" value="{{ service.id }}" data-dm-filter-service>
+                    <span>{{ service.name }}</span>
+                </label>
+            {% endfor %}
+            <label class="dm-filter-check">
+                <input type="checkbox" value="none" data-dm-filter-service>
+                <span>Keinem Dienst zugeordnet</span>
+            </label>
+        </div>
+    {% endif %}
 
     {% if contao_versions %}
         <div class="dm-filter-section">
