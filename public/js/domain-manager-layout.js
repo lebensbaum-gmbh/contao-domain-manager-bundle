@@ -38,6 +38,10 @@
         const container = document.getElementById('container');
         if (container) {
             container.classList.add('domain-manager-layout-container');
+            // The legacy page layout reserves space for the former right sidebar
+            // with an inline padding-right. The Domain Manager grid now owns that
+            // sidebar itself, so keeping the legacy padding would reserve it twice.
+            container.style.setProperty('padding-right', '0', 'important');
         }
     };
 
