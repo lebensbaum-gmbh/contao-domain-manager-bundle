@@ -97,7 +97,7 @@ final class MigrateExternalServicesMigration extends AbstractMigration
                     `name` varchar(128) NOT NULL default '',
                     `url` varchar(1024) NOT NULL default '',
                     PRIMARY KEY (`id`)
-                ) ENGINE=InnoDB
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
             SQL
         );
     }
