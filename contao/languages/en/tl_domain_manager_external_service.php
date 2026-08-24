@@ -18,3 +18,8 @@ $GLOBALS['TL_LANG']['tl_domain_manager_external_service']['edit'] = ['Edit', 'Ed
 $GLOBALS['TL_LANG']['tl_domain_manager_external_service']['copy'] = ['Duplicate', 'Duplicate external service ID %s.'];
 $GLOBALS['TL_LANG']['tl_domain_manager_external_service']['delete'] = ['Delete', 'Delete external service ID %s.'];
 $GLOBALS['TL_LANG']['tl_domain_manager_external_service']['show'] = ['Details', 'Show external service ID %s.'];
+
+$GLOBALS['TL_LANG']['tl_domain_manager_external_service']['dm_new'] = $GLOBALS['TL_LANG']['tl_domain_manager_external_service']['new'];
+$GLOBALS['TL_LANG']['tl_domain_manager_external_service']['dm_edit'] = $GLOBALS['TL_LANG']['tl_domain_manager_external_service']['edit'];
+$GLOBALS['TL_LANG']['tl_domain_manager_external_service']['dm_copy'] = $GLOBALS['TL_LANG']['tl_domain_manager_external_service']['copy'];
+$GLOBALS['TL_LANG']['tl_domain_manager_external_service']['dm_delete'] = $GLOBALS['TL_LANG']['tl_domain_manager_external_service']['delete'];
