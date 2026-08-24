@@ -39,7 +39,7 @@ $GLOBALS['TL_DCA']['tl_domain_manager_settings'] = [
         ],
     ],
     'palettes' => [
-        'default' => '{automatic_sync_legend},auto_sync_enabled,auto_sync_interval,auto_sync_last_attempt,auto_sync_last_success,auto_sync_status,auto_sync_message;{access_legend},sync_member_groups;{health_legend},stale_sync_days',
+        'default' => '{automatic_sync_legend},auto_sync_enabled,auto_sync_interval,auto_sync_last_attempt,auto_sync_last_success,auto_sync_status,auto_sync_message,auto_sync_cron_panel;{access_legend},sync_member_groups;{health_legend},stale_sync_days',
     ],
     'fields' => [
         'id' => [
@@ -108,6 +108,13 @@ $GLOBALS['TL_DCA']['tl_domain_manager_settings'] = [
                 'tl_class' => 'clr',
             ],
             'sql' => 'text NULL',
+        ],
+        'auto_sync_cron_panel' => [
+            'exclude' => false,
+            'input_field_callback' => [SettingsCallbacks::class, 'renderCronPanel'],
+            'eval' => [
+                'tl_class' => 'clr',
+            ],
         ],
         'sync_member_groups' => [
             'exclude' => false,
