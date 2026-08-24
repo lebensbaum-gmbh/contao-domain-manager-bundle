@@ -1,4 +1,50 @@
 (() => {
+    const findSiblingHosts = (filterHost, overviewHost) => {
+        let filterNode = filterHost;
+
+        while (filterNode && filterNode.parentElement) {
+            let overviewNode = overviewHost;
+
+            while (overviewNode && overviewNode.parentElement) {
+                if (filterNode !== overviewNode && filterNode.parentElement === overviewNode.parentElement) {
+                    return {
+                        filterNode,
+                        overviewNode,
+                        parent: filterNode.parentElement,
+                    };
+                }
+
+                overviewNode = overviewNode.parentElement;
+            }
+
+            filterNode = filterNode.parentElement;
+        }
+
+        return null;
+    };
+
+    const removeEmptyLegacyShell = (shell) => {
+        if (!shell || shell.matches('.mod_article')) {
+            return;
+        }
+
+        const inside = shell.querySelector(':scope > .inside');
+        if (inside && inside.children.length === 0 && shell.children.length === 1) {
+            shell.remove();
+        }
+    };
+
+    const markContainer = () => {
+        const container = document.getElementById('container');
+        if (container) {
+            container.classList.add('domain-manager-layout-container');
+            // The legacy page layout reserves space for the former right sidebar
+            // with an inline padding-right. The Domain Manager grid now owns that
+            // sidebar itself, so keeping the legacy padding would reserve it twice.
+            container.style.setProperty('padding-right', '0', 'important');
+        }
+    };
+
     const initializeLayout = () => {
         const filter = document.querySelector('[data-domain-manager-filter]');
         const overview = document.querySelector('[data-domain-manager-overview]');
@@ -7,10 +53,10 @@
             return;
         }
 
-        const filterHost = filter.parentElement;
-        const overviewHost = overview.parentElement;
+        const filterArticle = filter.closest('.mod_article') || filter.parentElement;
+        const overviewArticle = overview.closest('.mod_article') || overview.parentElement;
 
-        if (!filterHost || !overviewHost) {
+        if (!filterArticle || !overviewArticle) {
             return;
         }
 
@@ -18,28 +64,36 @@
         layout.className = 'domain-manager-layout';
         layout.dataset.domainManagerLayout = '1';
 
-        if (filterHost === overviewHost) {
-            filterHost.insertBefore(layout, filter);
+        if (filterArticle === overviewArticle) {
+            filterArticle.insertBefore(layout, filter);
             layout.appendChild(filter);
             layout.appendChild(overview);
             filter.classList.add('domain-manager-layout-filter');
             overview.classList.add('domain-manager-layout-overview');
+            markContainer();
             return;
         }
 
-        if (!filterHost.parentElement || filterHost.parentElement !== overviewHost.parentElement) {
+        const hosts = findSiblingHosts(filterArticle, overviewArticle);
+        if (!hosts) {
             return;
         }
 
-        const parent = filterHost.parentElement;
-        const filterComesFirst = Boolean(filterHost.compareDocumentPosition(overviewHost) & Node.DOCUMENT_POSITION_FOLLOWING);
-        parent.insertBefore(layout, filterComesFirst ? filterHost : overviewHost);
+        const filterShell = hosts.filterNode;
+        const overviewShell = hosts.overviewNode;
+        const filterComesFirst = Boolean(filterShell.compareDocumentPosition(overviewShell) & Node.DOCUMENT_POSITION_FOLLOWING);
 
-        layout.appendChild(filterHost);
-        layout.appendChild(overviewHost);
+        hosts.parent.insertBefore(layout, filterComesFirst ? filterShell : overviewShell);
 
-        filterHost.classList.add('domain-manager-layout-filter');
-        overviewHost.classList.add('domain-manager-layout-overview');
+        layout.appendChild(filterArticle);
+        layout.appendChild(overviewArticle);
+
+        filterArticle.classList.add('domain-manager-layout-filter');
+        overviewArticle.classList.add('domain-manager-layout-overview');
+
+        removeEmptyLegacyShell(filterShell);
+        removeEmptyLegacyShell(overviewShell);
+        markContainer();
     };
 
     if (document.readyState === 'loading') {
