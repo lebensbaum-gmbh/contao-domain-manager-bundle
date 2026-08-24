@@ -42,6 +42,17 @@ $GLOBALS['TL_LANG']['tl_domain_manager_settings']['auto_sync_message'] = [
     'Automatic synchronization message',
     'Summary of the last automatic synchronization run.',
 ];
+$GLOBALS['TL_LANG']['tl_domain_manager_settings']['cron_panel'] = [
+    'title' => 'Server cron job',
+    'description' => 'For reliable automatic synchronization, Contao\'s cron framework must be started regularly from the command line. The Domain Manager cannot create this server cron job at your hosting provider.',
+    'command' => 'Recommended command',
+    'schedule' => 'Run the server cron job every minute if possible. Contao itself decides which registered jobs are actually due.',
+    'hoster_hint' => 'The required PHP path or PHP version depends on the hosting provider. Replace “php” in the example with the provider-specific PHP command if necessary.',
+    'disabled' => 'Automatic synchronization is disabled.',
+    'not_confirmed' => 'No automatic CLI run has been confirmed yet. Please configure and test the server cron job.',
+    'confirmed' => 'Automatic CLI execution last confirmed: %s.',
+    'overdue' => 'No due automatic run has been detected since %s. Please check the server cron job.',
+];
 $GLOBALS['TL_LANG']['tl_domain_manager_settings']['sync_member_groups'] = [
     'Allowed member groups',
     'Only authenticated front end members in at least one of these groups may run system data synchronization. With no group selected, front end synchronization is disabled.',
