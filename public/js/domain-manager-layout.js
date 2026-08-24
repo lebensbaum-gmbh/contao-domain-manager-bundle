@@ -75,6 +75,17 @@
         return null;
     };
 
+    const removeEmptyLegacyShell = (shell) => {
+        if (!shell || shell.matches('.mod_article')) {
+            return;
+        }
+
+        const inside = shell.querySelector(':scope > .inside');
+        if (inside && inside.children.length === 0 && shell.children.length === 1) {
+            shell.remove();
+        }
+    };
+
     const initializeLayout = () => {
         const filter = document.querySelector('[data-domain-manager-filter]');
         const overview = document.querySelector('[data-domain-manager-overview]');
@@ -83,10 +94,10 @@
             return;
         }
 
-        const filterHost = filter.parentElement;
-        const overviewHost = overview.parentElement;
+        const filterArticle = filter.closest('.mod_article') || filter.parentElement;
+        const overviewArticle = overview.closest('.mod_article') || overview.parentElement;
 
-        if (!filterHost || !overviewHost) {
+        if (!filterArticle || !overviewArticle) {
             return;
         }
 
@@ -94,8 +105,8 @@
         layout.className = 'domain-manager-layout';
         layout.dataset.domainManagerLayout = '1';
 
-        if (filterHost === overviewHost) {
-            filterHost.insertBefore(layout, filter);
+        if (filterArticle === overviewArticle) {
+            filterArticle.insertBefore(layout, filter);
             layout.appendChild(filter);
             layout.appendChild(overview);
             filter.classList.add('domain-manager-layout-filter');
@@ -104,19 +115,26 @@
             return;
         }
 
-        const hosts = findSiblingHosts(filterHost, overviewHost);
+        const hosts = findSiblingHosts(filterArticle, overviewArticle);
         if (!hosts) {
             return;
         }
 
-        const filterComesFirst = Boolean(hosts.filterNode.compareDocumentPosition(hosts.overviewNode) & Node.DOCUMENT_POSITION_FOLLOWING);
-        hosts.parent.insertBefore(layout, filterComesFirst ? hosts.filterNode : hosts.overviewNode);
+        const filterShell = hosts.filterNode;
+        const overviewShell = hosts.overviewNode;
+        const filterComesFirst = Boolean(filterShell.compareDocumentPosition(overviewShell) & Node.DOCUMENT_POSITION_FOLLOWING);
 
-        layout.appendChild(hosts.filterNode);
-        layout.appendChild(hosts.overviewNode);
+        hosts.parent.insertBefore(layout, filterComesFirst ? filterShell : overviewShell);
 
-        hosts.filterNode.classList.add('domain-manager-layout-filter');
-        hosts.overviewNode.classList.add('domain-manager-layout-overview');
+        layout.appendChild(filterArticle);
+        layout.appendChild(overviewArticle);
+
+        filterArticle.classList.add('domain-manager-layout-filter');
+        overviewArticle.classList.add('domain-manager-layout-overview');
+
+        removeEmptyLegacyShell(filterShell);
+        removeEmptyLegacyShell(overviewShell);
+
         renderDebugInfo(layout);
     };
 
