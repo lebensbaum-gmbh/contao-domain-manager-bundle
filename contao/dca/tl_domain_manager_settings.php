@@ -38,7 +38,7 @@ $GLOBALS['TL_DCA']['tl_domain_manager_settings'] = [
         ],
     ],
     'palettes' => [
-        'default' => '{access_legend},sync_member_groups;{health_legend},stale_sync_days;{links_legend},trakked_url',
+        'default' => '{access_legend},sync_member_groups;{health_legend},stale_sync_days',
     ],
     'fields' => [
         'id' => [
@@ -69,15 +69,8 @@ $GLOBALS['TL_DCA']['tl_domain_manager_settings'] = [
             ],
             'sql' => "int(10) unsigned NOT NULL default 30",
         ],
+        // Legacy field retained temporarily so existing v1.4 data can be migrated safely.
         'trakked_url' => [
-            'exclude' => false,
-            'inputType' => 'text',
-            'eval' => [
-                'maxlength' => 1024,
-                'rgxp' => 'url',
-                'decodeEntities' => true,
-                'tl_class' => 'clr long',
-            ],
             'sql' => "varchar(1024) NOT NULL default ''",
         ],
     ],
