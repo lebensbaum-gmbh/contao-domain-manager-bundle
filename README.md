@@ -198,7 +198,7 @@ Der konkrete PHP-Befehl hängt vom Hoster ab und kann z. B. auch `/usr/bin/php84
 
 Der häufige Aufruf bedeutet nicht, dass jede Minute alle Synchronisationen laufen: Contao entscheidet selbst, welche registrierten Cronjobs fällig sind. Zusätzlich prüft der Domain Manager das konfigurierte Synchronisationsintervall.
 
-In den Domain-Manager-Einstellungen wird ein Cron-Hinweis mit dem installationsbezogenen Kommando angezeigt. Der Status wird aus den tatsächlich erfolgten automatischen CLI-Läufen abgeleitet. Bleibt ein fälliger Lauf über das eingestellte Intervall hinaus aus, weist der Domain Manager auf die Cron-Konfiguration hin.
+In den Domain-Manager-Einstellungen wird ein Cron-Hinweis mit dem installationsbezogenen Kommando angezeigt. Der Status wird aus den tatsächlich erfolgten automatischen CLI-Läufen abgeleitet. Bleibt ein fälliger Lauf über das eingestellte Intervall plus einer kurzen Toleranzzeit hinaus aus, weist der Domain Manager auf die Cron-Konfiguration hin.
 
 ## Externe Dienste
 
