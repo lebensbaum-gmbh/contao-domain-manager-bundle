@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Lebensbaum\ContaoDomainManagerBundle\Controller\ContentElement;
 
 use Contao\ContentModel;
-use Contao\FilesModel;
 use Contao\CoreBundle\Controller\ContentElement\AbstractContentElementController;
 use Contao\CoreBundle\DependencyInjection\Attribute\AsContentElement;
-use Contao\CoreBundle\Twig\FragmentTemplate;
 use Contao\CoreBundle\Security\ContaoCorePermissions;
+use Contao\CoreBundle\Twig\FragmentTemplate;
+use Contao\FilesModel;
+use Contao\StringUtil;
 use Doctrine\DBAL\Connection;
 use Lebensbaum\ContaoDomainManagerBundle\Health\InstallationHealthEvaluator;
 use Lebensbaum\ContaoDomainManagerBundle\Settings\DomainManagerSettings;
@@ -18,6 +19,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Throwable;
 
 #[AsContentElement(
     type: 'domain_manager_overview',
@@ -27,6 +29,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
 {
     private const DOMAIN_TABLE = 'tl_domain_manager_domain';
     private const INSTALLATION_TABLE = 'tl_domain_manager_installation';
+    private const SERVICE_TABLE = 'tl_domain_manager_external_service';
 
     public function __construct(
         private readonly Connection $connection,
@@ -46,6 +49,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
         $allContaoVersions = [];
         $allPhpVersions = [];
         $allEnvironments = [];
+        $externalServices = $this->loadExternalServices();
         $staleSyncDays = $this->settings->getStaleSyncDays();
         $syncMemberGroupIds = $this->settings->getSyncMemberGroupIds();
         $canSync = [] !== $syncMemberGroupIds
@@ -75,7 +79,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
             $liveInstallationId = (int) ($domainRow['dm_live_installation_id'] ?? 0);
 
             foreach ($installationRows as $installationRow) {
-                $installation = $this->normalizeInstallation($installationRow);
+                $installation = $this->normalizeInstallation($installationRow, $externalServices);
                 $installation['health'] = $this->healthEvaluator->evaluate($installation, $staleSyncDays);
                 $installations[] = $installation;
 
@@ -134,6 +138,9 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
             foreach ($installations as $installation) {
                 $searchTerms[] = $installation['domain'];
                 $searchTerms[] = $installation['environment_label'];
+                foreach ($installation['external_services'] as $service) {
+                    $searchTerms[] = $service['name'];
+                }
             }
 
             $domains[] = [
@@ -169,7 +176,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
         $template->set('php_versions', array_values($phpVersions));
         $template->set('environments', $allEnvironments);
         $template->set('can_sync', $canSync);
-        $template->set('trakked_url', $this->settings->getTrakkedUrl());
+        $template->set('external_services', array_values($externalServices));
         $response = $template->getResponse();
         $response->headers->set('Cache-Control', 'private, no-store, max-age=0');
 
@@ -178,9 +185,10 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
 
     /**
      * @param array<string, mixed> $row
+     * @param array<int, array{id: int, name: string, url: string}> $externalServices
      * @return array<string, mixed>
      */
-    private function normalizeInstallation(array $row): array
+    private function normalizeInstallation(array $row, array $externalServices): array
     {
         $domain = trim((string) ($row['domain'] ?? ''));
         $environment = $this->normalizeEnvironment((string) ($row['environment'] ?? ''));
@@ -188,6 +196,18 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
         $phpVersion = trim((string) ($row['php_version'] ?? ''));
         $backendUrl = $this->safeUrl((string) ($row['backend_url'] ?? ''));
         $managerUrl = $this->safeUrl((string) ($row['manager_url'] ?? ''));
+        $externalServiceIds = [];
+
+        foreach (StringUtil::deserialize($row['external_services'] ?? null, true) as $serviceId) {
+            if (is_numeric($serviceId) && isset($externalServices[(int) $serviceId])) {
+                $externalServiceIds[] = (int) $serviceId;
+            }
+        }
+
+        $assignedServices = [];
+        foreach (array_values(array_unique($externalServiceIds)) as $serviceId) {
+            $assignedServices[] = $externalServices[$serviceId];
+        }
 
         return [
             'id' => (int) ($row['id'] ?? 0),
@@ -203,7 +223,8 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
             'backend_url' => $backendUrl,
             'manager_url' => $managerUrl,
             'is_live' => $this->isChecked($row['is_live'] ?? ''),
-            'trakked' => $this->isChecked($row['trakked'] ?? ''),
+            'external_service_ids' => $externalServiceIds,
+            'external_services' => $assignedServices,
             'status' => trim((string) ($row['status'] ?? '')),
             'notes' => trim((string) ($row['notes'] ?? '')),
             'last_sync' => (int) ($row['last_sync'] ?? 0),
@@ -213,6 +234,37 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
             'connection_status' => trim((string) ($row['dm_connection_status'] ?? '')),
             'connection_message' => trim((string) ($row['dm_connection_message'] ?? '')),
         ];
+    }
+
+    /** @return array<int, array{id: int, name: string, url: string}> */
+    private function loadExternalServices(): array
+    {
+        try {
+            $rows = $this->connection->fetchAllAssociative(
+                'SELECT id, name, url FROM '.self::SERVICE_TABLE.' ORDER BY name, id'
+            );
+        } catch (Throwable) {
+            return [];
+        }
+
+        $services = [];
+
+        foreach ($rows as $row) {
+            $id = (int) ($row['id'] ?? 0);
+            $name = trim((string) ($row['name'] ?? ''));
+
+            if ($id < 1 || '' === $name) {
+                continue;
+            }
+
+            $services[$id] = [
+                'id' => $id,
+                'name' => $name,
+                'url' => $this->safeUrl((string) ($row['url'] ?? '')),
+            ];
+        }
+
+        return $services;
     }
 
     private function isChecked(mixed $value): bool
@@ -275,7 +327,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
             $file = FilesModel::findByUuid($uuid);
 
             return null !== $file ? trim((string) $file->path) : '';
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return '';
         }
     }
