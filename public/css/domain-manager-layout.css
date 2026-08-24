@@ -41,7 +41,10 @@ body.domainverwaltung-page .domain-manager-layout {
     padding-inline: 0;
 }
 
-@media (max-width: 1180px) {
+/* Tablet and narrower desktop widths: give the overview the full page width.
+   This includes iPad Pro landscape (1366 CSS px), which is too narrow for
+   the desktop sidebar plus the multi-column domain cards. */
+@media (max-width: 1399px) {
     .domain-manager-layout {
         grid-template-columns: minmax(0, 1fr);
         gap: 18px;
@@ -61,6 +64,50 @@ body.domainverwaltung-page .domain-manager-layout {
         grid-column: 1;
         grid-row: 2;
     }
+
+    /* Keep the filter compact when it moves above the overview. */
+    .domain-manager-layout .domain-manager-filter {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px 24px;
+        align-items: start;
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-title {
+        grid-column: 1 / -1;
+        margin-bottom: 0;
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-section {
+        min-width: 0;
+        padding: 0;
+        border-bottom: 0;
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-section + .dm-filter-section {
+        padding-top: 0;
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-reset,
+    .domain-manager-layout .domain-manager-filter .dm-filter-empty {
+        grid-column: 1 / -1;
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-reset {
+        width: auto;
+        margin-top: 0;
+        justify-self: start;
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-empty {
+        margin-top: 0;
+    }
+}
+
+@media (max-width: 980px) {
+    .domain-manager-layout .domain-manager-filter {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 680px) {
@@ -70,5 +117,31 @@ body.domainverwaltung-page .domain-manager-layout {
 
     body.domainverwaltung-page .domain-manager-layout {
         padding-inline: 0;
+    }
+
+    .domain-manager-layout .domain-manager-filter {
+        display: block;
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-title {
+        margin-bottom: 22px;
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-section {
+        padding: 0 0 18px;
+        border-bottom: 1px solid var(--dm-border-light);
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-section + .dm-filter-section {
+        padding-top: 18px;
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-reset {
+        width: 100%;
+        margin-top: 18px;
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-empty {
+        margin-top: 14px;
     }
 }
