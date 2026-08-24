@@ -15,6 +15,12 @@
     box-sizing: border-box;
 }
 
+/* Once the Domain Manager takes over the page layout, use the wider desktop
+   container that the overview was designed for. Smaller viewports are unaffected. */
+#container.domain-manager-layout-container {
+    max-width: 1480px !important;
+}
+
 /* The layout script may move complete Contao article/module wrappers into this grid.
    Normalize only those marked hosts so pre-existing page-layout widths/floats do not
    keep controlling the Domain Manager layout. */
