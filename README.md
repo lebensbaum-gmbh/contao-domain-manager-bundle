@@ -9,6 +9,12 @@ Hauptdomains und zugehörige Installationen können im Backend verwaltet, mit de
 - Verwaltung von Hauptdomains und zugehörigen Contao-Installationen
 - Verbindungstest zu überwachten Installationen
 - Einzel- und Sammelsynchronisation von Systeminformationen
+- automatische Synchronisation über Contaos Cronjob-Framework
+- konfigurierbares Auto-Sync-Intervall: stündlich, alle 6 Stunden, alle 12 Stunden oder täglich
+- Status, letzter Versuch und letzter vollständiger Erfolg der automatischen Synchronisation
+- Verwaltung beliebiger externer Dienste wie Monitoring, Hosting oder GitHub
+- Zuordnung mehrerer externer Dienste pro Installation
+- automatische Migration bestehender Trakked-Verknüpfungen aus Version 1.4
 - automatische Übernahme von Contao-Version, PHP-Version, Datenbankname und DocumentRoot
 - kompakte Anzeige des Webroots im Frontend, z. B. `/public` oder `/web`
 - Statussystem mit **OK**, **Hinweis** und **Fehler**
@@ -16,6 +22,7 @@ Hauptdomains und zugehörige Installationen können im Backend verwaltet, mit de
 - automatische Bewertung der Supportphase von Contao- und PHP-Versionen
 - Status- und Zeitinformationen zur letzten Synchronisation
 - Statusfilter für **OK**, **Hinweis** und **Fehler**
+- Filter nach externen Diensten
 - Notizen und Screenshots je Installation
 - Rechteverwaltung für Backend-Benutzergruppen
 - Frontend-Inhaltselement **Domainübersicht**
@@ -62,7 +69,7 @@ Installiere über den **Contao Manager**:
 lebensbaum/contao-domain-manager-bundle
 ```
 
-Führe anschließend die von Contao angebotene Datenbankmigration aus.
+Führe anschließend die von Contao angebotenen Datenbankmigrationen aus.
 
 ### 3. Ersteinrichtung starten
 
@@ -159,6 +166,53 @@ Im Frontend stehen je Hauptdomain **Systemdaten aktualisieren** sowie global **A
 
 Bei der Sammelsynchronisation werden alle Hauptdomains nacheinander verarbeitet. Ein Fehler bei einer Installation verhindert nicht die Aktualisierung der übrigen Einträge.
 
+## Automatische Synchronisation
+
+Unter **Domainverwaltung → Einstellungen** kann die automatische Synchronisation aktiviert werden. Zur Auswahl stehen die Intervalle:
+
+- stündlich
+- alle 6 Stunden
+- alle 12 Stunden
+- täglich
+
+Die eigentliche Synchronisation verwendet dieselbe zentrale Logik wie die manuelle Sammelsynchronisation. Fehler einzelner Hauptdomains oder Installationen verhindern nicht die Verarbeitung der übrigen Einträge.
+
+Der Domain Manager speichert:
+
+- den letzten automatischen Versuch
+- die letzte vollständig erfolgreiche automatische Synchronisation
+- den Status des letzten Laufs
+- eine Zusammenfassung des Ergebnisses
+
+### Server-Cronjob erforderlich
+
+Für eine zuverlässige automatische Synchronisation muss Contaos Cronjob-Framework regelmäßig per CLI gestartet werden. Der Domain Manager kann einen Cronjob auf Ebene des Hosting-Accounts oder Servers nicht selbst anlegen.
+
+Empfohlen ist ein Server-Cronjob, der möglichst jede Minute folgenden Befehl ausführt:
+
+```text
+php /pfad/zur/contao-installation/vendor/bin/contao-console contao:cron
+```
+
+Der konkrete PHP-Befehl hängt vom Hoster ab und kann z. B. auch `/usr/bin/php84` oder `/usr/bin/php85` lauten.
+
+Der häufige Aufruf bedeutet nicht, dass jede Minute alle Synchronisationen laufen: Contao entscheidet selbst, welche registrierten Cronjobs fällig sind. Zusätzlich prüft der Domain Manager das konfigurierte Synchronisationsintervall.
+
+In den Domain-Manager-Einstellungen wird ein Cron-Hinweis mit dem installationsbezogenen Kommando angezeigt. Der Status wird aus den tatsächlich erfolgten automatischen CLI-Läufen abgeleitet. Bleibt ein fälliger Lauf über das eingestellte Intervall hinaus aus, weist der Domain Manager auf die Cron-Konfiguration hin.
+
+## Externe Dienste
+
+Unter **Domainverwaltung → Externe Dienste** können optionale externe Werkzeuge neutral hinterlegt werden, zum Beispiel:
+
+- Monitoring-Dienste
+- Hosting-Verwaltungen
+- GitHub oder andere Repository-Dienste
+- sonstige technische Verwaltungsoberflächen
+
+Jeder Dienst erhält eine Bezeichnung und eine URL. Installationen können einem oder mehreren Diensten zugeordnet werden. Im Frontend erscheinen nur die tatsächlich konfigurierten Dienste und Zuordnungen.
+
+Bei einem Update von Version 1.4 werden eine vorhandene Trakked-URL und bestehende Trakked-Zuordnungen automatisch in dieses neutrale System übernommen.
+
 ## Automatisch erzeugte Seitenstruktur
 
 Der Ersteinrichtungs-Assistent erzeugt standardmäßig:
@@ -229,13 +283,15 @@ Die Hauptdomains werden als aufklappbare Einträge dargestellt. Bereits in der k
 
 Im aufgeklappten Bereich erscheinen zusätzliche technische Daten und konkrete Statushinweise.
 
+Bei aktivierter automatischer Synchronisation zeigt die Übersicht zusätzlich den letzten vollständigen Erfolg und den frühestmöglichen nächsten Lauf.
+
 ### Domainfilter
 
 Der Filter unterstützt unter anderem:
 
 - Suchbegriff
 - aktuelles Ziel
-- Trakked-Status
+- externe Dienste
 - Status **OK**, **Hinweis**, **Fehler**
 - Contao-Version
 - PHP-Version
@@ -314,8 +370,10 @@ Weitere verfügbare Variablen umfassen unter anderem:
 Für Backend-Benutzergruppen können getrennte Rechte vergeben werden, unter anderem für:
 
 - Bearbeiten von Hauptdomains und Installationen
+- Bearbeiten externer Dienste
 - Verbindungstests
 - Ersetzen von Secrets
+- globale Einstellungen
 
 Die **Ersteinrichtung** steht ausschließlich Administratoren zur Verfügung.
 
@@ -328,16 +386,17 @@ Frontend-Aktionen zur Einzel- und Sammelsynchronisation werden unabhängig von d
 - Die Domainübersicht ist standardmäßig als geschützte Frontend-Seite vorgesehen.
 - Die automatische Ersteinrichtung ist nur für Backend-Administratoren verfügbar.
 - Der Assistent arbeitet beim Anlegen mehrerer Bausteine innerhalb einer Datenbanktransaktion.
+- Längere automatische Synchronisationen werden bewusst nur im CLI-Cron ausgeführt und nicht während normaler Frontend-Aufrufe.
 
 ## Updates
 
 Stabile Versionen werden über Packagist veröffentlicht. Empfohlen ist eine normale Composer-Versionsanforderung, z. B.:
 
 ```text
-^1.4
+^1.5
 ```
 
-Entwicklungsstände wie `dev-main` sind ausschließlich für Tests gedacht.
+Entwicklungsstände wie `dev-main` oder Feature-Branches sind ausschließlich für Tests gedacht.
 
 ## Lizenz
 
