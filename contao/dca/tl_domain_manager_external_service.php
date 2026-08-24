@@ -26,21 +26,22 @@ $GLOBALS['TL_DCA']['tl_domain_manager_external_service'] = [
             'format' => '%s — %s',
         ],
         'global_operations' => [
-            'all' => [
-                'href' => 'act=select',
-                'class' => 'header_edit_all',
+            'dm_new' => [
+                'href' => 'act=create',
+                'class' => 'header_new',
+                'attributes' => 'onclick="Backend.getScrollOffset()" accesskey="n"',
             ],
         ],
         'operations' => [
-            'edit' => [
+            'dm_edit' => [
                 'href' => 'act=edit',
                 'icon' => 'edit.svg',
             ],
-            'copy' => [
+            'dm_copy' => [
                 'href' => 'act=copy',
                 'icon' => 'copy.svg',
             ],
-            'delete' => [
+            'dm_delete' => [
                 'href' => 'act=delete',
                 'icon' => 'delete.svg',
                 'attributes' => 'onclick="if(!confirm(\'Wirklich löschen?\'))return false;Backend.getScrollOffset()"',
@@ -92,6 +93,13 @@ foreach ($GLOBALS['TL_DCA']['tl_domain_manager_external_service']['fields'] as $
     }
 }
 unset($fieldConfig);
+
+foreach ($GLOBALS['TL_DCA']['tl_domain_manager_external_service']['list']['global_operations'] as $operationName => &$operationConfig) {
+    if (!isset($operationConfig['label']) && isset($GLOBALS['TL_LANG']['tl_domain_manager_external_service'][$operationName])) {
+        $operationConfig['label'] = $GLOBALS['TL_LANG']['tl_domain_manager_external_service'][$operationName];
+    }
+}
+unset($operationConfig);
 
 foreach ($GLOBALS['TL_DCA']['tl_domain_manager_external_service']['list']['operations'] as $operationName => &$operationConfig) {
     if (!isset($operationConfig['label']) && isset($GLOBALS['TL_LANG']['tl_domain_manager_external_service'][$operationName])) {
