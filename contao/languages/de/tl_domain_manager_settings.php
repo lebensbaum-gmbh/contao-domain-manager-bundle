@@ -33,6 +33,11 @@ $GLOBALS['TL_LANG']['tl_domain_manager_settings']['auto_sync_status'] = [
     'Status der automatischen Synchronisation',
     'Ergebnis des letzten automatischen Synchronisationslaufs.',
 ];
+$GLOBALS['TL_LANG']['tl_domain_manager_settings']['auto_sync_statuses'] = [
+    'success' => 'Erfolgreich',
+    'partial' => 'Teilweise erfolgreich',
+    'error' => 'Fehler',
+];
 $GLOBALS['TL_LANG']['tl_domain_manager_settings']['auto_sync_message'] = [
     'Meldung der automatischen Synchronisation',
     'Zusammenfassung des letzten automatischen Synchronisationslaufs.',
