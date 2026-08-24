@@ -20,9 +20,13 @@
 
 {% block content %}
 <div class="domain-manager-overview" data-domain-manager-overview>
-    {% if trakked_url %}
+    {% if external_services %}
         <div class="domain-manager-global-actions">
-            <a class="domain-manager-trakked-link" href="{{ trakked_url }}" target="_blank" rel="noopener noreferrer">Zu Trakked <span aria-hidden="true">↗</span></a>
+            {% for service in external_services %}
+                {% if service.url %}
+                    <a class="domain-manager-trakked-link domain-manager-service-link" href="{{ service.url }}" target="_blank" rel="noopener noreferrer">Zu {{ service.name }} <span aria-hidden="true">↗</span></a>
+                {% endif %}
+            {% endfor %}
         </div>
     {% endif %}
     <div class="domain-manager-list">
@@ -104,7 +108,7 @@
                         data-php="{{ installation.php_version|e('html_attr') }}"
                         data-environment="{{ installation.environment|e('html_attr') }}"
                         data-environment-label="{{ installation.environment_label|e('html_attr') }}"
-                        data-tracked="{{ installation.trakked ? '1' : '0' }}"
+                        data-services="{{ installation.external_service_ids|join(' ')|e('html_attr') }}"
                     >
                         <div class="target-head">
                             <div>
@@ -122,9 +126,13 @@
                                     </span>
                                     {% if installation.environment_label %}<span class="environment-badge">{{ installation.environment_label }}</span>{% endif %}
                                     <span class="status-badge is-current">Aktuelles Ziel</span>
-                                    <span class="status-badge {{ installation.trakked ? 'is-tracked' : 'is-untracked' }}">
-                                        {{ installation.trakked ? 'In Trakked' : 'Nicht in Trakked' }}
-                                    </span>
+                                    {% if installation.external_services %}
+                                        {% for service in installation.external_services %}
+                                            <span class="status-badge is-tracked">{{ service.name }}</span>
+                                        {% endfor %}
+                                    {% else %}
+                                        <span class="status-badge is-untracked">Kein externer Dienst</span>
+                                    {% endif %}
                                 </div>
 
                                 {% if installation.backend_url or installation.manager_url %}
@@ -190,7 +198,7 @@
                                 data-php="{{ installation.php_version|e('html_attr') }}"
                                 data-environment="{{ installation.environment|e('html_attr') }}"
                                 data-environment-label="{{ installation.environment_label|e('html_attr') }}"
-                                data-tracked="{{ installation.trakked ? '1' : '0' }}"
+                                data-services="{{ installation.external_service_ids|join(' ')|e('html_attr') }}"
                             >
                                 <summary class="installation-row">
                                     <span class="installation-domain"><a href="{{ installation.frontend_url }}" target="_blank" rel="noopener">{{ installation.domain }}</a></span>
@@ -202,7 +210,11 @@
                                             <span class="health-dot" aria-hidden="true"></span>
                                             {{ installation.health.label }}{% if installation.health.issue_count > 0 %} · {{ installation.health.issue_count }}{% endif %}
                                         </span>
-                                        <span class="status-badge {{ installation.trakked ? 'is-tracked' : 'is-untracked' }}">{{ installation.trakked ? 'Trakked' : 'Nicht in Trakked' }}</span>
+                                        {% if installation.external_services %}
+                                            {% for service in installation.external_services %}<span class="status-badge is-tracked">{{ service.name }}</span>{% endfor %}
+                                        {% else %}
+                                            <span class="status-badge is-untracked">Kein externer Dienst</span>
+                                        {% endif %}
                                         <span class="installation-toggle" aria-hidden="true">›</span>
                                     </span>
                                 </summary>
