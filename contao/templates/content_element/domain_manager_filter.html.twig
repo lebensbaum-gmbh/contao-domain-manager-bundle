@@ -9,7 +9,7 @@
 {% endadd %}
 
 {% add "domain_manager_layout_css" to stylesheets %}
-    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-layout.css') ~ '?v=1.5.1'} %}
+    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-layout.css') ~ '?v=1.5.1-compact-1'} %}
         {{ block('stylesheet_component') }}
     {% endwith %}
 {% endadd %}
@@ -19,14 +19,14 @@
 {% endadd %}
 
 {% add "domain_manager_layout_js" to body %}
-    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-layout.js') ~ '?v=1.5.1-debug-2' }}" defer></script>
+    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-layout.js') ~ '?v=1.5.1-compact-1' }}" defer></script>
 {% endadd %}
 
 {% block content %}
 <aside class="domain-manager-filter" data-domain-manager-filter>
     <h2 class="dm-filter-title">Filter</h2>
 
-    <div class="dm-filter-section">
+    <div class="dm-filter-section dm-filter-search-section">
         <label class="dm-filter-label" for="dm-filter-search-{{ id|default('overview') }}">Suche</label>
         <input
             id="dm-filter-search-{{ id|default('overview') }}"
@@ -45,7 +45,7 @@
         </label>
     </div>
 
-    <div class="dm-filter-section">
+    <div class="dm-filter-section dm-filter-status">
         <h3 class="dm-filter-heading">Status</h3>
         <label class="dm-filter-check">
             <input type="checkbox" value="ok" data-dm-filter-health>
@@ -62,7 +62,7 @@
     </div>
 
     {% if external_services %}
-        <div class="dm-filter-section">
+        <div class="dm-filter-section dm-filter-services">
             <h3 class="dm-filter-heading">Externe Dienste</h3>
             {% for service in external_services %}
                 <label class="dm-filter-check">
@@ -78,7 +78,7 @@
     {% endif %}
 
     {% if contao_versions %}
-        <div class="dm-filter-section">
+        <div class="dm-filter-section dm-filter-contao">
             <h3 class="dm-filter-heading">Contao Version</h3>
             {% for version in contao_versions %}
                 <label class="dm-filter-check">
@@ -90,7 +90,7 @@
     {% endif %}
 
     {% if php_versions %}
-        <div class="dm-filter-section">
+        <div class="dm-filter-section dm-filter-php">
             <h3 class="dm-filter-heading">PHP-Version</h3>
             {% for version in php_versions %}
                 <label class="dm-filter-check">
@@ -102,7 +102,7 @@
     {% endif %}
 
     {% if environments %}
-        <div class="dm-filter-section">
+        <div class="dm-filter-section dm-filter-environment">
             <h3 class="dm-filter-heading">Umgebung</h3>
             {% for value, label in environments %}
                 <label class="dm-filter-check">
