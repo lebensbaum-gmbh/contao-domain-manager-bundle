@@ -34,6 +34,13 @@
         }
     };
 
+    const markContainer = () => {
+        const container = document.getElementById('container');
+        if (container) {
+            container.classList.add('domain-manager-layout-container');
+        }
+    };
+
     const initializeLayout = () => {
         const filter = document.querySelector('[data-domain-manager-filter]');
         const overview = document.querySelector('[data-domain-manager-overview]');
@@ -59,6 +66,7 @@
             layout.appendChild(overview);
             filter.classList.add('domain-manager-layout-filter');
             overview.classList.add('domain-manager-layout-overview');
+            markContainer();
             return;
         }
 
@@ -81,6 +89,7 @@
 
         removeEmptyLegacyShell(filterShell);
         removeEmptyLegacyShell(overviewShell);
+        markContainer();
     };
 
     if (document.readyState === 'loading') {
