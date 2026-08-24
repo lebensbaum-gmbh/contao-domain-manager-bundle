@@ -23,6 +23,8 @@ services:
 
     Lebensbaum\ContaoDomainManagerBundle\Dca\SettingsCallbacks:
         public: true
+        arguments:
+            $projectDir: '%kernel.project_dir%'
 
     Lebensbaum\ContaoDomainManagerBundle\Security\Voter\DataContainer\DomainAccessVoter:
         autoconfigure: false
