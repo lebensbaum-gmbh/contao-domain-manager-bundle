@@ -51,6 +51,30 @@
         }
     };
 
+    const findSiblingHosts = (filterHost, overviewHost) => {
+        let filterNode = filterHost;
+
+        while (filterNode && filterNode.parentElement) {
+            let overviewNode = overviewHost;
+
+            while (overviewNode && overviewNode.parentElement) {
+                if (filterNode !== overviewNode && filterNode.parentElement === overviewNode.parentElement) {
+                    return {
+                        filterNode,
+                        overviewNode,
+                        parent: filterNode.parentElement,
+                    };
+                }
+
+                overviewNode = overviewNode.parentElement;
+            }
+
+            filterNode = filterNode.parentElement;
+        }
+
+        return null;
+    };
+
     const initializeLayout = () => {
         const filter = document.querySelector('[data-domain-manager-filter]');
         const overview = document.querySelector('[data-domain-manager-overview]');
@@ -80,19 +104,19 @@
             return;
         }
 
-        if (!filterHost.parentElement || filterHost.parentElement !== overviewHost.parentElement) {
+        const hosts = findSiblingHosts(filterHost, overviewHost);
+        if (!hosts) {
             return;
         }
 
-        const parent = filterHost.parentElement;
-        const filterComesFirst = Boolean(filterHost.compareDocumentPosition(overviewHost) & Node.DOCUMENT_POSITION_FOLLOWING);
-        parent.insertBefore(layout, filterComesFirst ? filterHost : overviewHost);
+        const filterComesFirst = Boolean(hosts.filterNode.compareDocumentPosition(hosts.overviewNode) & Node.DOCUMENT_POSITION_FOLLOWING);
+        hosts.parent.insertBefore(layout, filterComesFirst ? hosts.filterNode : hosts.overviewNode);
 
-        layout.appendChild(filterHost);
-        layout.appendChild(overviewHost);
+        layout.appendChild(hosts.filterNode);
+        layout.appendChild(hosts.overviewNode);
 
-        filterHost.classList.add('domain-manager-layout-filter');
-        overviewHost.classList.add('domain-manager-layout-overview');
+        hosts.filterNode.classList.add('domain-manager-layout-filter');
+        hosts.overviewNode.classList.add('domain-manager-layout-overview');
         renderDebugInfo(layout);
     };
 
