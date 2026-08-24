@@ -8,9 +8,14 @@ $GLOBALS['TL_LANG']['MOD']['domain_manager_domains'] = [
     'Manage main domains and their associated Contao installations.',
 ];
 
+$GLOBALS['TL_LANG']['MOD']['domain_manager_services'] = [
+    'External services',
+    'Manage optional external services such as monitoring, hosting or GitHub.',
+];
+
 $GLOBALS['TL_LANG']['MOD']['domain_manager_settings'] = [
     'Settings',
-    'Global settings for front end synchronization and external services.',
+    'Global settings for front end synchronization and status evaluation.',
 ];
 
 $GLOBALS['TL_LANG']['MOD']['domain_manager_setup'] = [

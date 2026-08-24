@@ -15,6 +15,12 @@ $GLOBALS['BE_MOD']['domain_manager']['domain_manager_domains'] = [
     ],
 ];
 
+$GLOBALS['BE_MOD']['domain_manager']['domain_manager_services'] = [
+    'tables' => [
+        'tl_domain_manager_external_service',
+    ],
+];
+
 $GLOBALS['BE_MOD']['domain_manager']['domain_manager_settings'] = [
     'tables' => [
         'tl_domain_manager_settings',

@@ -67,7 +67,7 @@ $GLOBALS['TL_DCA']['tl_domain_manager_installation'] = [
         ],
     ],
     'palettes' => [
-        'default' => '{installation_legend},domain,environment;{technical_legend},system_id,document_root,contao_version,php_version,database_name;{links_legend},backend_url,manager_url;{status_legend},is_live,trakked,status,notes;{sync_legend},last_sync,sync_status,sync_message;{connection_legend},dm_connection_panel,dm_secret_editor,dm_connection_status,dm_last_connection_test,dm_last_connection_success,dm_secret_changed_at,dm_connection_message',
+        'default' => '{installation_legend},domain,environment;{technical_legend},system_id,document_root,contao_version,php_version,database_name;{links_legend},backend_url,manager_url;{status_legend},is_live,external_services,status,notes;{sync_legend},last_sync,sync_status,sync_message;{connection_legend},dm_connection_panel,dm_secret_editor,dm_connection_status,dm_last_connection_test,dm_last_connection_success,dm_secret_changed_at,dm_connection_message',
     ],
     'fields' => [
         'id' => [
@@ -144,10 +144,18 @@ $GLOBALS['TL_DCA']['tl_domain_manager_installation'] = [
             'eval' => ['tl_class' => 'w50 m12'],
             'sql' => "char(1) NOT NULL default ''",
         ],
-        'trakked' => [
+        'external_services' => [
             'exclude' => false,
             'inputType' => 'checkbox',
-            'eval' => ['tl_class' => 'w50 m12'],
+            'foreignKey' => 'tl_domain_manager_external_service.name',
+            'eval' => [
+                'multiple' => true,
+                'tl_class' => 'clr',
+            ],
+            'sql' => 'blob NULL',
+        ],
+        // Legacy field retained temporarily so existing v1.4 data can be migrated safely.
+        'trakked' => [
             'sql' => "char(1) NOT NULL default ''",
         ],
         'status' => [

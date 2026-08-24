@@ -21,12 +21,22 @@ services:
     Lebensbaum\ContaoDomainManagerBundle\Dca\InstallationCallbacks:
         public: true
 
+    Lebensbaum\ContaoDomainManagerBundle\Dca\SettingsCallbacks:
+        public: true
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
     Lebensbaum\ContaoDomainManagerBundle\Security\Voter\DataContainer\DomainAccessVoter:
         autoconfigure: false
         tags:
             - { name: security.voter, priority: 200 }
 
     Lebensbaum\ContaoDomainManagerBundle\Security\Voter\DataContainer\InstallationAccessVoter:
+        autoconfigure: false
+        tags:
+            - { name: security.voter, priority: 200 }
+
+    Lebensbaum\ContaoDomainManagerBundle\Security\Voter\DataContainer\ExternalServiceAccessVoter:
         autoconfigure: false
         tags:
             - { name: security.voter, priority: 200 }

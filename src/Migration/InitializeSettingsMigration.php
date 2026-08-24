@@ -13,6 +13,19 @@ final class InitializeSettingsMigration extends AbstractMigration
 {
     private const TABLE = 'tl_domain_manager_settings';
 
+    /** @var list<string> */
+    private const REQUIRED_COLUMNS = [
+        'sync_member_groups',
+        'stale_sync_days',
+        'trakked_url',
+        'auto_sync_enabled',
+        'auto_sync_interval',
+        'auto_sync_last_attempt',
+        'auto_sync_last_success',
+        'auto_sync_status',
+        'auto_sync_message',
+    ];
+
     public function __construct(private readonly Connection $connection)
     {
     }
@@ -33,8 +46,10 @@ final class InitializeSettingsMigration extends AbstractMigration
 
             $columns = array_change_key_case($schemaManager->listTableColumns(self::TABLE), CASE_LOWER);
 
-            if (!isset($columns['sync_member_groups'], $columns['trakked_url'])) {
-                return true;
+            foreach (self::REQUIRED_COLUMNS as $column) {
+                if (!isset($columns[$column])) {
+                    return true;
+                }
             }
 
             return false === $this->connection->fetchOne(
@@ -59,13 +74,20 @@ final class InitializeSettingsMigration extends AbstractMigration
                     'id' => 1,
                     'tstamp' => time(),
                     'sync_member_groups' => null,
+                    'stale_sync_days' => 30,
                     'trakked_url' => '',
+                    'auto_sync_enabled' => '',
+                    'auto_sync_interval' => 6,
+                    'auto_sync_last_attempt' => 0,
+                    'auto_sync_last_success' => 0,
+                    'auto_sync_status' => '',
+                    'auto_sync_message' => null,
                 ]);
             }
 
             return $this->createResult(
                 true,
-                'Die globalen Einstellungen wurden angelegt. Bitte die berechtigten Frontend-Mitgliedergruppen und optionale Links im Backend festlegen.'
+                'Die globalen Einstellungen wurden angelegt bzw. auf den aktuellen Stand gebracht.'
             );
         } catch (Throwable $exception) {
             return $this->createResult(false, 'Die Domain-Manager-Einstellungen konnten nicht initialisiert werden: '.$exception->getMessage());
@@ -80,7 +102,14 @@ final class InitializeSettingsMigration extends AbstractMigration
                     `id` int(10) unsigned NOT NULL auto_increment,
                     `tstamp` int(10) unsigned NOT NULL default 0,
                     `sync_member_groups` blob NULL,
+                    `stale_sync_days` int(10) unsigned NOT NULL default 30,
                     `trakked_url` varchar(1024) NOT NULL default '',
+                    `auto_sync_enabled` char(1) NOT NULL default '',
+                    `auto_sync_interval` int(10) unsigned NOT NULL default 6,
+                    `auto_sync_last_attempt` int(10) unsigned NOT NULL default 0,
+                    `auto_sync_last_success` int(10) unsigned NOT NULL default 0,
+                    `auto_sync_status` varchar(32) NOT NULL default '',
+                    `auto_sync_message` text NULL,
                     PRIMARY KEY (`id`)
                 ) ENGINE=InnoDB
             SQL
@@ -89,12 +118,24 @@ final class InitializeSettingsMigration extends AbstractMigration
         $schemaManager = $this->connection->createSchemaManager();
         $columns = array_change_key_case($schemaManager->listTableColumns(self::TABLE), CASE_LOWER);
 
-        if (!isset($columns['sync_member_groups'])) {
-            $this->connection->executeStatement('ALTER TABLE '.self::TABLE.' ADD `sync_member_groups` blob NULL');
-        }
+        $definitions = [
+            'sync_member_groups' => 'blob NULL',
+            'stale_sync_days' => 'int(10) unsigned NOT NULL default 30',
+            'trakked_url' => "varchar(1024) NOT NULL default ''",
+            'auto_sync_enabled' => "char(1) NOT NULL default ''",
+            'auto_sync_interval' => 'int(10) unsigned NOT NULL default 6',
+            'auto_sync_last_attempt' => 'int(10) unsigned NOT NULL default 0',
+            'auto_sync_last_success' => 'int(10) unsigned NOT NULL default 0',
+            'auto_sync_status' => "varchar(32) NOT NULL default ''",
+            'auto_sync_message' => 'text NULL',
+        ];
 
-        if (!isset($columns['trakked_url'])) {
-            $this->connection->executeStatement("ALTER TABLE ".self::TABLE." ADD `trakked_url` varchar(1024) NOT NULL default ''");
+        foreach ($definitions as $column => $definition) {
+            if (!isset($columns[$column])) {
+                $this->connection->executeStatement(
+                    sprintf('ALTER TABLE %s ADD `%s` %s', self::TABLE, $column, $definition)
+                );
+            }
         }
     }
 }

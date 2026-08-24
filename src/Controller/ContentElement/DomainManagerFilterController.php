@@ -11,6 +11,7 @@ use Contao\CoreBundle\Twig\FragmentTemplate;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 #[AsContentElement(
     type: 'domain_manager_filter',
@@ -19,6 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
 final class DomainManagerFilterController extends AbstractContentElementController
 {
     private const INSTALLATION_TABLE = 'tl_domain_manager_installation';
+    private const SERVICE_TABLE = 'tl_domain_manager_external_service';
 
     public function __construct(
         private readonly Connection $connection,
@@ -66,11 +68,36 @@ final class DomainManagerFilterController extends AbstractContentElementControll
         $template->set('contao_versions', $contaoVersions);
         $template->set('php_versions', $phpVersions);
         $template->set('environments', $environments);
+        $template->set('external_services', $this->loadExternalServices());
 
         $response = $template->getResponse();
         $response->headers->set('Cache-Control', 'private, no-store, max-age=0');
 
         return $response;
+    }
+
+    /** @return list<array{id: int, name: string}> */
+    private function loadExternalServices(): array
+    {
+        try {
+            $rows = $this->connection->fetchAllAssociative(
+                'SELECT id, name FROM '.self::SERVICE_TABLE.' ORDER BY name, id'
+            );
+        } catch (Throwable) {
+            return [];
+        }
+
+        $services = [];
+        foreach ($rows as $row) {
+            $id = (int) ($row['id'] ?? 0);
+            $name = trim((string) ($row['name'] ?? ''));
+
+            if ($id > 0 && '' !== $name) {
+                $services[] = ['id' => $id, 'name' => $name];
+            }
+        }
+
+        return $services;
     }
 
     private function normalizeEnvironment(string $value): string

@@ -173,14 +173,22 @@
             const contao = installation.dataset.contao || '';
             const php = installation.dataset.php || '';
             const environment = installation.dataset.environment || '';
-            const trakked = installation.dataset.tracked || '0';
+            const services = (installation.dataset.services || '').split(/\s+/).filter(Boolean);
             const health = getHealthStatus(installation);
 
             if (selected.health.length && !selected.health.includes(health)) return false;
             if (selected.contao.length && !selected.contao.includes(contao)) return false;
             if (selected.php.length && !selected.php.includes(php)) return false;
             if (selected.environment.length && !selected.environment.includes(environment)) return false;
-            if (selected.trakked.length && !selected.trakked.includes(trakked)) return false;
+
+            if (selected.services.length) {
+                const matchNone = selected.services.includes('none') && services.length === 0;
+                const matchService = selected.services
+                    .filter((serviceId) => serviceId !== 'none')
+                    .some((serviceId) => services.includes(serviceId));
+
+                if (!matchNone && !matchService) return false;
+            }
 
             if (term && !domainSearchMatches && !normalize(installation.dataset.search).includes(term)) return false;
 
@@ -196,7 +204,7 @@
                 contao: getChecked('[data-dm-filter-contao]'),
                 php: getChecked('[data-dm-filter-php]'),
                 environment: getChecked('[data-dm-filter-environment]'),
-                trakked: getChecked('[data-dm-filter-trakked]'),
+                services: getChecked('[data-dm-filter-service]'),
             };
             const term = normalize(search ? search.value : '');
             const onlyCurrent = Boolean(currentOnly && currentOnly.checked);
@@ -205,7 +213,7 @@
                 || selected.contao.length
                 || selected.php.length
                 || selected.environment.length
-                || selected.trakked.length
+                || selected.services.length
             );
             const filterIsActive = Boolean(term || onlyCurrent || hasTechnicalFilter);
 
