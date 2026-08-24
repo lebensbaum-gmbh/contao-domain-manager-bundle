@@ -38,7 +38,7 @@ $GLOBALS['TL_DCA']['tl_domain_manager_settings'] = [
         ],
     ],
     'palettes' => [
-        'default' => '{access_legend},sync_member_groups;{health_legend},stale_sync_days',
+        'default' => '{automatic_sync_legend},auto_sync_enabled,auto_sync_interval,auto_sync_last_attempt,auto_sync_last_success,auto_sync_status,auto_sync_message;{access_legend},sync_member_groups;{health_legend},stale_sync_days',
     ],
     'fields' => [
         'id' => [
@@ -46,6 +46,63 @@ $GLOBALS['TL_DCA']['tl_domain_manager_settings'] = [
         ],
         'tstamp' => [
             'sql' => "int(10) unsigned NOT NULL default 0",
+        ],
+        'auto_sync_enabled' => [
+            'exclude' => false,
+            'inputType' => 'checkbox',
+            'eval' => [
+                'tl_class' => 'w50 m12',
+            ],
+            'sql' => "char(1) NOT NULL default ''",
+        ],
+        'auto_sync_interval' => [
+            'exclude' => false,
+            'inputType' => 'select',
+            'options' => [1, 6, 12, 24],
+            'reference' => &$GLOBALS['TL_LANG']['tl_domain_manager_settings']['auto_sync_intervals'],
+            'default' => 6,
+            'eval' => [
+                'tl_class' => 'w50',
+            ],
+            'sql' => "int(10) unsigned NOT NULL default 6",
+        ],
+        'auto_sync_last_attempt' => [
+            'exclude' => false,
+            'inputType' => 'text',
+            'eval' => [
+                'readonly' => true,
+                'rgxp' => 'datim',
+                'tl_class' => 'w50',
+            ],
+            'sql' => "int(10) unsigned NOT NULL default 0",
+        ],
+        'auto_sync_last_success' => [
+            'exclude' => false,
+            'inputType' => 'text',
+            'eval' => [
+                'readonly' => true,
+                'rgxp' => 'datim',
+                'tl_class' => 'w50',
+            ],
+            'sql' => "int(10) unsigned NOT NULL default 0",
+        ],
+        'auto_sync_status' => [
+            'exclude' => false,
+            'inputType' => 'text',
+            'eval' => [
+                'readonly' => true,
+                'tl_class' => 'w50',
+            ],
+            'sql' => "varchar(32) NOT NULL default ''",
+        ],
+        'auto_sync_message' => [
+            'exclude' => false,
+            'inputType' => 'textarea',
+            'eval' => [
+                'readonly' => true,
+                'tl_class' => 'clr',
+            ],
+            'sql' => 'text NULL',
         ],
         'sync_member_groups' => [
             'exclude' => false,
