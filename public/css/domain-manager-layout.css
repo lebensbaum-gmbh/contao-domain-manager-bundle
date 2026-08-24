@@ -42,9 +42,9 @@ body.domainverwaltung-page .domain-manager-layout {
 }
 
 /* Tablet and narrower desktop widths: give the overview the full page width.
-   This includes iPad Pro landscape (1366 CSS px), which is too narrow for
-   the desktop sidebar plus the multi-column domain cards. */
-@media (max-width: 1399px) {
+   This includes large iPads in landscape, where the desktop sidebar plus
+   the multi-column domain cards leaves too little usable overview width. */
+@media (max-width: 1500px) {
     .domain-manager-layout {
         grid-template-columns: minmax(0, 1fr);
         gap: 18px;
