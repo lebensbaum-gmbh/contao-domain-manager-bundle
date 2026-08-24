@@ -72,6 +72,69 @@ body.domainverwaltung-page h1 {
     margin-bottom: 16px;
 }
 
+/*
+ * Component polish. These rules intentionally do not require the
+ * domainverwaltung-page body class so existing/manual installations keep
+ * their own page layout while receiving the same component styling.
+ */
+.domain-manager-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 380px);
+}
+
+.domain-manager-overview .domain-summary {
+    grid-template-columns: 112px minmax(160px, 1.5fr) minmax(180px, 1.4fr) minmax(100px, .7fr) minmax(90px, .6fr);
+    padding-block: 16px;
+}
+
+.domain-manager-overview .domain-thumbnail {
+    width: 92px;
+    height: 52px;
+}
+
+.domain-manager-filter {
+    box-sizing: border-box;
+}
+
+.domainverwaltung-login.logout {
+    margin-top: 18px;
+}
+
+.domain-manager-overview .domain-manager-global-actions .domain-manager-trakked-link,
+.domain-manager-overview .domain-manager-global-actions .domain-sync-all-button {
+    font-size: .88rem !important;
+    line-height: 1.2;
+}
+
+.domain-manager-overview .detail-action {
+    border-color: var(--dm-accent);
+    background: var(--dm-accent);
+    color: #fff !important;
+}
+
+.domain-manager-overview .detail-action:hover,
+.domain-manager-overview .detail-action:focus-visible {
+    border-color: var(--dm-accent-hover);
+    background: var(--dm-accent-hover);
+    color: #fff !important;
+}
+
+@media (max-width: 1180px) {
+    .domain-manager-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 980px) {
+    .domain-manager-overview .domain-summary {
+        grid-template-columns: 100px minmax(150px, 1.5fr) minmax(150px, 1fr);
+    }
+
+    .domain-manager-overview .domain-thumbnail {
+        width: 84px;
+        height: 47px;
+    }
+}
+
 @media (max-width: 680px) {
     body.domainverwaltung-page #container {
         width: calc(100vw - 28px) !important;
@@ -79,5 +142,15 @@ body.domainverwaltung-page h1 {
 
     body.domainverwaltung-page #main > .inside {
         padding: 10px 0 36px !important;
+    }
+
+    .domain-manager-overview .domain-summary {
+        grid-template-columns: 82px minmax(0, 1fr);
+        padding-block: 14px;
+    }
+
+    .domain-manager-overview .domain-thumbnail {
+        width: 72px;
+        height: 41px;
     }
 }
