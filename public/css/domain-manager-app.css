@@ -66,62 +66,60 @@ body.domainverwaltung-page .domain-manager-layout {
     max-width: none !important;
     margin: 0 !important;
     padding-inline: 0 !important;
-    grid-template-columns: minmax(0, 1fr) minmax(320px, 360px);
 }
 
 body.domainverwaltung-page h1 {
     margin-bottom: 16px;
 }
 
-/* Keep collapsed domain rows spacious enough for a complete 16:9 thumbnail. */
-body.domainverwaltung-page .domain-summary {
+/*
+ * Component polish. These rules intentionally do not require the
+ * domainverwaltung-page body class so existing/manual installations keep
+ * their own page layout while receiving the same component styling.
+ */
+.domain-manager-overview .domain-summary {
     grid-template-columns: 92px minmax(160px, 1.5fr) minmax(180px, 1.4fr) minmax(100px, .7fr) minmax(90px, .6fr);
     padding-block: 16px;
 }
 
-body.domainverwaltung-page .domain-thumbnail {
+.domain-manager-overview .domain-thumbnail {
     width: 92px;
     height: 52px;
 }
 
-/* Add breathing room between the domain list and the account/logout block. */
-body.domainverwaltung-page .domainverwaltung-login.logout {
+.domain-manager-filter {
+    box-sizing: border-box;
+}
+
+.domainverwaltung-login.logout {
     margin-top: 18px;
 }
 
-/* Keep the global action buttons visually consistent. */
-body.domainverwaltung-page .domain-manager-global-actions .domain-manager-trakked-link,
-body.domainverwaltung-page .domain-manager-global-actions .domain-sync-all-button {
+.domain-manager-overview .domain-manager-global-actions .domain-manager-trakked-link,
+.domain-manager-overview .domain-manager-global-actions .domain-sync-all-button {
     font-size: .88rem !important;
     line-height: 1.2;
 }
 
-/* Render Backend/Manager actions as filled buttons with readable text. */
-body.domainverwaltung-page .detail-action {
+.domain-manager-overview .detail-action {
     border-color: var(--dm-accent);
     background: var(--dm-accent);
     color: #fff !important;
 }
 
-body.domainverwaltung-page .detail-action:hover,
-body.domainverwaltung-page .detail-action:focus-visible {
+.domain-manager-overview .detail-action:hover,
+.domain-manager-overview .detail-action:focus-visible {
     border-color: var(--dm-accent-hover);
     background: var(--dm-accent-hover);
     color: #fff !important;
 }
 
-@media (max-width: 1180px) {
-    body.domainverwaltung-page .domain-manager-layout {
-        grid-template-columns: minmax(0, 1fr);
-    }
-}
-
 @media (max-width: 980px) {
-    body.domainverwaltung-page .domain-summary {
+    .domain-manager-overview .domain-summary {
         grid-template-columns: 84px minmax(150px, 1.5fr) minmax(150px, 1fr);
     }
 
-    body.domainverwaltung-page .domain-thumbnail {
+    .domain-manager-overview .domain-thumbnail {
         width: 84px;
         height: 47px;
     }
@@ -136,12 +134,12 @@ body.domainverwaltung-page .detail-action:focus-visible {
         padding: 10px 0 36px !important;
     }
 
-    body.domainverwaltung-page .domain-summary {
+    .domain-manager-overview .domain-summary {
         grid-template-columns: 72px minmax(0, 1fr);
         padding-block: 14px;
     }
 
-    body.domainverwaltung-page .domain-thumbnail {
+    .domain-manager-overview .domain-thumbnail {
         width: 72px;
         height: 41px;
     }
