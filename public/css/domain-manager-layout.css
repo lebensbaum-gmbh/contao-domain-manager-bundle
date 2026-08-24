@@ -97,19 +97,55 @@ body.domainverwaltung-page .domain-manager-layout {
         grid-row: 2;
     }
 
-    /* Keep the filter compact when it moves above the overview. */
+    /* Compact tablet filter: title/reset, then search/current/status, then four
+       technical filter groups across the available width. */
     .domain-manager-layout .domain-manager-filter {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 18px 28px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-areas:
+            "title title title reset"
+            "search search current status"
+            "services contao php environment";
+        gap: 14px 24px;
         align-items: start;
         width: 100%;
         max-width: none;
+        padding: 16px 18px;
     }
 
     .domain-manager-layout .domain-manager-filter .dm-filter-title {
-        grid-column: 1 / -1;
-        margin-bottom: 0;
+        grid-area: title;
+        margin: 0;
+        align-self: center;
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-search-section {
+        grid-area: search;
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-current {
+        grid-area: current;
+        padding-top: 26px !important;
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-status {
+        grid-area: status;
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-services {
+        grid-area: services;
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-contao {
+        grid-area: contao;
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-php {
+        grid-area: php;
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-environment {
+        grid-area: environment;
     }
 
     .domain-manager-layout .domain-manager-filter .dm-filter-section {
@@ -122,18 +158,37 @@ body.domainverwaltung-page .domain-manager-layout {
         padding-top: 0;
     }
 
-    .domain-manager-layout .domain-manager-filter .dm-filter-reset,
-    .domain-manager-layout .domain-manager-filter .dm-filter-empty {
-        grid-column: 1 / -1;
+    .domain-manager-layout .domain-manager-filter .dm-filter-heading,
+    .domain-manager-layout .domain-manager-filter .dm-filter-label {
+        margin-bottom: 7px;
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-check {
+        margin-bottom: 6px;
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-status .dm-filter-check {
+        display: inline-flex;
+        margin-right: 12px;
+        margin-bottom: 0;
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-search {
+        min-height: 38px;
     }
 
     .domain-manager-layout .domain-manager-filter .dm-filter-reset {
+        grid-area: reset;
         width: auto;
-        margin-top: 0;
-        justify-self: start;
+        margin: 0;
+        padding: 8px 12px;
+        justify-self: end;
+        align-self: start;
+        white-space: nowrap;
     }
 
     .domain-manager-layout .domain-manager-filter .dm-filter-empty {
+        grid-column: 1 / -1;
         margin-top: 0;
     }
 }
@@ -141,6 +196,17 @@ body.domainverwaltung-page .domain-manager-layout {
 @media (max-width: 980px) {
     .domain-manager-layout .domain-manager-filter {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-areas:
+            "title reset"
+            "search search"
+            "current status"
+            "services contao"
+            "php environment";
+        gap: 14px 20px;
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-current {
+        padding-top: 0 !important;
     }
 }
 
@@ -155,6 +221,7 @@ body.domainverwaltung-page .domain-manager-layout {
 
     .domain-manager-layout .domain-manager-filter {
         display: block;
+        padding: 18px;
     }
 
     .domain-manager-layout .domain-manager-filter .dm-filter-title {
@@ -168,6 +235,16 @@ body.domainverwaltung-page .domain-manager-layout {
 
     .domain-manager-layout .domain-manager-filter .dm-filter-section + .dm-filter-section {
         padding-top: 18px;
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-current {
+        padding-top: 18px !important;
+    }
+
+    .domain-manager-layout .domain-manager-filter .dm-filter-status .dm-filter-check {
+        display: flex;
+        margin-right: 0;
+        margin-bottom: 9px;
     }
 
     .domain-manager-layout .domain-manager-filter .dm-filter-reset {
