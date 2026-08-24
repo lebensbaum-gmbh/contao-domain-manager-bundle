@@ -77,7 +77,7 @@ body.domainverwaltung-page .domain-manager-layout {
    The !important on the grid tracks is intentional: some host themes apply their
    own grid-template-columns to generic layout wrappers at tablet widths. */
 @media (max-width: 1180px), (hover: none) and (pointer: coarse) {
-    body.domainverwaltung-page #container {
+    #container.domain-manager-layout-container {
         padding-right: 0 !important;
     }
 
