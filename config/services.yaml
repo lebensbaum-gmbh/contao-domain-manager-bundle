@@ -21,6 +21,9 @@ services:
     Lebensbaum\ContaoDomainManagerBundle\Dca\InstallationCallbacks:
         public: true
 
+    Lebensbaum\ContaoDomainManagerBundle\Dca\SettingsCallbacks:
+        public: true
+
     Lebensbaum\ContaoDomainManagerBundle\Security\Voter\DataContainer\DomainAccessVoter:
         autoconfigure: false
         tags:
