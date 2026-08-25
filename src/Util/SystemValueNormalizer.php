@@ -48,4 +48,24 @@ final class SystemValueNormalizer
 
         return $matches[1].'.'.$matches[2];
     }
+
+    public static function phpVersionFull(string $version): string
+    {
+        $version = trim($version);
+
+        if (1 !== preg_match('/\A(\d+)\.(\d+)(?:\.(\d+))?/', $version, $matches)) {
+            throw new RuntimeException(sprintf(
+                'Die PHP-Version „%s“ konnte nicht verarbeitet werden.',
+                $version
+            ));
+        }
+
+        $normalized = $matches[1].'.'.$matches[2];
+
+        if (isset($matches[3]) && '' !== $matches[3]) {
+            $normalized .= '.'.$matches[3];
+        }
+
+        return $normalized;
+    }
 }
