@@ -89,7 +89,8 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
                 $this->eventDispatcher->dispatch($healthEvent);
                 $installation['health'] = $this->applyHealthExtensions(
                     $installation['health'],
-                    $healthEvent->getIssues()
+                    $healthEvent->getIssues(),
+                    $healthEvent->getInfoMessages()
                 );
 
                 $installations[] = $installation;
@@ -250,9 +251,10 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
     /**
      * @param array{status:string,label:string,messages:list<string>,issue_count:int} $health
      * @param list<array{status:string,message:string}> $issues
+     * @param list<string> $infoMessages
      * @return array{status:string,label:string,messages:list<string>,issue_count:int}
      */
-    private function applyHealthExtensions(array $health, array $issues): array
+    private function applyHealthExtensions(array $health, array $issues, array $infoMessages = []): array
     {
         $severity = [
             InstallationHealthEvaluator::STATUS_OK => 0,
@@ -261,6 +263,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
         ];
         $status = (string) ($health['status'] ?? InstallationHealthEvaluator::STATUS_OK);
         $messages = $health['messages'] ?? [];
+        $issueCount = max(0, (int) ($health['issue_count'] ?? count($messages)));
 
         foreach ($issues as $issue) {
             $issueStatus = (string) ($issue['status'] ?? InstallationHealthEvaluator::STATUS_OK);
@@ -276,6 +279,15 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
 
             if (!in_array($message, $messages, true)) {
                 $messages[] = $message;
+                ++$issueCount;
+            }
+        }
+
+        foreach ($infoMessages as $message) {
+            $message = trim($message);
+
+            if ('' !== $message && !in_array($message, $messages, true)) {
+                $messages[] = $message;
             }
         }
 
@@ -287,7 +299,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
                 default => 'OK',
             },
             'messages' => $messages,
-            'issue_count' => count($messages),
+            'issue_count' => $issueCount,
         ];
     }
 
