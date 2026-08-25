@@ -9,9 +9,23 @@ final class InstallationHealthEvaluationEvent
     /** @var list<array{status:string,message:string}> */
     private array $issues = [];
 
+    /** @var list<string> */
+    private array $infoMessages = [];
+
     /** @param array<string, mixed> $installation */
     public function __construct(public readonly array $installation)
     {
+    }
+
+    public function addInfo(string $message): void
+    {
+        $message = trim($message);
+
+        if ('' === $message || in_array($message, $this->infoMessages, true)) {
+            return;
+        }
+
+        $this->infoMessages[] = $message;
     }
 
     public function addWarning(string $message): void
@@ -28,6 +42,12 @@ final class InstallationHealthEvaluationEvent
     public function getIssues(): array
     {
         return $this->issues;
+    }
+
+    /** @return list<string> */
+    public function getInfoMessages(): array
+    {
+        return $this->infoMessages;
     }
 
     private function addIssue(string $status, string $message): void
