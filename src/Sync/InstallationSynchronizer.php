@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Lebensbaum\ContaoDomainManagerBundle\Sync;
 
 use Doctrine\DBAL\Connection;
+use Lebensbaum\ContaoDomainManagerBundle\Event\InstallationSynchronizedEvent;
 use Lebensbaum\ContaoDomainManagerBundle\Util\SystemValueNormalizer;
 use RuntimeException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 
 final class InstallationSynchronizer
@@ -16,6 +18,7 @@ final class InstallationSynchronizer
     public function __construct(
         private readonly Connection $connection,
         private readonly SystemInfoClient $systemInfoClient,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -88,6 +91,16 @@ final class InstallationSynchronizer
                 $updateData,
                 ['id' => $installationId]
             );
+
+            $this->eventDispatcher->dispatch(new InstallationSynchronizedEvent(
+                $installationId,
+                $domain,
+                $oldContaoVersion,
+                $contaoVersion,
+                $oldPhpVersion,
+                $phpVersion,
+                $timestamp,
+            ));
 
             return [
                 'id' => $installationId,
