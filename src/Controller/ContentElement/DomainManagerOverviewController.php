@@ -177,7 +177,6 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
         $template->set('environments', $allEnvironments);
         $template->set('can_sync', $canSync);
         $template->set('external_services', array_values($externalServices));
-        $template->set('auto_sync', $this->buildAutoSyncState());
         $response = $template->getResponse();
         $response->headers->set('Cache-Control', 'private, no-store, max-age=0');
 
@@ -266,33 +265,6 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
         }
 
         return $services;
-    }
-
-    /** @return array<string, bool|int|string> */
-    private function buildAutoSyncState(): array
-    {
-        $enabled = $this->settings->isAutoSyncEnabled();
-        $interval = $this->settings->getAutoSyncIntervalHours();
-        $lastAttempt = $this->settings->getAutoSyncLastAttempt();
-        $lastSuccess = $this->settings->getAutoSyncLastSuccess();
-
-        return [
-            'enabled' => $enabled,
-            'interval_hours' => $interval,
-            'interval_label' => match ($interval) {
-                1 => 'stündlich',
-                12 => 'alle 12 Stunden',
-                24 => 'täglich',
-                default => 'alle 6 Stunden',
-            },
-            'last_attempt_label' => $this->formatTimestamp($lastAttempt),
-            'last_success_label' => $this->formatTimestamp($lastSuccess),
-            'next_due_label' => $enabled && $lastAttempt > 0
-                ? $this->formatTimestamp($lastAttempt + ($interval * 3600))
-                : '',
-            'status' => $this->settings->getAutoSyncStatus(),
-            'message' => $this->settings->getAutoSyncMessage(),
-        ];
     }
 
     private function isChecked(mixed $value): bool
