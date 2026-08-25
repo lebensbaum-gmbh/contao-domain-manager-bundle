@@ -231,6 +231,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
             'document_root' => SystemValueNormalizer::webrootLabel((string) ($row['document_root'] ?? '')),
             'contao_version' => $contaoVersion,
             'php_version' => $phpVersion,
+            'php_version_full' => trim((string) ($row['php_version_full'] ?? '')),
             'database_name' => trim((string) ($row['database_name'] ?? '')),
             'backend_url' => $backendUrl,
             'manager_url' => $managerUrl,
