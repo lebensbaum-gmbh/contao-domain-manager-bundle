@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Contao\DC_Table;
-use Lebensbaum\ContaoDomainManagerBundle\Dca\SettingsCallbacks;
 
 $GLOBALS['TL_DCA']['tl_domain_manager_settings'] = [
     'config' => [
@@ -39,7 +38,7 @@ $GLOBALS['TL_DCA']['tl_domain_manager_settings'] = [
         ],
     ],
     'palettes' => [
-        'default' => '{automatic_sync_legend},auto_sync_enabled,auto_sync_interval,auto_sync_last_attempt,auto_sync_last_success,auto_sync_status,auto_sync_message,auto_sync_cron_panel;{access_legend},sync_member_groups;{health_legend},stale_sync_days',
+        'default' => '{access_legend},sync_member_groups;{health_legend},stale_sync_days',
     ],
     'fields' => [
         'id' => [
@@ -47,74 +46,6 @@ $GLOBALS['TL_DCA']['tl_domain_manager_settings'] = [
         ],
         'tstamp' => [
             'sql' => "int(10) unsigned NOT NULL default 0",
-        ],
-        'auto_sync_enabled' => [
-            'exclude' => false,
-            'inputType' => 'checkbox',
-            'eval' => [
-                'tl_class' => 'w50 m12',
-            ],
-            'sql' => "char(1) NOT NULL default ''",
-        ],
-        'auto_sync_interval' => [
-            'exclude' => false,
-            'inputType' => 'select',
-            'options' => [1, 6, 12, 24],
-            'reference' => &$GLOBALS['TL_LANG']['tl_domain_manager_settings']['auto_sync_intervals'],
-            'default' => 6,
-            'eval' => [
-                'tl_class' => 'w50',
-            ],
-            'sql' => "int(10) unsigned NOT NULL default 6",
-        ],
-        'auto_sync_last_attempt' => [
-            'exclude' => false,
-            'inputType' => 'text',
-            'load_callback' => [[SettingsCallbacks::class, 'normalizeOptionalTimestamp']],
-            'eval' => [
-                'readonly' => true,
-                'rgxp' => 'datim',
-                'tl_class' => 'w50',
-            ],
-            'sql' => "int(10) unsigned NOT NULL default 0",
-        ],
-        'auto_sync_last_success' => [
-            'exclude' => false,
-            'inputType' => 'text',
-            'load_callback' => [[SettingsCallbacks::class, 'normalizeOptionalTimestamp']],
-            'eval' => [
-                'readonly' => true,
-                'rgxp' => 'datim',
-                'tl_class' => 'w50',
-            ],
-            'sql' => "int(10) unsigned NOT NULL default 0",
-        ],
-        'auto_sync_status' => [
-            'exclude' => false,
-            'inputType' => 'text',
-            'load_callback' => [[SettingsCallbacks::class, 'translateAutoSyncStatus']],
-            'save_callback' => [[SettingsCallbacks::class, 'normalizeAutoSyncStatusForStorage']],
-            'eval' => [
-                'readonly' => true,
-                'tl_class' => 'w50',
-            ],
-            'sql' => "varchar(32) NOT NULL default ''",
-        ],
-        'auto_sync_message' => [
-            'exclude' => false,
-            'inputType' => 'textarea',
-            'eval' => [
-                'readonly' => true,
-                'tl_class' => 'clr',
-            ],
-            'sql' => 'text NULL',
-        ],
-        'auto_sync_cron_panel' => [
-            'exclude' => false,
-            'input_field_callback' => [SettingsCallbacks::class, 'renderCronPanel'],
-            'eval' => [
-                'tl_class' => 'clr',
-            ],
         ],
         'sync_member_groups' => [
             'exclude' => false,
@@ -138,6 +69,30 @@ $GLOBALS['TL_DCA']['tl_domain_manager_settings'] = [
             ],
             'sql' => "int(10) unsigned NOT NULL default 30",
         ],
+
+        // Compatibility storage for automatic synchronization settings introduced in
+        // v1.5. These fields intentionally remain hidden in Free so existing data is
+        // preserved and can later be adopted by the Pro extension without a destructive
+        // database migration.
+        'auto_sync_enabled' => [
+            'sql' => "char(1) NOT NULL default ''",
+        ],
+        'auto_sync_interval' => [
+            'sql' => "int(10) unsigned NOT NULL default 6",
+        ],
+        'auto_sync_last_attempt' => [
+            'sql' => "int(10) unsigned NOT NULL default 0",
+        ],
+        'auto_sync_last_success' => [
+            'sql' => "int(10) unsigned NOT NULL default 0",
+        ],
+        'auto_sync_status' => [
+            'sql' => "varchar(32) NOT NULL default ''",
+        ],
+        'auto_sync_message' => [
+            'sql' => 'text NULL',
+        ],
+
         // Legacy field retained temporarily so existing v1.4 data can be migrated safely.
         'trakked_url' => [
             'sql' => "varchar(1024) NOT NULL default ''",
