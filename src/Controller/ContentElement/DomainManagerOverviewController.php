@@ -12,6 +12,7 @@ use Contao\CoreBundle\Twig\FragmentTemplate;
 use Contao\FilesModel;
 use Contao\StringUtil;
 use Doctrine\DBAL\Connection;
+use Lebensbaum\ContaoDomainManagerBundle\Event\InstallationHealthEvaluationEvent;
 use Lebensbaum\ContaoDomainManagerBundle\Health\InstallationHealthEvaluator;
 use Lebensbaum\ContaoDomainManagerBundle\Settings\DomainManagerSettings;
 use Lebensbaum\ContaoDomainManagerBundle\Util\SystemValueNormalizer;
@@ -19,6 +20,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 
 #[AsContentElement(
@@ -37,6 +39,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
         private readonly DomainManagerSettings $settings,
         private readonly AuthorizationCheckerInterface $authorizationChecker,
         private readonly InstallationHealthEvaluator $healthEvaluator,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -81,6 +84,14 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
             foreach ($installationRows as $installationRow) {
                 $installation = $this->normalizeInstallation($installationRow, $externalServices);
                 $installation['health'] = $this->healthEvaluator->evaluate($installation, $staleSyncDays);
+
+                $healthEvent = new InstallationHealthEvaluationEvent($installation);
+                $this->eventDispatcher->dispatch($healthEvent);
+                $installation['health'] = $this->applyHealthExtensions(
+                    $installation['health'],
+                    $healthEvent->getIssues()
+                );
+
                 $installations[] = $installation;
 
                 if ('' !== $installation['contao_version']) {
@@ -233,6 +244,50 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
             'sync_message' => trim((string) ($row['sync_message'] ?? '')),
             'connection_status' => trim((string) ($row['dm_connection_status'] ?? '')),
             'connection_message' => trim((string) ($row['dm_connection_message'] ?? '')),
+        ];
+    }
+
+    /**
+     * @param array{status:string,label:string,messages:list<string>,issue_count:int} $health
+     * @param list<array{status:string,message:string}> $issues
+     * @return array{status:string,label:string,messages:list<string>,issue_count:int}
+     */
+    private function applyHealthExtensions(array $health, array $issues): array
+    {
+        $severity = [
+            InstallationHealthEvaluator::STATUS_OK => 0,
+            InstallationHealthEvaluator::STATUS_WARNING => 1,
+            InstallationHealthEvaluator::STATUS_ERROR => 2,
+        ];
+        $status = (string) ($health['status'] ?? InstallationHealthEvaluator::STATUS_OK);
+        $messages = $health['messages'] ?? [];
+
+        foreach ($issues as $issue) {
+            $issueStatus = (string) ($issue['status'] ?? InstallationHealthEvaluator::STATUS_OK);
+            $message = trim((string) ($issue['message'] ?? ''));
+
+            if ('' === $message) {
+                continue;
+            }
+
+            if (($severity[$issueStatus] ?? 0) > ($severity[$status] ?? 0)) {
+                $status = $issueStatus;
+            }
+
+            if (!in_array($message, $messages, true)) {
+                $messages[] = $message;
+            }
+        }
+
+        return [
+            'status' => $status,
+            'label' => match ($status) {
+                InstallationHealthEvaluator::STATUS_ERROR => 'Fehler',
+                InstallationHealthEvaluator::STATUS_WARNING => 'Hinweis',
+                default => 'OK',
+            },
+            'messages' => $messages,
+            'issue_count' => count($messages),
         ];
     }
 
