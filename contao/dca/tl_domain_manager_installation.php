@@ -120,6 +120,9 @@ $GLOBALS['TL_DCA']['tl_domain_manager_installation'] = [
             'eval' => ['maxlength' => 64, 'tl_class' => 'w50'],
             'sql' => "varchar(64) NOT NULL default ''",
         ],
+        'php_version_full' => [
+            'sql' => "varchar(64) NOT NULL default ''",
+        ],
         'database_name' => [
             'exclude' => false,
             'inputType' => 'text',
