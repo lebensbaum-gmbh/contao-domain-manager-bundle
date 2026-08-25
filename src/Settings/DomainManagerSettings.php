@@ -12,6 +12,8 @@ final class DomainManagerSettings
 {
     private const TABLE = 'tl_domain_manager_settings';
     private const DEFAULT_STALE_SYNC_DAYS = 30;
+    private const DEFAULT_AUTO_SYNC_INTERVAL_HOURS = 6;
+    private const AUTO_SYNC_INTERVALS = [1, 6, 12, 24];
 
     public function __construct(private readonly Connection $connection)
     {
@@ -58,6 +60,53 @@ final class DomainManagerSettings
         }
 
         return $days;
+    }
+
+    /**
+     * Free never enables automatic synchronization. The legacy getters below are
+     * temporarily retained so v1.5 data stays readable while the Pro extension is
+     * split out without forcing a destructive migration.
+     */
+    public function isAutoSyncEnabled(): bool
+    {
+        return false;
+    }
+
+    public function getAutoSyncIntervalHours(): int
+    {
+        $value = $this->getValue('auto_sync_interval');
+        $hours = is_numeric($value) ? (int) $value : self::DEFAULT_AUTO_SYNC_INTERVAL_HOURS;
+
+        return in_array($hours, self::AUTO_SYNC_INTERVALS, true)
+            ? $hours
+            : self::DEFAULT_AUTO_SYNC_INTERVAL_HOURS;
+    }
+
+    public function getAutoSyncLastAttempt(): int
+    {
+        return $this->getPositiveInt('auto_sync_last_attempt');
+    }
+
+    public function getAutoSyncLastSuccess(): int
+    {
+        return $this->getPositiveInt('auto_sync_last_success');
+    }
+
+    public function getAutoSyncStatus(): string
+    {
+        return trim((string) ($this->getValue('auto_sync_status') ?? ''));
+    }
+
+    public function getAutoSyncMessage(): string
+    {
+        return trim((string) ($this->getValue('auto_sync_message') ?? ''));
+    }
+
+    private function getPositiveInt(string $field): int
+    {
+        $value = $this->getValue($field);
+
+        return is_numeric($value) ? max(0, (int) $value) : 0;
     }
 
     private function getValue(string $field): mixed
