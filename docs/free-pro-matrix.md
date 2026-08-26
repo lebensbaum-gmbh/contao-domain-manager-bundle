@@ -42,6 +42,7 @@ Die Pro-Version erweitert die Free-Version um Automatisierung, Monitoring und Be
 | Verfügbarkeit der Website regelmäßig prüfen | – | geplant |
 | Ausfall und Wiederherstellung erkennen | – | geplant |
 | Contao-Updates innerhalb der verwendeten Versionslinie erkennen | – | geplant |
+| Contao-Updates zentral aus der Domainübersicht vorbereiten und ausführen | – | geplant |
 | PHP-Supportphase und Supportende überwachen | – | geplant |
 | SSL-Zertifikat und Ablaufdatum überwachen | – | geplant |
 | System-Info-Erreichbarkeit überwachen | – | geplant |
@@ -51,6 +52,24 @@ Die Pro-Version erweitert die Free-Version um Automatisierung, Monitoring und Be
 | E-Mail-Benachrichtigungen bei relevanten Zustandsänderungen | – | geplant |
 | Zusammenfassungen, z. B. Wochenbericht | – | geplant |
 | Status- und Ereignishistorie | – | später |
+
+## Geplante Contao-Update-Funktion
+
+Die Pro-Version soll verfügbare Contao-Updates nicht nur erkennen, sondern ein Update direkt aus der zentralen Domainübersicht vorbereiten und bewusst durch den Benutzer starten können.
+
+Zum Zielbild gehören insbesondere:
+
+- Prüfung, ob die Zielinstallation für ein Update erreichbar und ausreichend konfiguriert ist
+- vorbereitende Sicherheits- bzw. Wiederherstellungsstrategie vor dem Update
+- definierter Wartungsmodus während des Updatevorgangs
+- Ausführung der Composer-/Contao-Aktualisierung auf der Zielinstallation
+- Ausführung notwendiger Contao-Migrationen
+- technische Nachkontrolle nach dem Update
+- erneute Synchronisierung der Systemdaten
+- unmittelbare Monitoring-Prüfung auf Erreichbarkeit, HTTP-Fehler und neue Log-Fehler
+- nachvollziehbarer Update-Status bzw. Update-Verlauf in der Domainverwaltung
+
+Ein automatisches, unbeaufsichtigtes Einspielen von Contao-Updates ist zunächst **nicht** das Ziel. Der Updatevorgang soll bewusst aus der Pro-Oberfläche gestartet werden. Insbesondere Backup, Wiederherstellung und Rollback müssen vor einer Umsetzung technisch zuverlässig gelöst sein.
 
 ## Log-Monitoring – Zielbild
 
