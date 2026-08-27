@@ -65,11 +65,26 @@
         layout.dataset.domainManagerLayout = '1';
 
         if (filterArticle === overviewArticle) {
-            filterArticle.insertBefore(layout, filter);
-            layout.appendChild(filter);
-            layout.appendChild(overview);
-            filter.classList.add('domain-manager-layout-filter');
-            overview.classList.add('domain-manager-layout-overview');
+            // Both content elements can live in the same Contao article. Their data
+            // nodes are usually nested inside content-element wrappers and are not
+            // direct children of .mod_article, so insertBefore(layout, filter) would
+            // throw a DOMException. Resolve the closest sibling hosts instead and
+            // move those complete wrappers into the Domain Manager grid.
+            const hosts = findSiblingHosts(filter, overview);
+            if (!hosts) {
+                return;
+            }
+
+            const filterHost = hosts.filterNode;
+            const overviewHost = hosts.overviewNode;
+            const filterComesFirst = Boolean(filterHost.compareDocumentPosition(overviewHost) & Node.DOCUMENT_POSITION_FOLLOWING);
+
+            hosts.parent.insertBefore(layout, filterComesFirst ? filterHost : overviewHost);
+            layout.appendChild(filterHost);
+            layout.appendChild(overviewHost);
+
+            filterHost.classList.add('domain-manager-layout-filter');
+            overviewHost.classList.add('domain-manager-layout-overview');
             markContainer();
             return;
         }
