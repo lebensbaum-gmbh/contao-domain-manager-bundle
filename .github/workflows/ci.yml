@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - feature/free-pro-split-v1.6-integration
   pull_request:
     branches:
       - main
