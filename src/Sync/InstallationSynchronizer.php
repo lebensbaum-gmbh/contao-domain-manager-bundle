@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Lebensbaum\ContaoDomainManagerBundle\Sync;
 
 use Doctrine\DBAL\Connection;
+use Lebensbaum\ContaoDomainManagerBundle\Connection\SystemInfoConnectionException;
 use Lebensbaum\ContaoDomainManagerBundle\Event\InstallationSynchronizedEvent;
 use Lebensbaum\ContaoDomainManagerBundle\Util\SystemValueNormalizer;
 use RuntimeException;
@@ -42,14 +43,19 @@ final class InstallationSynchronizer
 
         try {
             if ('' === $domain) {
-                throw new RuntimeException('Im Installationsdatensatz fehlt die Domain.');
+                throw new SystemInfoConnectionException(
+                    'configuration',
+                    'domain_missing',
+                    'Im Installationsdatensatz fehlt die Domain.'
+                );
             }
 
             if (1 !== preg_match('/\A[a-f0-9]{32}\z/i', $systemId)) {
-                throw new RuntimeException(sprintf(
-                    'Für die Installation „%s“ fehlt eine gültige Installations-ID.',
-                    $domain
-                ));
+                throw new SystemInfoConnectionException(
+                    'configuration',
+                    'invalid_installation_id',
+                    sprintf('Für die Installation „%s“ fehlt eine gültige Installations-ID.', $domain)
+                );
             }
 
             $systemInfo = $this->systemInfoClient->fetch($domain, $systemId);
@@ -70,6 +76,9 @@ final class InstallationSynchronizer
                 'sync_status' => 'success',
                 'sync_message' => 'Systeminformationen erfolgreich aktualisiert.',
                 'dm_connection_status' => 'success',
+                'dm_connection_stage' => 'system_data',
+                'dm_connection_error_code' => '',
+                'dm_connection_http_status' => 200,
                 'dm_connection_message' => sprintf(
                     'Verbindung erfolgreich. Contao %s, PHP %s.',
                     $contaoVersion,
@@ -112,26 +121,58 @@ final class InstallationSynchronizer
                 'old_php_version' => $oldPhpVersionFull,
                 'new_php_version' => $phpVersionFull,
             ];
-        } catch (Throwable $exception) {
-            try {
-                $message = $this->normalizeErrorMessage($exception->getMessage());
-
-                $this->connection->update(
-                    self::TABLE,
-                    [
-                        'sync_status' => 'error',
-                        'sync_message' => $message,
-                        'dm_connection_status' => 'error',
-                        'dm_connection_message' => $message,
-                        'dm_last_connection_test' => $timestamp,
-                        'tstamp' => $timestamp,
-                    ],
-                    ['id' => $installationId]
-                );
-            } catch (Throwable) {
-            }
+        } catch (SystemInfoConnectionException $exception) {
+            $this->storeFailure(
+                $installationId,
+                $timestamp,
+                $exception->getStage(),
+                $exception->getErrorCode(),
+                $exception->getHttpStatus(),
+                $exception->getMessage(),
+            );
 
             throw $exception;
+        } catch (Throwable $exception) {
+            $this->storeFailure(
+                $installationId,
+                $timestamp,
+                'unknown',
+                'unexpected_error',
+                null,
+                $exception->getMessage(),
+            );
+
+            throw $exception;
+        }
+    }
+
+    private function storeFailure(
+        int $installationId,
+        int $timestamp,
+        string $stage,
+        string $errorCode,
+        ?int $httpStatus,
+        string $message,
+    ): void {
+        try {
+            $message = $this->normalizeErrorMessage($message);
+
+            $this->connection->update(
+                self::TABLE,
+                [
+                    'sync_status' => 'error',
+                    'sync_message' => $message,
+                    'dm_connection_status' => 'error',
+                    'dm_connection_stage' => substr(trim($stage), 0, 32),
+                    'dm_connection_error_code' => substr(trim($errorCode), 0, 64),
+                    'dm_connection_http_status' => $httpStatus ?? 0,
+                    'dm_connection_message' => $message,
+                    'dm_last_connection_test' => $timestamp,
+                    'tstamp' => $timestamp,
+                ],
+                ['id' => $installationId]
+            );
+        } catch (Throwable) {
         }
     }
 
