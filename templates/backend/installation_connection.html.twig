@@ -8,8 +8,8 @@
             {% if success %}
                 <div class="tl_confirm" style="margin:0 0 18px">{{ success }}</div>
             {% endif %}
-            {% if error %}
-                <div class="tl_error" style="margin:0 0 18px">{{ error }}</div>
+            {% if connection_error %}
+                <div class="tl_error" style="margin:0 0 18px">{{ connection_error }}</div>
             {% endif %}
 
             <h2 style="margin:0 0 18px">{{ record.domain }}</h2>
