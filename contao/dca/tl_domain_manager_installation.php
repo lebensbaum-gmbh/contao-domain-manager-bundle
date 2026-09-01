@@ -216,6 +216,15 @@ $GLOBALS['TL_DCA']['tl_domain_manager_installation'] = [
             'eval' => ['readonly' => true, 'tl_class' => 'w50'],
             'sql' => "varchar(32) NOT NULL default ''",
         ],
+        'dm_connection_stage' => [
+            'sql' => "varchar(32) NOT NULL default ''",
+        ],
+        'dm_connection_error_code' => [
+            'sql' => "varchar(64) NOT NULL default ''",
+        ],
+        'dm_connection_http_status' => [
+            'sql' => "smallint(5) unsigned NOT NULL default 0",
+        ],
         'dm_connection_message' => [
             'exclude' => false,
             'inputType' => 'textarea',
