@@ -7,6 +7,7 @@ namespace Lebensbaum\ContaoDomainManagerBundle\Controller\Backend;
 use Contao\CoreBundle\Controller\AbstractBackendController;
 use Doctrine\DBAL\Connection;
 use Lebensbaum\ContaoDomainManagerBundle\Connection\InstallationConnectionTester;
+use Lebensbaum\ContaoDomainManagerBundle\Connection\SystemInfoConnectionException;
 use Lebensbaum\ContaoDomainManagerBundle\Security\BackendPermissionChecker;
 use Lebensbaum\ContaoDomainManagerBundle\Security\DomainManagerPermissions;
 use Lebensbaum\ContaoDomainManagerBundle\Security\SecretStore;
@@ -28,6 +29,8 @@ use Throwable;
 )]
 final class InstallationConnectionController extends AbstractBackendController
 {
+    private const SYSTEM_INFO_PATH = '/_domainverwaltung/systeminfo';
+
     public function __construct(
         private readonly Connection $connection,
         private readonly InstallationConnectionTester $connectionTester,
@@ -57,7 +60,11 @@ final class InstallationConnectionController extends AbstractBackendController
 
         if ($request->isMethod('POST')) {
             $action = trim((string) $request->request->get('dm_action', ''));
-            $flashBag = $request->getSession()->getFlashBag();
+            $feedback = [
+                'success' => null,
+                'error' => null,
+                'technical_details' => null,
+            ];
 
             if ('test' === $action) {
                 if (!$canTest) {
@@ -66,14 +73,20 @@ final class InstallationConnectionController extends AbstractBackendController
 
                 try {
                     $result = $this->connectionTester->test($id);
-                    $flashBag->add('domain_manager_connection_success', sprintf(
-                        'Verbindung zu „%s“ erfolgreich: Contao %s, PHP %s.',
+                    $feedback['success'] = sprintf(
+                        'Verbindung vollständig geprüft – 5 von 5 Stufen erfolgreich. „%s“: Contao %s, PHP %s.',
                         $result['domain'],
                         $result['contao_version'] ?? 'nicht ermittelbar',
                         $result['php_version']
-                    ));
+                    );
+                } catch (SystemInfoConnectionException $exception) {
+                    $feedback['error'] = $exception->getMessage();
+
+                    if (null !== $exception->getTechnicalDetails() && '' !== trim($exception->getTechnicalDetails())) {
+                        $feedback['technical_details'] = $exception->getTechnicalDetails();
+                    }
                 } catch (Throwable $exception) {
-                    $flashBag->add('domain_manager_connection_error', $exception->getMessage());
+                    $feedback['error'] = $exception->getMessage();
                 }
             } elseif ('replace_secret' === $action) {
                 if (!$canManageSecret) {
@@ -83,18 +96,20 @@ final class InstallationConnectionController extends AbstractBackendController
                 $secret = trim((string) $request->request->get('dm_secret_plaintext', ''));
 
                 if ('' === $secret) {
-                    $flashBag->add('domain_manager_connection_error', 'Bitte ein 64-stelliges Secret eingeben.');
+                    $feedback['error'] = 'Bitte ein 64-stelliges Secret eingeben.';
                 } else {
                     try {
                         $this->secretStore->storeSecretForInstallation($id, $secret);
-                        $flashBag->add('domain_manager_connection_success', 'Das Secret wurde verschlüsselt gespeichert.');
+                        $feedback['success'] = 'Das Secret wurde verschlüsselt gespeichert.';
                     } catch (Throwable $exception) {
-                        $flashBag->add('domain_manager_connection_error', $exception->getMessage());
+                        $feedback['error'] = $exception->getMessage();
                     }
                 }
             } else {
-                $flashBag->add('domain_manager_connection_error', 'Unbekannte Aktion.');
+                $feedback['error'] = 'Unbekannte Aktion.';
             }
+
+            $request->getSession()->set($this->feedbackSessionKey($id), $feedback);
 
             return new RedirectResponse(
                 $request->getUriForPath($request->getPathInfo()),
@@ -102,10 +117,17 @@ final class InstallationConnectionController extends AbstractBackendController
             );
         }
 
-        $successMessages = $request->getSession()->getFlashBag()->get('domain_manager_connection_success');
-        $errorMessages = $request->getSession()->getFlashBag()->get('domain_manager_connection_error');
-        $success = $successMessages[0] ?? null;
-        $error = $errorMessages[0] ?? null;
+        $feedback = $request->getSession()->remove($this->feedbackSessionKey($id));
+
+        if (!is_array($feedback)) {
+            $feedback = [];
+        }
+
+        $success = isset($feedback['success']) && is_string($feedback['success']) ? $feedback['success'] : null;
+        $error = isset($feedback['error']) && is_string($feedback['error']) ? $feedback['error'] : null;
+        $technicalDetails = isset($feedback['technical_details']) && is_string($feedback['technical_details'])
+            ? $feedback['technical_details']
+            : null;
 
         return $this->render('@ContaoDomainManager/backend/installation_connection.html.twig', [
             'title' => 'System-Info-Verbindung',
@@ -114,7 +136,8 @@ final class InstallationConnectionController extends AbstractBackendController
             'can_test' => $canTest,
             'can_manage_secret' => $canManageSecret,
             'success' => $success,
-            'error' => $error,
+            'connection_error' => $error,
+            'technical_details' => $technicalDetails,
             'return_url' => $returnUrl,
         ]);
     }
@@ -132,6 +155,9 @@ final class InstallationConnectionController extends AbstractBackendController
                     i.dm_encrypted_secret,
                     i.dm_secret_changed_at,
                     i.dm_connection_status,
+                    i.dm_connection_stage,
+                    i.dm_connection_error_code,
+                    i.dm_connection_http_status,
                     i.dm_connection_message,
                     i.dm_last_connection_test,
                     i.dm_last_connection_success,
@@ -153,10 +179,15 @@ final class InstallationConnectionController extends AbstractBackendController
     private function normalizeRecord(array $record): array
     {
         $status = trim((string) ($record['dm_connection_status'] ?? ''));
+        $stage = trim((string) ($record['dm_connection_stage'] ?? ''));
+        $errorCode = trim((string) ($record['dm_connection_error_code'] ?? ''));
+        $httpStatus = (int) ($record['dm_connection_http_status'] ?? 0);
+        $domain = trim((string) ($record['domain'] ?? ''));
+        [$stageLabel, $stageStep] = $this->describeStage($stage);
 
         return [
             'id' => (int) ($record['id'] ?? 0),
-            'domain' => trim((string) ($record['domain'] ?? '')),
+            'domain' => $domain,
             'parent_domain' => trim((string) ($record['parent_domain'] ?? '')),
             'system_id' => trim((string) ($record['system_id'] ?? '')),
             'has_secret' => '' !== trim((string) ($record['dm_encrypted_secret'] ?? '')),
@@ -168,6 +199,13 @@ final class InstallationConnectionController extends AbstractBackendController
                 'not_configured' => 'Nicht konfiguriert',
                 default => 'Noch nicht getestet',
             },
+            'stage' => $stage,
+            'stage_label' => $stageLabel,
+            'stage_step' => $stageStep,
+            'error_code' => $errorCode,
+            'http_status' => $httpStatus > 0 ? $httpStatus : null,
+            'diagnosis_hint' => $this->diagnosisHint($errorCode),
+            'endpoint_url' => $this->createEndpointUrlForDisplay($domain),
             'message' => trim((string) ($record['dm_connection_message'] ?? '')),
             'last_test' => $this->formatTimestamp((int) ($record['dm_last_connection_test'] ?? 0)),
             'last_success' => $this->formatTimestamp((int) ($record['dm_last_connection_success'] ?? 0)),
@@ -175,9 +213,67 @@ final class InstallationConnectionController extends AbstractBackendController
         ];
     }
 
+    /** @return array{0:string,1:?int} */
+    private function describeStage(string $stage): array
+    {
+        return match ($stage) {
+            'configuration' => ['Konfiguration', 1],
+            'transport' => ['Zielserver erreichen', 2],
+            'endpoint' => ['System-Info-Endpunkt', 3],
+            'authentication' => ['Authentifizierung', 4],
+            'response' => ['API-Antwort', 4],
+            'system_data' => ['Systemdaten', 5],
+            'unknown' => ['Unbekannter Fehler', null],
+            default => ['Noch nicht geprüft', null],
+        };
+    }
+
+    private function diagnosisHint(string $errorCode): string
+    {
+        return match ($errorCode) {
+            'target_unreachable' => 'Domain/DNS, TLS-Zertifikat und Server-Erreichbarkeit prüfen.',
+            'endpoint_not_found' => 'Prüfen, ob das System-Info-Bundle auf der Zielinstallation installiert und aktiv ist.',
+            'remote_service_not_configured' => 'System Info auf der Zielinstallation öffnen und Zugangsdaten/Konfiguration prüfen.',
+            'unauthorized' => 'Installations-ID und Secret auf beiden Seiten vergleichen.',
+            'clock_skew' => 'Serverzeit bzw. Zeitsynchronisation der beiden Systeme prüfen.',
+            'remote_server_error', 'remote_system_info_unavailable' => 'Zuerst die PHP-Version der betroffenen Domain/Subdomain prüfen, danach Contao- und Server-Fehlerprotokolle.',
+            'invalid_json', 'incomplete_response', 'invalid_optional_field' => 'System-Info-Endpunkt und installierte Bundle-Version prüfen.',
+            'unsupported_api_version' => 'Core/Free und System-Info-Bundle auf kompatible Versionen aktualisieren.',
+            'installation_id_mismatch' => 'Installations-ID und Zuordnung der Zielinstallation prüfen.',
+            default => '',
+        };
+    }
+
+    private function createEndpointUrlForDisplay(string $domain): string
+    {
+        if ('' === $domain) {
+            return '';
+        }
+
+        $baseUrl = str_contains($domain, '://') ? $domain : 'https://'.$domain;
+        $parts = parse_url($baseUrl);
+
+        if (false === $parts || empty($parts['host'])) {
+            return '';
+        }
+
+        $url = 'https://'.$parts['host'];
+
+        if (isset($parts['port'])) {
+            $url .= ':'.$parts['port'];
+        }
+
+        return $url.self::SYSTEM_INFO_PATH;
+    }
+
     private function formatTimestamp(int $timestamp): string
     {
         return $timestamp > 0 ? date('d.m.Y, H:i', $timestamp).' Uhr' : '–';
+    }
+
+    private function feedbackSessionKey(int $id): string
+    {
+        return 'domain_manager_connection_feedback_'.$id;
     }
 
     private function resolveReturnUrl(Request $request, int $id, int $pid): string

@@ -8,8 +8,8 @@
             {% if success %}
                 <div class="tl_confirm" style="margin:0 0 18px">{{ success }}</div>
             {% endif %}
-            {% if error %}
-                <div class="tl_error" style="margin:0 0 18px">{{ error }}</div>
+            {% if connection_error %}
+                <div class="tl_error" style="margin:0 0 18px">{{ connection_error }}</div>
             {% endif %}
 
             <h2 style="margin:0 0 18px">{{ record.domain }}</h2>
@@ -28,6 +28,41 @@
                     {% endif %}
                 </tbody>
             </table>
+
+            {% if record.status == 'error' and record.stage %}
+                <fieldset class="tl_box" style="max-width:900px;margin:0 0 22px">
+                    <legend>Fehlerdiagnose</legend>
+                    <table class="tl_listing" style="width:100%;margin:0">
+                        <tbody>
+                            <tr>
+                                <td style="width:230px;padding:6px 12px 6px 0"><strong>Fehlerstufe</strong></td>
+                                <td>
+                                    {% if record.stage_step %}Stufe {{ record.stage_step }} von 5 – {% endif %}{{ record.stage_label }}
+                                </td>
+                            </tr>
+                            {% if record.http_status %}
+                                <tr><td style="padding:6px 12px 6px 0"><strong>HTTP-Status</strong></td><td>{{ record.http_status }}</td></tr>
+                            {% endif %}
+                            {% if record.error_code %}
+                                <tr><td style="padding:6px 12px 6px 0"><strong>Fehlercode</strong></td><td><code>{{ record.error_code }}</code></td></tr>
+                            {% endif %}
+                            {% if record.endpoint_url %}
+                                <tr><td style="padding:6px 12px 6px 0;vertical-align:top"><strong>Geprüfter Endpoint</strong></td><td><code>{{ record.endpoint_url }}</code></td></tr>
+                            {% endif %}
+                            {% if record.diagnosis_hint %}
+                                <tr><td style="padding:6px 12px 6px 0;vertical-align:top"><strong>Als Nächstes prüfen</strong></td><td>{{ record.diagnosis_hint }}</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+
+                    {% if technical_details %}
+                        <details style="margin-top:14px">
+                            <summary>Technische Details</summary>
+                            <pre style="white-space:pre-wrap;margin:10px 0 0">{{ technical_details }}</pre>
+                        </details>
+                    {% endif %}
+                </fieldset>
+            {% endif %}
 
             {% if can_test %}
                 <form method="post" action="{{ path('contao_domain_manager_installation_connection', {id: record.id}) }}" style="margin:0 0 28px">

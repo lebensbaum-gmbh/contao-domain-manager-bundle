@@ -39,11 +39,19 @@ final class InstallationConnectionTester
 
         try {
             if ('' === $domain) {
-                throw new RuntimeException('Im Installationsdatensatz fehlt die Domain.');
+                throw new SystemInfoConnectionException(
+                    'configuration',
+                    'domain_missing',
+                    'Im Installationsdatensatz fehlt die Domain.'
+                );
             }
 
             if (1 !== preg_match('/\A[a-f0-9]{32}\z/i', $systemId)) {
-                throw new RuntimeException('Es ist keine gültige Installations-ID hinterlegt.');
+                throw new SystemInfoConnectionException(
+                    'configuration',
+                    'invalid_installation_id',
+                    'Es ist keine gültige Installations-ID hinterlegt.'
+                );
             }
 
             $systemInfo = $this->systemInfoClient->fetch($domain, $systemId);
@@ -52,6 +60,9 @@ final class InstallationConnectionTester
                 self::TABLE,
                 [
                     'dm_connection_status' => 'success',
+                    'dm_connection_stage' => 'system_data',
+                    'dm_connection_error_code' => '',
+                    'dm_connection_http_status' => 200,
                     'dm_connection_message' => sprintf(
                         'Verbindung erfolgreich. Contao %s, PHP %s.',
                         $systemInfo['contao_version'] ?? 'nicht ermittelbar',
@@ -70,22 +81,54 @@ final class InstallationConnectionTester
                 'contao_version' => $systemInfo['contao_version'],
                 'php_version' => $systemInfo['php_version'],
             ];
-        } catch (Throwable $exception) {
-            try {
-                $this->connection->update(
-                    self::TABLE,
-                    [
-                        'dm_connection_status' => 'error',
-                        'dm_connection_message' => $this->normalizeMessage($exception->getMessage()),
-                        'dm_last_connection_test' => $timestamp,
-                        'tstamp' => $timestamp,
-                    ],
-                    ['id' => $installationId]
-                );
-            } catch (Throwable) {
-            }
+        } catch (SystemInfoConnectionException $exception) {
+            $this->storeFailure(
+                $installationId,
+                $timestamp,
+                $exception->getStage(),
+                $exception->getErrorCode(),
+                $exception->getHttpStatus(),
+                $exception->getMessage(),
+            );
 
             throw $exception;
+        } catch (Throwable $exception) {
+            $this->storeFailure(
+                $installationId,
+                $timestamp,
+                'unknown',
+                'unexpected_error',
+                null,
+                $this->normalizeMessage($exception->getMessage()),
+            );
+
+            throw $exception;
+        }
+    }
+
+    private function storeFailure(
+        int $installationId,
+        int $timestamp,
+        string $stage,
+        string $errorCode,
+        ?int $httpStatus,
+        string $message,
+    ): void {
+        try {
+            $this->connection->update(
+                self::TABLE,
+                [
+                    'dm_connection_status' => 'error',
+                    'dm_connection_stage' => substr(trim($stage), 0, 32),
+                    'dm_connection_error_code' => substr(trim($errorCode), 0, 64),
+                    'dm_connection_http_status' => $httpStatus ?? 0,
+                    'dm_connection_message' => $this->normalizeMessage($message),
+                    'dm_last_connection_test' => $timestamp,
+                    'tstamp' => $timestamp,
+                ],
+                ['id' => $installationId]
+            );
+        } catch (Throwable) {
         }
     }
 

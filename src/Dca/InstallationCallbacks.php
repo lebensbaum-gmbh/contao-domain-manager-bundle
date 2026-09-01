@@ -38,6 +38,9 @@ final class InstallationCallbacks
         $systemId = trim((string) ($record['system_id'] ?? ''));
         $encryptedSecret = trim((string) ($record['dm_encrypted_secret'] ?? ''));
         $status = trim((string) ($record['dm_connection_status'] ?? ''));
+        $stage = trim((string) ($record['dm_connection_stage'] ?? ''));
+        $errorCode = trim((string) ($record['dm_connection_error_code'] ?? ''));
+        $httpStatus = (int) ($record['dm_connection_http_status'] ?? 0);
         $message = trim((string) ($record['dm_connection_message'] ?? ''));
         $lastTest = (int) ($record['dm_last_connection_test'] ?? 0);
         $lastSuccess = (int) ($record['dm_last_connection_success'] ?? 0);
@@ -62,6 +65,18 @@ final class InstallationCallbacks
             ['Letzter erfolgreicher Test', $this->formatTimestamp($lastSuccess)],
             ['Secret zuletzt geändert', $this->formatTimestamp($secretChanged)],
         ];
+
+        if ('error' === $status && '' !== $stage) {
+            $rows[] = ['Fehlerstufe', $this->escape($this->describeStage($stage))];
+
+            if ($httpStatus > 0) {
+                $rows[] = ['HTTP-Status', (string) $httpStatus];
+            }
+
+            if ('' !== $errorCode) {
+                $rows[] = ['Fehlercode', '<code>'.$this->escape($errorCode).'</code>'];
+            }
+        }
 
         if ('' !== $message) {
             $rows[] = ['Meldung', nl2br($this->escape($message))];
@@ -174,6 +189,9 @@ final class InstallationCallbacks
                         dm_encrypted_secret,
                         dm_secret_changed_at,
                         dm_connection_status,
+                        dm_connection_stage,
+                        dm_connection_error_code,
+                        dm_connection_http_status,
                         dm_connection_message,
                         dm_last_connection_test,
                         dm_last_connection_success
@@ -188,6 +206,19 @@ final class InstallationCallbacks
         } catch (Throwable) {
             return null;
         }
+    }
+
+    private function describeStage(string $stage): string
+    {
+        return match ($stage) {
+            'configuration' => 'Stufe 1 von 5 – Konfiguration',
+            'transport' => 'Stufe 2 von 5 – Zielserver erreichen',
+            'endpoint' => 'Stufe 3 von 5 – System-Info-Endpunkt',
+            'authentication' => 'Stufe 4 von 5 – Authentifizierung',
+            'response' => 'Stufe 4 von 5 – API-Antwort',
+            'system_data' => 'Stufe 5 von 5 – Systemdaten',
+            default => 'Unbekannter Fehler',
+        };
     }
 
     private function formatTimestamp(int $timestamp): string
