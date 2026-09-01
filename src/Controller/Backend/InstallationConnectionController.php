@@ -60,7 +60,11 @@ final class InstallationConnectionController extends AbstractBackendController
 
         if ($request->isMethod('POST')) {
             $action = trim((string) $request->request->get('dm_action', ''));
-            $flashBag = $request->getSession()->getFlashBag();
+            $feedback = [
+                'success' => null,
+                'error' => null,
+                'technical_details' => null,
+            ];
 
             if ('test' === $action) {
                 if (!$canTest) {
@@ -69,20 +73,20 @@ final class InstallationConnectionController extends AbstractBackendController
 
                 try {
                     $result = $this->connectionTester->test($id);
-                    $flashBag->add('domain_manager_connection_success', sprintf(
-                        'Verbindung zu „%s“ erfolgreich: Contao %s, PHP %s.',
+                    $feedback['success'] = sprintf(
+                        'Verbindung vollständig geprüft – 5 von 5 Stufen erfolgreich. „%s“: Contao %s, PHP %s.',
                         $result['domain'],
                         $result['contao_version'] ?? 'nicht ermittelbar',
                         $result['php_version']
-                    ));
+                    );
                 } catch (SystemInfoConnectionException $exception) {
-                    $flashBag->add('domain_manager_connection_error', $exception->getMessage());
+                    $feedback['error'] = $exception->getMessage();
 
                     if (null !== $exception->getTechnicalDetails() && '' !== trim($exception->getTechnicalDetails())) {
-                        $flashBag->add('domain_manager_connection_details', $exception->getTechnicalDetails());
+                        $feedback['technical_details'] = $exception->getTechnicalDetails();
                     }
                 } catch (Throwable $exception) {
-                    $flashBag->add('domain_manager_connection_error', $exception->getMessage());
+                    $feedback['error'] = $exception->getMessage();
                 }
             } elseif ('replace_secret' === $action) {
                 if (!$canManageSecret) {
@@ -92,18 +96,20 @@ final class InstallationConnectionController extends AbstractBackendController
                 $secret = trim((string) $request->request->get('dm_secret_plaintext', ''));
 
                 if ('' === $secret) {
-                    $flashBag->add('domain_manager_connection_error', 'Bitte ein 64-stelliges Secret eingeben.');
+                    $feedback['error'] = 'Bitte ein 64-stelliges Secret eingeben.';
                 } else {
                     try {
                         $this->secretStore->storeSecretForInstallation($id, $secret);
-                        $flashBag->add('domain_manager_connection_success', 'Das Secret wurde verschlüsselt gespeichert.');
+                        $feedback['success'] = 'Das Secret wurde verschlüsselt gespeichert.';
                     } catch (Throwable $exception) {
-                        $flashBag->add('domain_manager_connection_error', $exception->getMessage());
+                        $feedback['error'] = $exception->getMessage();
                     }
                 }
             } else {
-                $flashBag->add('domain_manager_connection_error', 'Unbekannte Aktion.');
+                $feedback['error'] = 'Unbekannte Aktion.';
             }
+
+            $request->getSession()->set($this->feedbackSessionKey($id), $feedback);
 
             return new RedirectResponse(
                 $request->getUriForPath($request->getPathInfo()),
@@ -111,12 +117,17 @@ final class InstallationConnectionController extends AbstractBackendController
             );
         }
 
-        $successMessages = $request->getSession()->getFlashBag()->get('domain_manager_connection_success');
-        $errorMessages = $request->getSession()->getFlashBag()->get('domain_manager_connection_error');
-        $detailMessages = $request->getSession()->getFlashBag()->get('domain_manager_connection_details');
-        $success = $successMessages[0] ?? null;
-        $error = $errorMessages[0] ?? null;
-        $technicalDetails = $detailMessages[0] ?? null;
+        $feedback = $request->getSession()->remove($this->feedbackSessionKey($id));
+
+        if (!is_array($feedback)) {
+            $feedback = [];
+        }
+
+        $success = isset($feedback['success']) && is_string($feedback['success']) ? $feedback['success'] : null;
+        $error = isset($feedback['error']) && is_string($feedback['error']) ? $feedback['error'] : null;
+        $technicalDetails = isset($feedback['technical_details']) && is_string($feedback['technical_details'])
+            ? $feedback['technical_details']
+            : null;
 
         return $this->render('@ContaoDomainManager/backend/installation_connection.html.twig', [
             'title' => 'System-Info-Verbindung',
@@ -258,6 +269,11 @@ final class InstallationConnectionController extends AbstractBackendController
     private function formatTimestamp(int $timestamp): string
     {
         return $timestamp > 0 ? date('d.m.Y, H:i', $timestamp).' Uhr' : '–';
+    }
+
+    private function feedbackSessionKey(int $id): string
+    {
+        return 'domain_manager_connection_feedback_'.$id;
     }
 
     private function resolveReturnUrl(Request $request, int $id, int $pid): string
