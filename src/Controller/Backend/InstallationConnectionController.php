@@ -136,7 +136,7 @@ final class InstallationConnectionController extends AbstractBackendController
             'can_test' => $canTest,
             'can_manage_secret' => $canManageSecret,
             'success' => $success,
-            'error' => $error,
+            'connection_error' => $error,
             'technical_details' => $technicalDetails,
             'return_url' => $returnUrl,
         ]);
