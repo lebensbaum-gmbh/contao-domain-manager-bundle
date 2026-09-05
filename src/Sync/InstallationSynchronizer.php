@@ -6,8 +6,10 @@ namespace Lebensbaum\ContaoDomainManagerBundle\Sync;
 
 use Doctrine\DBAL\Connection;
 use Lebensbaum\ContaoDomainManagerBundle\Connection\SystemInfoConnectionException;
+use Lebensbaum\ContaoDomainManagerBundle\Event\InstallationSynchronizedEvent;
 use Lebensbaum\ContaoDomainManagerBundle\Util\SystemValueNormalizer;
 use RuntimeException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 
 final class InstallationSynchronizer
@@ -17,13 +19,14 @@ final class InstallationSynchronizer
     public function __construct(
         private readonly Connection $connection,
         private readonly SystemInfoClient $systemInfoClient,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
     public function synchronize(int $installationId): array
     {
         $installation = $this->connection->fetchAssociative(
-            'SELECT id, domain, system_id, document_root, contao_version, CAST(php_version AS CHAR) AS php_version, database_name FROM '.self::TABLE.' WHERE id = ?',
+            'SELECT id, domain, system_id, document_root, contao_version, CAST(php_version AS CHAR) AS php_version, CAST(php_version_full AS CHAR) AS php_version_full, database_name FROM '.self::TABLE.' WHERE id = ?',
             [$installationId]
         );
 
@@ -59,14 +62,16 @@ final class InstallationSynchronizer
 
             $contaoVersion = SystemValueNormalizer::contaoVersion($systemInfo['contao_version']);
             $phpVersion = SystemValueNormalizer::phpVersion($systemInfo['php_version']);
+            $phpVersionFull = SystemValueNormalizer::phpVersionFull($systemInfo['php_version']);
             $documentRoot = trim((string) ($systemInfo['document_root'] ?? ''));
             $databaseName = trim((string) ($systemInfo['database_name'] ?? ''));
             $oldContaoVersion = trim((string) $installation['contao_version']);
-            $oldPhpVersion = trim((string) $installation['php_version']);
+            $oldPhpVersionFull = trim((string) ($installation['php_version_full'] ?? ''));
 
             $updateData = [
                 'contao_version' => $contaoVersion,
                 'php_version' => $phpVersion,
+                'php_version_full' => $phpVersionFull,
                 'last_sync' => $timestamp,
                 'sync_status' => 'success',
                 'sync_message' => 'Systeminformationen erfolgreich aktualisiert.',
@@ -77,7 +82,7 @@ final class InstallationSynchronizer
                 'dm_connection_message' => sprintf(
                     'Verbindung erfolgreich. Contao %s, PHP %s.',
                     $contaoVersion,
-                    $systemInfo['php_version']
+                    $phpVersionFull
                 ),
                 'dm_last_connection_test' => $timestamp,
                 'dm_last_connection_success' => $timestamp,
@@ -98,13 +103,23 @@ final class InstallationSynchronizer
                 ['id' => $installationId]
             );
 
+            $this->eventDispatcher->dispatch(new InstallationSynchronizedEvent(
+                $installationId,
+                $domain,
+                $oldContaoVersion,
+                $contaoVersion,
+                $oldPhpVersionFull,
+                $phpVersionFull,
+                $timestamp,
+            ));
+
             return [
                 'id' => $installationId,
                 'domain' => $domain,
                 'old_contao_version' => $oldContaoVersion,
                 'new_contao_version' => $contaoVersion,
-                'old_php_version' => $oldPhpVersion,
-                'new_php_version' => $phpVersion,
+                'old_php_version' => $oldPhpVersionFull,
+                'new_php_version' => $phpVersionFull,
             ];
         } catch (SystemInfoConnectionException $exception) {
             $this->storeFailure(

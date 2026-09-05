@@ -1,6 +1,6 @@
 # Contao Domain Manager
 
-Der **Contao Domain Manager** ermöglicht die zentrale Verwaltung, Synchronisation und Überwachung mehrerer Contao-Installationen in einer eigenen Contao-Installation.
+Der **Contao Domain Manager** ermöglicht die zentrale Verwaltung und Synchronisation mehrerer Contao-Installationen in einer eigenen Contao-Installation.
 
 Hauptdomains und zugehörige Installationen können im Backend verwaltet, mit den jeweiligen Zielsystemen verbunden und deren Systeminformationen zentral aktualisiert werden. Für das Frontend stehen eine geschützte Domainübersicht und umfangreiche Filter zur Verfügung.
 
@@ -8,14 +8,11 @@ Hauptdomains und zugehörige Installationen können im Backend verwaltet, mit de
 
 - Verwaltung von Hauptdomains und zugehörigen Contao-Installationen
 - Verbindungstest zu überwachten Installationen
-- Einzel- und Sammelsynchronisation von Systeminformationen
-- automatische Synchronisation über Contaos Cronjob-Framework
-- konfigurierbares Auto-Sync-Intervall: stündlich, alle 6 Stunden, alle 12 Stunden oder täglich
-- Status, letzter Versuch und letzter vollständiger Erfolg der automatischen Synchronisation
+- manuelle Einzel- und Sammelsynchronisation von Systeminformationen
 - Verwaltung beliebiger externer Dienste wie Monitoring, Hosting oder GitHub
 - Zuordnung mehrerer externer Dienste pro Installation
 - automatische Migration bestehender Trakked-Verknüpfungen aus Version 1.4
-- automatische Übernahme von Contao-Version, PHP-Version, Datenbankname und DocumentRoot
+- automatische Übernahme von Contao-Version, PHP-Version, Datenbankname und DocumentRoot bei der Synchronisation
 - kompakte Anzeige des Webroots im Frontend, z. B. `/public` oder `/web`
 - Statussystem mit **OK**, **Hinweis** und **Fehler**
 - Hinweise bei veralteter Synchronisation, fehlender System-Info-Konfiguration und `/web` als Webroot
@@ -30,6 +27,10 @@ Hauptdomains und zugehörige Installationen können im Backend verwaltet, mit de
 - responsives Standardlayout und Seitentheme
 - anpassbare CSS-Custom-Properties
 - **Ersteinrichtungs-Assistent**, der Theme, Seitenlayout, Seitenstruktur, Login, Fehlerseiten, Mitgliedergruppe und Inhaltselemente automatisch anlegt
+
+Die Free-Version benötigt keinen Server-Cronjob. Systemdaten werden auf Wunsch manuell pro Hauptdomain oder gesammelt aktualisiert.
+
+Automatische Synchronisierung, Monitoring und Benachrichtigungen sind für eine separate Pro-Erweiterung vorgesehen. Die Produktaufteilung ist in [`docs/free-pro-matrix.md`](docs/free-pro-matrix.md) dokumentiert.
 
 ## Voraussetzungen
 
@@ -166,39 +167,7 @@ Im Frontend stehen je Hauptdomain **Systemdaten aktualisieren** sowie global **A
 
 Bei der Sammelsynchronisation werden alle Hauptdomains nacheinander verarbeitet. Ein Fehler bei einer Installation verhindert nicht die Aktualisierung der übrigen Einträge.
 
-## Automatische Synchronisation
-
-Unter **Domainverwaltung → Einstellungen** kann die automatische Synchronisation aktiviert werden. Zur Auswahl stehen die Intervalle:
-
-- stündlich
-- alle 6 Stunden
-- alle 12 Stunden
-- täglich
-
-Die eigentliche Synchronisation verwendet dieselbe zentrale Logik wie die manuelle Sammelsynchronisation. Fehler einzelner Hauptdomains oder Installationen verhindern nicht die Verarbeitung der übrigen Einträge.
-
-Der Domain Manager speichert:
-
-- den letzten automatischen Versuch
-- die letzte vollständig erfolgreiche automatische Synchronisation
-- den Status des letzten Laufs
-- eine Zusammenfassung des Ergebnisses
-
-### Server-Cronjob erforderlich
-
-Für eine zuverlässige automatische Synchronisation muss Contaos Cronjob-Framework regelmäßig per CLI gestartet werden. Der Domain Manager kann einen Cronjob auf Ebene des Hosting-Accounts oder Servers nicht selbst anlegen.
-
-Empfohlen ist ein Server-Cronjob, der möglichst jede Minute folgenden Befehl ausführt:
-
-```text
-php /pfad/zur/contao-installation/vendor/bin/contao-console contao:cron
-```
-
-Der konkrete PHP-Befehl hängt vom Hoster ab und kann z. B. auch `/usr/bin/php84` oder `/usr/bin/php85` lauten.
-
-Der häufige Aufruf bedeutet nicht, dass jede Minute alle Synchronisationen laufen: Contao entscheidet selbst, welche registrierten Cronjobs fällig sind. Zusätzlich prüft der Domain Manager das konfigurierte Synchronisationsintervall.
-
-In den Domain-Manager-Einstellungen wird ein Cron-Hinweis mit dem installationsbezogenen Kommando angezeigt. Der Status wird aus den tatsächlich erfolgten automatischen CLI-Läufen abgeleitet. Bleibt ein fälliger Lauf über das eingestellte Intervall plus einer kurzen Toleranzzeit hinaus aus, weist der Domain Manager auf die Cron-Konfiguration hin.
+Die Synchronisierung wird in der Free-Version bewusst manuell ausgelöst. Ein Server-Cronjob ist für den normalen Betrieb nicht erforderlich.
 
 ## Externe Dienste
 
@@ -281,9 +250,7 @@ Die Hauptdomains werden als aufklappbare Einträge dargestellt. Bereits in der k
 - PHP-Version
 - Status
 
-Im aufgeklappten Bereich erscheinen zusätzliche technische Daten und konkrete Statushinweise.
-
-Bei aktivierter automatischer Synchronisation zeigt die Übersicht zusätzlich den letzten vollständigen Erfolg und den frühestmöglichen nächsten Lauf.
+Im aufgeklappten Bereich erscheinen zusätzliche technische Daten und konkrete Statushinweise. Die manuelle Aktualisierung kann direkt aus der Übersicht ausgelöst werden.
 
 ### Domainfilter
 
@@ -386,17 +353,24 @@ Frontend-Aktionen zur Einzel- und Sammelsynchronisation werden unabhängig von d
 - Die Domainübersicht ist standardmäßig als geschützte Frontend-Seite vorgesehen.
 - Die automatische Ersteinrichtung ist nur für Backend-Administratoren verfügbar.
 - Der Assistent arbeitet beim Anlegen mehrerer Bausteine innerhalb einer Datenbanktransaktion.
-- Längere automatische Synchronisationen werden bewusst nur im CLI-Cron ausgeführt und nicht während normaler Frontend-Aufrufe.
+- Die Free-Version startet keine länger laufenden Synchronisationen automatisch während normaler Frontend-Aufrufe.
+
+## Free / Pro
+
+Die bisher veröffentlichte Version 1.5.1 enthält bereits eine Cron-basierte automatische Synchronisierung. Diese Version bleibt als veröffentlichter 1.x-Stand unverändert nutzbar.
+
+Für die nächste Hauptversion ist eine klare Aufteilung vorgesehen:
+
+- **Free / Core:** komplette Domainverwaltung und manuelle Synchronisierung
+- **Pro:** automatische Synchronisierung, Monitoring und Benachrichtigungen
+
+Weitere Details stehen in [`docs/free-pro-matrix.md`](docs/free-pro-matrix.md).
 
 ## Updates
 
-Stabile Versionen werden über Packagist veröffentlicht. Empfohlen ist eine normale Composer-Versionsanforderung, z. B.:
+Stabile Versionen werden über Packagist veröffentlicht. Entwicklungsstände wie `dev-main` oder Feature-Branches sind ausschließlich für Tests gedacht.
 
-```text
-^1.5
-```
-
-Entwicklungsstände wie `dev-main` oder Feature-Branches sind ausschließlich für Tests gedacht.
+Der Free-/Pro-Schnitt ist als neue Hauptversion vorgesehen, damit bestehende 1.x-Installationen nicht durch ein normales Update Funktionen verlieren.
 
 ## Lizenz
 

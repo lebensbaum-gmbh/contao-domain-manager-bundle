@@ -41,6 +41,7 @@ final class DomainManagerSettingsTest extends TestCase
         $this->connection->insert('tl_domain_manager_settings', [
             'id' => 1,
             'tstamp' => 0,
+            'sync_member_groups' => null,
             'stale_sync_days' => 30,
             'auto_sync_enabled' => '',
             'auto_sync_interval' => 6,
@@ -57,14 +58,58 @@ final class DomainManagerSettingsTest extends TestCase
         $this->connection->close();
     }
 
-    public function testAutomaticSynchronizationIsDisabledByDefault(): void
+    public function testSyncMemberGroupsAreEmptyByDefault(): void
     {
-        self::assertFalse($this->settings->isAutoSyncEnabled());
-        self::assertFalse($this->settings->isAutoSyncDue(1_000_000));
-        self::assertSame(6, $this->settings->getAutoSyncIntervalHours());
+        self::assertSame([], $this->settings->getSyncMemberGroupIds());
     }
 
-    public function testFirstAutomaticSynchronizationIsImmediatelyDueAfterEnabling(): void
+    public function testSyncMemberGroupsAreNormalizedAndDeduplicated(): void
+    {
+        $this->connection->update(
+            'tl_domain_manager_settings',
+            ['sync_member_groups' => serialize(['2', '5', '2', 'invalid', 0])],
+            ['id' => 1]
+        );
+
+        self::assertSame([2, 5], $this->settings->getSyncMemberGroupIds());
+    }
+
+    public function testStaleSyncDaysDefaultsToThirty(): void
+    {
+        self::assertSame(30, $this->settings->getStaleSyncDays());
+    }
+
+    public function testConfiguredStaleSyncDaysAreReturned(): void
+    {
+        $this->connection->update(
+            'tl_domain_manager_settings',
+            ['stale_sync_days' => 45],
+            ['id' => 1]
+        );
+
+        self::assertSame(45, $this->settings->getStaleSyncDays());
+    }
+
+    public function testInvalidStaleSyncDaysFallBackToThirty(): void
+    {
+        $this->connection->update(
+            'tl_domain_manager_settings',
+            ['stale_sync_days' => 0],
+            ['id' => 1]
+        );
+
+        self::assertSame(30, $this->settings->getStaleSyncDays());
+
+        $this->connection->update(
+            'tl_domain_manager_settings',
+            ['stale_sync_days' => 4000],
+            ['id' => 1]
+        );
+
+        self::assertSame(30, $this->settings->getStaleSyncDays());
+    }
+
+    public function testFreeNeverEnablesAutomaticSynchronization(): void
     {
         $this->connection->update(
             'tl_domain_manager_settings',
@@ -72,68 +117,6 @@ final class DomainManagerSettingsTest extends TestCase
             ['id' => 1]
         );
 
-        self::assertTrue($this->settings->isAutoSyncEnabled());
-        self::assertTrue($this->settings->isAutoSyncDue(1_000_000));
-    }
-
-    public function testConfiguredIntervalControlsWhenNextRunIsDue(): void
-    {
-        $lastAttempt = 1_000_000;
-
-        $this->connection->update(
-            'tl_domain_manager_settings',
-            [
-                'auto_sync_enabled' => '1',
-                'auto_sync_interval' => 6,
-                'auto_sync_last_attempt' => $lastAttempt,
-            ],
-            ['id' => 1]
-        );
-
-        self::assertFalse($this->settings->isAutoSyncDue($lastAttempt + (6 * 3600) - 1));
-        self::assertTrue($this->settings->isAutoSyncDue($lastAttempt + (6 * 3600)));
-    }
-
-    public function testSuccessfulRunStoresAttemptSuccessStatusAndMessage(): void
-    {
-        $timestamp = 1_000_000;
-
-        $this->settings->markAutoSyncAttempt($timestamp);
-
-        self::assertSame($timestamp, $this->settings->getAutoSyncLastAttempt());
-        self::assertSame('running', $this->settings->getAutoSyncStatus());
-
-        $this->settings->storeAutoSyncResult('success', 'Alles aktuell.', $timestamp);
-
-        self::assertSame($timestamp, $this->settings->getAutoSyncLastAttempt());
-        self::assertSame($timestamp, $this->settings->getAutoSyncLastSuccess());
-        self::assertSame('success', $this->settings->getAutoSyncStatus());
-        self::assertSame('Alles aktuell.', $this->settings->getAutoSyncMessage());
-    }
-
-    public function testFailedRunDoesNotOverwriteLastSuccessfulRun(): void
-    {
-        $this->connection->update(
-            'tl_domain_manager_settings',
-            ['auto_sync_last_success' => 900_000],
-            ['id' => 1]
-        );
-
-        $this->settings->storeAutoSyncResult('error', 'Fehlgeschlagen.', 1_000_000);
-
-        self::assertSame(900_000, $this->settings->getAutoSyncLastSuccess());
-        self::assertSame(1_000_000, $this->settings->getAutoSyncLastAttempt());
-        self::assertSame('error', $this->settings->getAutoSyncStatus());
-    }
-
-    public function testInvalidIntervalFallsBackToSixHours(): void
-    {
-        $this->connection->update(
-            'tl_domain_manager_settings',
-            ['auto_sync_interval' => 5],
-            ['id' => 1]
-        );
-
-        self::assertSame(6, $this->settings->getAutoSyncIntervalHours());
+        self::assertFalse($this->settings->isAutoSyncEnabled());
     }
 }

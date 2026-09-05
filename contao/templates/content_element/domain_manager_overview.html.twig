@@ -30,22 +30,6 @@
         </div>
     {% endif %}
 
-    {% if auto_sync.enabled %}
-        {% set auto_sync_class = auto_sync.status == 'success' ? 'is-success' : (auto_sync.status == 'partial' ? 'is-warning' : (auto_sync.status == 'error' ? 'is-error' : '')) %}
-        <div class="domain-sync-all-message {{ auto_sync_class }}" role="status">
-            <strong>Automatische Synchronisation aktiv · {{ auto_sync.interval_label }}</strong>
-            {% if auto_sync.last_success_label %}
-                <br>Letzte erfolgreiche automatische Synchronisation: {{ auto_sync.last_success_label }}
-            {% elseif auto_sync.last_attempt_label %}
-                <br>Noch keine vollständig erfolgreiche automatische Synchronisation.
-            {% else %}
-                <br>Der erste automatische Lauf steht noch aus.
-            {% endif %}
-            {% if auto_sync.next_due_label %}<br>Nächster Lauf frühestens: {{ auto_sync.next_due_label }}{% endif %}
-            {% if auto_sync.status in ['partial', 'error'] and auto_sync.message %}<br>{{ auto_sync.message }}{% endif %}
-        </div>
-    {% endif %}
-
     <div class="domain-manager-list">
     {% for domain in domains %}
         <details

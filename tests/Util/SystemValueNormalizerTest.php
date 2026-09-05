@@ -40,6 +40,13 @@ final class SystemValueNormalizerTest extends TestCase
         self::assertSame('8.3', SystemValueNormalizer::phpVersion(' 8.3.0 '));
     }
 
+    public function testExactPhpVersionKeepsPatchLevel(): void
+    {
+        self::assertSame('8.5.3', SystemValueNormalizer::phpVersionFull('8.5.3-nmm1'));
+        self::assertSame('8.4.24', SystemValueNormalizer::phpVersionFull('8.4.24'));
+        self::assertSame('8.3', SystemValueNormalizer::phpVersionFull(' 8.3 '));
+    }
+
     public function testInvalidPhpVersionIsRejected(): void
     {
         $this->expectException(RuntimeException::class);

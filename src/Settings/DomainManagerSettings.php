@@ -62,11 +62,14 @@ final class DomainManagerSettings
         return $days;
     }
 
+    /**
+     * Free never enables automatic synchronization. The legacy getters below are
+     * temporarily retained so v1.5 data stays readable while the Pro extension is
+     * split out without forcing a destructive migration.
+     */
     public function isAutoSyncEnabled(): bool
     {
-        $value = strtolower(trim((string) ($this->getValue('auto_sync_enabled') ?? '')));
-
-        return in_array($value, ['1', 'true', 'yes', 'ja', 'on'], true);
+        return false;
     }
 
     public function getAutoSyncIntervalHours(): int
@@ -99,91 +102,11 @@ final class DomainManagerSettings
         return trim((string) ($this->getValue('auto_sync_message') ?? ''));
     }
 
-    public function isAutoSyncDue(?int $now = null): bool
-    {
-        if (!$this->isAutoSyncEnabled()) {
-            return false;
-        }
-
-        $lastAttempt = $this->getAutoSyncLastAttempt();
-
-        if ($lastAttempt < 1) {
-            return true;
-        }
-
-        $now ??= time();
-
-        return ($now - $lastAttempt) >= ($this->getAutoSyncIntervalHours() * 3600);
-    }
-
-    public function markAutoSyncAttempt(int $timestamp): void
-    {
-        $this->setValues([
-            'tstamp' => time(),
-            'auto_sync_last_attempt' => max(0, $timestamp),
-            'auto_sync_status' => 'running',
-            'auto_sync_message' => '',
-        ]);
-    }
-
-    public function storeAutoSyncResult(string $status, string $message, int $attemptTimestamp): void
-    {
-        $values = [
-            'tstamp' => time(),
-            'auto_sync_last_attempt' => max(0, $attemptTimestamp),
-            'auto_sync_status' => trim($status),
-            'auto_sync_message' => trim($message),
-        ];
-
-        if ('success' === $status) {
-            $values['auto_sync_last_success'] = max(0, $attemptTimestamp);
-        }
-
-        $this->setValues($values);
-    }
-
     private function getPositiveInt(string $field): int
     {
         $value = $this->getValue($field);
 
         return is_numeric($value) ? max(0, (int) $value) : 0;
-    }
-
-    /** @param array<string, int|string|null> $values */
-    private function setValues(array $values): void
-    {
-        try {
-            $schemaManager = $this->connection->createSchemaManager();
-
-            if (!$schemaManager->tablesExist([self::TABLE])) {
-                return;
-            }
-
-            $columns = array_change_key_case($schemaManager->listTableColumns(self::TABLE), CASE_LOWER);
-            $filtered = [];
-
-            foreach ($values as $field => $value) {
-                if (isset($columns[strtolower($field)])) {
-                    $filtered[$field] = $value;
-                }
-            }
-
-            if ([] === $filtered) {
-                return;
-            }
-
-            $exists = $this->connection->fetchOne(
-                'SELECT id FROM '.self::TABLE.' WHERE id = 1 LIMIT 1'
-            );
-
-            if (false === $exists) {
-                return;
-            }
-
-            $this->connection->update(self::TABLE, $filtered, ['id' => 1]);
-        } catch (Throwable) {
-            // Settings access deliberately fails closed; synchronization itself must not crash here.
-        }
     }
 
     private function getValue(string $field): mixed

@@ -9,6 +9,7 @@ use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Lebensbaum\ContaoDomainManagerBundle\Connection\SystemInfoConnectionException;
 use Lebensbaum\ContaoDomainManagerBundle\Security\SecretCipher;
 use Lebensbaum\ContaoDomainManagerBundle\Security\SecretStore;
+use Lebensbaum\ContaoDomainManagerBundle\Sync\SystemInfoApiClient;
 use Lebensbaum\ContaoDomainManagerBundle\Sync\SystemInfoClient;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
@@ -77,10 +78,10 @@ final class SystemInfoClientTest extends TestCase
     {
         $client = $this->createClient(new MockResponse(json_encode([
             'api_version' => 1,
-            'system_info_version' => '1.1.0',
+            'system_info_version' => '1.3.0',
             'system_id' => self::SYSTEM_ID,
-            'contao_version' => '5.7.12',
-            'php_version' => '8.4.13',
+            'contao_version' => '5.7.13',
+            'php_version' => '8.5.3-nmm1',
             'database_name' => 'contao',
             'document_root' => '/var/www/public',
             'app_environment' => 'prod',
@@ -93,9 +94,9 @@ final class SystemInfoClientTest extends TestCase
         $data = $client->fetch('example.test', self::SYSTEM_ID);
 
         self::assertSame(1, $data['api_version']);
-        self::assertSame('1.1.0', $data['system_info_version']);
-        self::assertSame('5.7.12', $data['contao_version']);
-        self::assertSame('8.4.13', $data['php_version']);
+        self::assertSame('1.3.0', $data['system_info_version']);
+        self::assertSame('5.7.13', $data['contao_version']);
+        self::assertSame('8.5.3-nmm1', $data['php_version']);
     }
 
     private function createClient(MockResponse $response): SystemInfoClient
@@ -130,7 +131,8 @@ final class SystemInfoClientTest extends TestCase
 
         $secretStore = new SecretStore($connection, $cipher);
         $httpClient = new MockHttpClient($response, 'https://example.test');
+        $apiClient = new SystemInfoApiClient($httpClient, $secretStore);
 
-        return new SystemInfoClient($httpClient, $secretStore);
+        return new SystemInfoClient($apiClient);
     }
 }

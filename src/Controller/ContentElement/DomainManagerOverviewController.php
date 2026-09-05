@@ -12,6 +12,7 @@ use Contao\CoreBundle\Twig\FragmentTemplate;
 use Contao\FilesModel;
 use Contao\StringUtil;
 use Doctrine\DBAL\Connection;
+use Lebensbaum\ContaoDomainManagerBundle\Event\InstallationHealthEvaluationEvent;
 use Lebensbaum\ContaoDomainManagerBundle\Health\InstallationHealthEvaluator;
 use Lebensbaum\ContaoDomainManagerBundle\Settings\DomainManagerSettings;
 use Lebensbaum\ContaoDomainManagerBundle\Util\SystemValueNormalizer;
@@ -19,6 +20,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 
 #[AsContentElement(
@@ -37,6 +39,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
         private readonly DomainManagerSettings $settings,
         private readonly AuthorizationCheckerInterface $authorizationChecker,
         private readonly InstallationHealthEvaluator $healthEvaluator,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -81,6 +84,15 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
             foreach ($installationRows as $installationRow) {
                 $installation = $this->normalizeInstallation($installationRow, $externalServices);
                 $installation['health'] = $this->healthEvaluator->evaluate($installation, $staleSyncDays);
+
+                $healthEvent = new InstallationHealthEvaluationEvent($installation);
+                $this->eventDispatcher->dispatch($healthEvent);
+                $installation['health'] = $this->applyHealthExtensions(
+                    $installation['health'],
+                    $healthEvent->getIssues(),
+                    $healthEvent->getInfoMessages()
+                );
+
                 $installations[] = $installation;
 
                 if ('' !== $installation['contao_version']) {
@@ -177,7 +189,6 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
         $template->set('environments', $allEnvironments);
         $template->set('can_sync', $canSync);
         $template->set('external_services', array_values($externalServices));
-        $template->set('auto_sync', $this->buildAutoSyncState());
         $response = $template->getResponse();
         $response->headers->set('Cache-Control', 'private, no-store, max-age=0');
 
@@ -220,6 +231,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
             'document_root' => SystemValueNormalizer::webrootLabel((string) ($row['document_root'] ?? '')),
             'contao_version' => $contaoVersion,
             'php_version' => $phpVersion,
+            'php_version_full' => trim((string) ($row['php_version_full'] ?? '')),
             'database_name' => trim((string) ($row['database_name'] ?? '')),
             'backend_url' => $backendUrl,
             'manager_url' => $managerUrl,
@@ -234,6 +246,61 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
             'sync_message' => trim((string) ($row['sync_message'] ?? '')),
             'connection_status' => trim((string) ($row['dm_connection_status'] ?? '')),
             'connection_message' => trim((string) ($row['dm_connection_message'] ?? '')),
+        ];
+    }
+
+    /**
+     * @param array{status:string,label:string,messages:list<string>,issue_count:int} $health
+     * @param list<array{status:string,message:string}> $issues
+     * @param list<string> $infoMessages
+     * @return array{status:string,label:string,messages:list<string>,issue_count:int}
+     */
+    private function applyHealthExtensions(array $health, array $issues, array $infoMessages = []): array
+    {
+        $severity = [
+            InstallationHealthEvaluator::STATUS_OK => 0,
+            InstallationHealthEvaluator::STATUS_WARNING => 1,
+            InstallationHealthEvaluator::STATUS_ERROR => 2,
+        ];
+        $status = (string) ($health['status'] ?? InstallationHealthEvaluator::STATUS_OK);
+        $messages = $health['messages'] ?? [];
+        $issueCount = max(0, (int) ($health['issue_count'] ?? count($messages)));
+
+        foreach ($issues as $issue) {
+            $issueStatus = (string) ($issue['status'] ?? InstallationHealthEvaluator::STATUS_OK);
+            $message = trim((string) ($issue['message'] ?? ''));
+
+            if ('' === $message) {
+                continue;
+            }
+
+            if (($severity[$issueStatus] ?? 0) > ($severity[$status] ?? 0)) {
+                $status = $issueStatus;
+            }
+
+            if (!in_array($message, $messages, true)) {
+                $messages[] = $message;
+                ++$issueCount;
+            }
+        }
+
+        foreach ($infoMessages as $message) {
+            $message = trim($message);
+
+            if ('' !== $message && !in_array($message, $messages, true)) {
+                $messages[] = $message;
+            }
+        }
+
+        return [
+            'status' => $status,
+            'label' => match ($status) {
+                InstallationHealthEvaluator::STATUS_ERROR => 'Fehler',
+                InstallationHealthEvaluator::STATUS_WARNING => 'Hinweis',
+                default => 'OK',
+            },
+            'messages' => $messages,
+            'issue_count' => $issueCount,
         ];
     }
 
@@ -266,33 +333,6 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
         }
 
         return $services;
-    }
-
-    /** @return array<string, bool|int|string> */
-    private function buildAutoSyncState(): array
-    {
-        $enabled = $this->settings->isAutoSyncEnabled();
-        $interval = $this->settings->getAutoSyncIntervalHours();
-        $lastAttempt = $this->settings->getAutoSyncLastAttempt();
-        $lastSuccess = $this->settings->getAutoSyncLastSuccess();
-
-        return [
-            'enabled' => $enabled,
-            'interval_hours' => $interval,
-            'interval_label' => match ($interval) {
-                1 => 'stündlich',
-                12 => 'alle 12 Stunden',
-                24 => 'täglich',
-                default => 'alle 6 Stunden',
-            },
-            'last_attempt_label' => $this->formatTimestamp($lastAttempt),
-            'last_success_label' => $this->formatTimestamp($lastSuccess),
-            'next_due_label' => $enabled && $lastAttempt > 0
-                ? $this->formatTimestamp($lastAttempt + ($interval * 3600))
-                : '',
-            'status' => $this->settings->getAutoSyncStatus(),
-            'message' => $this->settings->getAutoSyncMessage(),
-        ];
     }
 
     private function isChecked(mixed $value): bool
