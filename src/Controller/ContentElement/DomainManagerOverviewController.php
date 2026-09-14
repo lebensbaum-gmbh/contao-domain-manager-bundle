@@ -199,7 +199,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
         $template->set('php_versions', array_values($phpVersions));
         $template->set('environments', $allEnvironments);
         $template->set('can_sync', $canSync);
-        $template->set('external_services', array_values($externalServices));
+        $template->set('external_services', []);
         $template->set('frontend_bulk_actions', $overviewFrontendEvent->getBulkActions());
         $response = $template->getResponse();
         $response->headers->set('Cache-Control', 'private, no-store, max-age=0');
