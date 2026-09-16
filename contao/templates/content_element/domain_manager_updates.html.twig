@@ -31,10 +31,9 @@
 {% import _self as dm %}
 
 {% block content %}
-<div class="dm-updates" data-dm-updates>
+<div class="dm-updates{% if pro_enabled %} has-selection{% endif %}" data-dm-updates>
     <header class="dm-updates-head">
         <div>
-            <span class="dm-updates-kicker">Domain Manager</span>
             <h2>Updates</h2>
             <p>Contao-Installationen zentral prüfen und Updates vorbereiten.</p>
         </div>
@@ -80,6 +79,19 @@
         </label>
     </div>
 
+    {% if pro_enabled and installations %}
+        <div class="dm-updates-selection" data-dm-update-selection>
+            <label class="dm-updates-select-visible">
+                <input type="checkbox" data-dm-select-visible>
+                <span>Sichtbare auswählen</span>
+            </label>
+            <div class="dm-updates-selection-status" aria-live="polite">
+                <span><strong data-dm-selected-count>0</strong> ausgewählt</span>
+                <button type="button" data-dm-clear-selection disabled>Auswahl aufheben</button>
+            </div>
+        </div>
+    {% endif %}
+
     <div class="dm-updates-list" data-dm-update-list>
         {% for installation in installations %}
             <article
@@ -88,6 +100,17 @@
                 data-update-state="{{ installation.update_state }}"
                 data-search="{{ (installation.domain ~ ' ' ~ installation.parent_domain ~ ' ' ~ installation.environment_label)|lower|e('html_attr') }}"
             >
+                {% if pro_enabled %}
+                    <label class="dm-update-select" title="{{ installation.domain }} auswählen">
+                        <input
+                            type="checkbox"
+                            value="{{ installation.id }}"
+                            data-dm-update-select
+                            aria-label="{{ installation.domain }} auswählen"
+                        >
+                    </label>
+                {% endif %}
+
                 <div class="dm-update-main">
                     <div class="dm-update-domain">
                         <strong>{{ installation.domain }}</strong>
