@@ -7,6 +7,7 @@
 .dm-updates-pro-teaser,
 .dm-updates-toolbar,
 .dm-updates-selection,
+.dm-updates-progress,
 .dm-update-row {
     background: #fff;
     border: 1px solid rgba(0, 0, 0, .1);
@@ -196,6 +197,67 @@
     font-size: .85rem;
 }
 
+.dm-updates-selection button.is-primary {
+    background: #222;
+    border-color: #222;
+    color: #fff;
+    font-weight: 700;
+}
+
+.dm-updates-selection button.is-primary:disabled {
+    background: #222;
+    color: #fff;
+}
+
+.dm-updates-progress {
+    display: grid;
+    gap: .75rem;
+    padding: 1rem 1.1rem;
+}
+
+.dm-updates-progress[hidden] {
+    display: none !important;
+}
+
+.dm-updates-progress-head,
+.dm-updates-progress-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.dm-updates-progress-head span,
+.dm-updates-progress-meta {
+    color: #666;
+    font-size: .88rem;
+}
+
+.dm-updates-progress-track {
+    overflow: hidden;
+    width: 100%;
+    height: .65rem;
+    border-radius: 999px;
+    background: #ececec;
+}
+
+.dm-updates-progress-bar {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: #222;
+    transition: width .2s ease;
+}
+
+.dm-updates-progress.is-complete {
+    border-color: rgba(37, 112, 52, .35);
+}
+
+.dm-updates-progress.has-errors {
+    border-color: rgba(150, 50, 50, .35);
+}
+
 .dm-updates-list {
     display: grid;
     gap: .6rem;
@@ -222,6 +284,11 @@
     border-color: rgba(0, 0, 0, .28);
     box-shadow: 0 0 0 2px rgba(0, 0, 0, .04);
     background: #fcfcfc;
+}
+
+.dm-update-row.is-processing {
+    border-color: rgba(0, 0, 0, .35);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, .05);
 }
 
 .dm-update-row.is-result {
@@ -277,6 +344,10 @@
     background: #f8dddd;
 }
 
+.dm-update-state.is-running {
+    background: #e8eef7;
+}
+
 .dm-update-state.is-locked,
 .dm-update-state.is-unknown {
     color: #666;
@@ -307,11 +378,26 @@
     color: #666;
 }
 
+.dm-updates.is-running .dm-updates-toolbar,
+.dm-updates.is-running .dm-updates-selection {
+    display: none;
+}
+
+.dm-updates.is-running .dm-update-select,
+.dm-updates.is-running .dm-update-actions {
+    display: none;
+}
+
+.dm-updates.is-running.has-selection .dm-update-row {
+    grid-template-columns: minmax(15rem, 1.8fr) minmax(6rem, .55fr) minmax(9rem, .8fr);
+}
+
 @media (max-width: 900px) {
     .dm-updates-head,
     .dm-updates-pro-teaser,
     .dm-updates-toolbar,
-    .dm-updates-selection {
+    .dm-updates-selection,
+    .dm-updates-progress-meta {
         align-items: stretch;
         flex-direction: column;
     }
@@ -332,8 +418,16 @@
         grid-template-columns: auto 1fr 1fr;
     }
 
+    .dm-updates.is-running.has-selection .dm-update-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
     .dm-updates.has-selection .dm-update-main {
         grid-column: 2 / -1;
+    }
+
+    .dm-updates.is-running.has-selection .dm-update-main {
+        grid-column: 1 / -1;
     }
 
     .dm-update-actions {
@@ -355,6 +449,10 @@
         grid-template-columns: auto 1fr;
     }
 
+    .dm-updates.is-running.has-selection .dm-update-row {
+        grid-template-columns: 1fr;
+    }
+
     .dm-updates.has-selection .dm-update-main,
     .dm-updates.has-selection .dm-update-version,
     .dm-updates.has-selection .dm-update-state,
@@ -362,11 +460,18 @@
         grid-column: 2;
     }
 
+    .dm-updates.is-running.has-selection .dm-update-main,
+    .dm-updates.is-running.has-selection .dm-update-version,
+    .dm-updates.is-running.has-selection .dm-update-state {
+        grid-column: 1;
+    }
+
     .dm-update-main {
         grid-template-columns: 1fr;
     }
 
-    .dm-updates-selection-status {
+    .dm-updates-selection-status,
+    .dm-updates-progress-head {
         align-items: flex-start;
         flex-direction: column;
     }
