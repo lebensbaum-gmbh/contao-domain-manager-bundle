@@ -22,10 +22,3 @@ $GLOBALS['TL_DCA']['tl_content']['palettes']['domain_manager_updates'] = '
     {protected_legend:hide},protected;
     {expert_legend:hide},cssID
 ';
-
-$GLOBALS['TL_DCA']['tl_content']['palettes']['domain_manager_navigation'] = '
-    {type_legend},type,headline;
-    {template_legend:hide},customTpl;
-    {protected_legend:hide},protected;
-    {expert_legend:hide},cssID
-';
