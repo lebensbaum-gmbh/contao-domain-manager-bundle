@@ -16,7 +16,6 @@ use Symfony\Component\HttpFoundation\Response;
 #[AsFrontendModule(
     type: 'domain_manager_navigation',
     category: 'domain_manager',
-    template: '@Contao/frontend_module/domain_manager_navigation.html.twig',
 )]
 final class DomainManagerNavigationController extends AbstractFrontendModuleController
 {
