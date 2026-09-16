@@ -34,9 +34,8 @@ final class FrontendWorkspaceNavigation
     /**
      * @return list<array{key:string,label:string,url:string,active:bool}>
      */
-    public function build(int $articleId): array
+    public function build(int $currentPageId): array
     {
-        $currentPageId = $this->findCurrentPageId($articleId);
         $items = [];
 
         foreach (self::ITEMS as $key => $configuration) {
@@ -71,24 +70,6 @@ final class FrontendWorkspaceNavigation
         }
 
         return $items;
-    }
-
-    private function findCurrentPageId(int $articleId): int
-    {
-        if ($articleId < 1) {
-            return 0;
-        }
-
-        try {
-            $pageId = $this->connection->fetchOne(
-                'SELECT pid FROM tl_article WHERE id = ? LIMIT 1',
-                [$articleId]
-            );
-
-            return is_numeric($pageId) ? (int) $pageId : 0;
-        } catch (Throwable) {
-            return 0;
-        }
     }
 
     private function findPageIdForContentType(string $contentType): int
