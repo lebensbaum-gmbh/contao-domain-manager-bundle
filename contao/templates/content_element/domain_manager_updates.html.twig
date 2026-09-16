@@ -1,0 +1,130 @@
+{% extends "@Contao/content_element/_base.html.twig" %}
+
+{% use "@Contao/component/_stylesheet.html.twig" %}
+
+{% add "domain_manager_updates_css" to stylesheets %}
+    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-updates.css')} %}
+        {{ block('stylesheet_component') }}
+    {% endwith %}
+{% endadd %}
+
+{% add "domain_manager_updates_js" to body %}
+    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-updates.js') }}" defer></script>
+{% endadd %}
+
+{% macro action(action, request_token) %}
+    {% if action.method == 'post' %}
+        <form class="dm-updates-action-form" action="{{ action.url }}" method="post">
+            <input type="hidden" name="REQUEST_TOKEN" value="{{ request_token }}">
+            <button
+                class="dm-updates-action is-{{ action.variant }}"
+                type="submit"
+                data-dm-action-label="{{ action.label|e('html_attr') }}"
+                {% if action.confirm %}data-dm-confirm="{{ action.confirm|e('html_attr') }}"{% endif %}
+            >{{ action.label }}</button>
+        </form>
+    {% else %}
+        <a class="dm-updates-action is-{{ action.variant }}" href="{{ action.url }}">{{ action.label }}</a>
+    {% endif %}
+{% endmacro %}
+
+{% import _self as dm %}
+
+{% block content %}
+<div class="dm-updates" data-dm-updates>
+    <header class="dm-updates-head">
+        <div>
+            <span class="dm-updates-kicker">Domain Manager</span>
+            <h2>Updates</h2>
+            <p>Contao-Installationen zentral prüfen und Updates vorbereiten.</p>
+        </div>
+        {% if pro_enabled %}
+            <div class="dm-updates-summary">
+                <strong>{{ available_count }}</strong>
+                <span>{{ available_count == 1 ? 'bekanntes Update' : 'bekannte Updates' }}</span>
+            </div>
+        {% else %}
+            <span class="dm-pro-badge">Pro</span>
+        {% endif %}
+    </header>
+
+    {% if not pro_enabled %}
+        <div class="dm-updates-pro-teaser">
+            <div>
+                <strong>Update-Management in der Pro-Version</strong>
+                <p>Updates prüfen, verfügbare Updates filtern, Sicherheitsbackups erstellen und Updates direkt installieren.</p>
+            </div>
+            <div class="dm-updates-pro-actions" aria-label="Pro-Funktionen">
+                <button type="button" disabled>Updates prüfen <span>Pro</span></button>
+                <button type="button" disabled>Updates installieren <span>Pro</span></button>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if result_message %}
+        <div class="dm-updates-result {{ install_status == 'error' or check_status in ['error', 'blocked'] ? 'is-error' : 'is-success' }}" role="status">
+            <strong>{{ result_message }}</strong>
+        </div>
+    {% endif %}
+
+    <div class="dm-updates-toolbar">
+        <div class="dm-updates-tabs" role="group" aria-label="Update-Filter">
+            <button type="button" class="is-active" data-dm-update-filter="all">Alle Installationen</button>
+            <button type="button" data-dm-update-filter="available" {% if not pro_enabled %}disabled title="Nur in der Pro-Version verfügbar"{% endif %}>
+                Updates verfügbar{% if not pro_enabled %} <span class="dm-pro-inline">Pro</span>{% endif %}
+            </button>
+        </div>
+        <label class="dm-updates-search">
+            <span>Installationen filtern</span>
+            <input type="search" placeholder="Domain suchen …" data-dm-update-search>
+        </label>
+    </div>
+
+    <div class="dm-updates-list" data-dm-update-list>
+        {% for installation in installations %}
+            <article
+                class="dm-update-row{% if installation.id == result_installation_id %} is-result{% endif %}"
+                data-dm-update-row
+                data-update-state="{{ installation.update_state }}"
+                data-search="{{ (installation.domain ~ ' ' ~ installation.parent_domain ~ ' ' ~ installation.environment_label)|lower|e('html_attr') }}"
+            >
+                <div class="dm-update-main">
+                    <div class="dm-update-domain">
+                        <strong>{{ installation.domain }}</strong>
+                        {% if installation.parent_domain and installation.parent_domain != installation.domain %}
+                            <span>Hauptdomain: {{ installation.parent_domain }}</span>
+                        {% endif %}
+                    </div>
+                    <span class="dm-update-environment">{{ installation.environment_label }}</span>
+                </div>
+
+                <div class="dm-update-version">
+                    <span>Contao</span>
+                    <strong>{{ installation.contao_version ?: '—' }}</strong>
+                </div>
+
+                <div class="dm-update-state is-{{ installation.update_state }}">
+                    {{ installation.update_state_label }}
+                </div>
+
+                <div class="dm-update-actions">
+                    {% if installation.frontend_actions %}
+                        {% for action in installation.frontend_actions %}
+                            {% if action.name in ['update-check', 'update-install'] %}
+                                {{ dm.action(action, contao.request_token) }}
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <button class="dm-updates-action is-locked" type="button" disabled title="Nur in der Pro-Version verfügbar">Update prüfen <span>Pro</span></button>
+                        <button class="dm-updates-action is-locked" type="button" disabled title="Nur in der Pro-Version verfügbar">Installieren <span>Pro</span></button>
+                    {% endif %}
+                </div>
+            </article>
+        {% else %}
+            <p class="dm-updates-empty">Es sind noch keine Installationen hinterlegt.</p>
+        {% endfor %}
+    </div>
+
+    <p class="dm-updates-empty" data-dm-update-empty hidden>Keine Installationen entsprechen dem gewählten Filter.</p>
+</div>
+{% endblock %}
