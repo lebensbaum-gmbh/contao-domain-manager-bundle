@@ -210,6 +210,10 @@
     transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
 }
 
+.dm-update-row[hidden] {
+    display: none !important;
+}
+
 .dm-updates.has-selection .dm-update-row {
     grid-template-columns: 1.25rem minmax(15rem, 1.8fr) minmax(6rem, .55fr) minmax(9rem, .8fr) minmax(14rem, 1fr);
 }
