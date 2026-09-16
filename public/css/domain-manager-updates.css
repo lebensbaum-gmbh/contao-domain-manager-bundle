@@ -6,6 +6,7 @@
 .dm-updates-head,
 .dm-updates-pro-teaser,
 .dm-updates-toolbar,
+.dm-updates-selection,
 .dm-update-row {
     background: #fff;
     border: 1px solid rgba(0, 0, 0, .1);
@@ -25,21 +26,9 @@
     margin: 0;
 }
 
-.dm-updates-head h2 {
-    margin-top: .15rem;
-}
-
 .dm-updates-head p {
     margin-top: .35rem;
     color: #666;
-}
-
-.dm-updates-kicker {
-    font-size: .78rem;
-    font-weight: 700;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    color: #777;
 }
 
 .dm-updates-summary {
@@ -101,7 +90,8 @@
 
 .dm-updates-pro-actions button,
 .dm-updates-tabs button,
-.dm-updates-action {
+.dm-updates-action,
+.dm-updates-selection button {
     appearance: none;
     border: 1px solid rgba(0, 0, 0, .15);
     border-radius: .45rem;
@@ -115,7 +105,8 @@
 
 .dm-updates-pro-actions button:disabled,
 .dm-updates-tabs button:disabled,
-.dm-updates-action:disabled {
+.dm-updates-action:disabled,
+.dm-updates-selection button:disabled {
     cursor: not-allowed;
     opacity: .6;
 }
@@ -163,6 +154,48 @@
     font: inherit;
 }
 
+.dm-updates-selection {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .75rem 1rem;
+}
+
+.dm-updates-select-visible,
+.dm-updates-selection-status {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+}
+
+.dm-updates-select-visible {
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.dm-updates-select-visible input,
+.dm-update-select input {
+    width: 1rem;
+    height: 1rem;
+    margin: 0;
+    accent-color: currentColor;
+}
+
+.dm-updates-selection-status {
+    color: #666;
+    font-size: .9rem;
+}
+
+.dm-updates-selection-status strong {
+    color: #222;
+}
+
+.dm-updates-selection button {
+    padding: .42rem .65rem;
+    font-size: .85rem;
+}
+
 .dm-updates-list {
     display: grid;
     gap: .6rem;
@@ -174,11 +207,29 @@
     align-items: center;
     gap: 1rem;
     padding: .9rem 1rem;
+    transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+
+.dm-updates.has-selection .dm-update-row {
+    grid-template-columns: 1.25rem minmax(15rem, 1.8fr) minmax(6rem, .55fr) minmax(9rem, .8fr) minmax(14rem, 1fr);
+}
+
+.dm-update-row.is-selected {
+    border-color: rgba(0, 0, 0, .28);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, .04);
+    background: #fcfcfc;
 }
 
 .dm-update-row.is-result {
     outline: 2px solid rgba(0, 0, 0, .12);
     outline-offset: 2px;
+}
+
+.dm-update-select {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
 }
 
 .dm-update-main,
@@ -255,7 +306,8 @@
 @media (max-width: 900px) {
     .dm-updates-head,
     .dm-updates-pro-teaser,
-    .dm-updates-toolbar {
+    .dm-updates-toolbar,
+    .dm-updates-selection {
         align-items: stretch;
         flex-direction: column;
     }
@@ -264,19 +316,45 @@
         text-align: left;
     }
 
-    .dm-update-row {
-        grid-template-columns: 1fr 1fr;
+    .dm-updates-selection-status {
+        justify-content: space-between;
+    }
+
+    .dm-update-row,
+    .dm-updates.has-selection .dm-update-row {
+        grid-template-columns: auto 1fr 1fr;
+    }
+
+    .dm-updates.has-selection .dm-update-main {
+        grid-column: 2 / -1;
     }
 
     .dm-update-actions {
         justify-content: flex-start;
-        grid-column: 1 / -1;
+        grid-column: 2 / -1;
     }
 }
 
 @media (max-width: 560px) {
     .dm-update-row,
+    .dm-updates.has-selection .dm-update-row {
+        grid-template-columns: auto 1fr;
+    }
+
+    .dm-update-main,
+    .dm-updates.has-selection .dm-update-main,
+    .dm-update-version,
+    .dm-update-state,
+    .dm-update-actions {
+        grid-column: 2;
+    }
+
     .dm-update-main {
         grid-template-columns: 1fr;
+    }
+
+    .dm-updates-selection-status {
+        align-items: flex-start;
+        flex-direction: column;
     }
 }
