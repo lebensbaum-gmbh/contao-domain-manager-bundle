@@ -15,6 +15,7 @@
         const selectedCount = root.querySelector('[data-dm-selected-count]');
         const clearSelection = root.querySelector('[data-dm-clear-selection]');
         const checkSelected = root.querySelector('[data-dm-check-selected]');
+        const installSelected = root.querySelector('[data-dm-install-selected]');
         const rowCheckboxes = Array.from(root.querySelectorAll('[data-dm-update-select]'));
         const progress = root.querySelector('[data-dm-update-progress]');
         const progressTitle = root.querySelector('[data-dm-progress-title]');
@@ -38,6 +39,8 @@
                     return 'Aktuell';
                 case 'error':
                     return 'Prüfung fehlgeschlagen';
+                case 'warning':
+                    return 'Installiert · Synchronisation prüfen';
                 case 'running':
                     return 'Prüfung läuft …';
                 case 'locked':
@@ -76,6 +79,9 @@
             .map((checkbox) => checkbox.closest('[data-dm-update-row]'))
             .filter(Boolean);
 
+        const installableSelectedRows = () => selectedRows()
+            .filter((row) => Boolean(findActionForm(row, 'update-install')));
+
         rowCheckboxes.forEach((checkbox) => {
             const row = checkbox.closest('[data-dm-update-row]');
             const eligible = Boolean(findActionForm(row, 'update-check'));
@@ -89,6 +95,7 @@
 
         const updateSelection = () => {
             const selected = selectedRows();
+            const installable = selected.filter((row) => Boolean(findActionForm(row, 'update-install')));
 
             rows.forEach((row) => {
                 const checkbox = row.querySelector('[data-dm-update-select]');
@@ -105,6 +112,13 @@
 
             if (checkSelected) {
                 checkSelected.disabled = bulkRunning || selected.length === 0;
+            }
+
+            if (installSelected) {
+                installSelected.disabled = bulkRunning || installable.length === 0;
+                installSelected.textContent = installable.length > 0
+                    ? `${installable.length} ${installable.length === 1 ? 'Update' : 'Updates'} installieren`
+                    : 'Ausgewählte installieren';
             }
 
             if (selectVisible) {
@@ -166,9 +180,27 @@
             }
         };
 
-        const stateFromResponseUrl = (url) => {
+        const stateFromResponseUrl = (url, action = 'check') => {
             try {
-                const status = new URL(url, window.location.href).searchParams.get('dm_update');
+                const params = new URL(url, window.location.href).searchParams;
+
+                if (action === 'install') {
+                    const status = params.get('dm_update_install');
+
+                    if (status === 'success') {
+                        return 'current';
+                    }
+                    if (status === 'success_sync_warning') {
+                        return 'warning';
+                    }
+                    if (status === 'error') {
+                        return 'error';
+                    }
+
+                    return 'error';
+                }
+
+                const status = params.get('dm_update');
 
                 if (status === 'ready') {
                     return 'available';
@@ -186,7 +218,7 @@
             return 'error';
         };
 
-        const refreshRowFromResponse = (row, html, responseUrl) => {
+        const refreshRowFromResponse = (row, html, responseUrl, action = 'check') => {
             const installationId = String(row.dataset.installationId || '');
             let refreshed = false;
 
@@ -195,10 +227,12 @@
                 const resultRow = documentFromResponse.querySelector(`[data-dm-update-row][data-installation-id="${installationId}"]`);
 
                 if (resultRow) {
-                    const resultState = resultRow.dataset.updateState || stateFromResponseUrl(responseUrl);
+                    const resultState = resultRow.dataset.updateState || stateFromResponseUrl(responseUrl, action);
                     const resultStateElement = resultRow.querySelector('.dm-update-state');
                     const currentActions = row.querySelector('.dm-update-actions');
                     const resultActions = resultRow.querySelector('.dm-update-actions');
+                    const currentVersion = row.querySelector('.dm-update-version');
+                    const resultVersion = resultRow.querySelector('.dm-update-version');
 
                     setRowState(row, resultState, resultStateElement?.textContent?.trim() || stateLabel(resultState));
 
@@ -206,14 +240,72 @@
                         currentActions.innerHTML = resultActions.innerHTML;
                     }
 
+                    if (currentVersion && resultVersion) {
+                        currentVersion.innerHTML = resultVersion.innerHTML;
+                    }
+
                     refreshed = true;
                 }
             }
 
             if (!refreshed) {
-                const state = stateFromResponseUrl(responseUrl);
+                const state = stateFromResponseUrl(responseUrl, action);
                 setRowState(row, state);
             }
+        };
+
+        const setBulkUiLocked = (locked) => {
+            filterButtons.forEach((button) => { button.disabled = locked; });
+            if (search) {
+                search.disabled = locked;
+            }
+            if (selectVisible) {
+                selectVisible.disabled = locked;
+            }
+            if (clearSelection) {
+                clearSelection.disabled = locked;
+            }
+            if (checkSelected) {
+                checkSelected.disabled = locked;
+            }
+            if (installSelected) {
+                installSelected.disabled = locked;
+            }
+            rowCheckboxes.forEach((checkbox) => {
+                checkbox.disabled = locked || checkbox.dataset.dmCheckEligible !== '1';
+            });
+        };
+
+        const startBulkRun = (selected, title, startText) => {
+            bulkRunning = true;
+            root.classList.add('is-running');
+            progress?.removeAttribute('hidden');
+            progress?.classList.remove('is-complete', 'has-errors', 'has-warnings');
+            previousResult?.setAttribute('hidden', 'hidden');
+
+            if (progressTitle) {
+                progressTitle.textContent = title;
+            }
+
+            setBulkUiLocked(true);
+
+            rows.forEach((row) => {
+                row.hidden = !selected.includes(row);
+                row.classList.remove('is-processing');
+            });
+            if (empty) {
+                empty.hidden = true;
+            }
+
+            updateProgress(0, selected.length, startText);
+        };
+
+        const finishBulkRun = () => {
+            bulkRunning = false;
+            root.classList.remove('is-running');
+            setBulkUiLocked(false);
+            updateAvailableCount();
+            apply();
         };
 
         const runBulkCheck = async () => {
@@ -226,40 +318,7 @@
                 return;
             }
 
-            bulkRunning = true;
-            root.classList.add('is-running');
-            progress?.removeAttribute('hidden');
-            progress?.classList.remove('is-complete', 'has-errors');
-            previousResult?.setAttribute('hidden', 'hidden');
-
-            if (progressTitle) {
-                progressTitle.textContent = 'Update-Prüfung läuft';
-            }
-
-            filterButtons.forEach((button) => { button.disabled = true; });
-            if (search) {
-                search.disabled = true;
-            }
-            if (selectVisible) {
-                selectVisible.disabled = true;
-            }
-            if (clearSelection) {
-                clearSelection.disabled = true;
-            }
-            if (checkSelected) {
-                checkSelected.disabled = true;
-            }
-            rowCheckboxes.forEach((checkbox) => { checkbox.disabled = true; });
-
-            rows.forEach((row) => {
-                row.hidden = !selected.includes(row);
-                row.classList.remove('is-processing');
-            });
-            if (empty) {
-                empty.hidden = true;
-            }
-
-            updateProgress(0, selected.length, 'Prüfung wird gestartet …');
+            startBulkRun(selected, 'Update-Prüfung läuft', 'Prüfung wird gestartet …');
 
             let completed = 0;
             let errors = 0;
@@ -292,7 +351,7 @@
                     }
 
                     const html = await response.text();
-                    refreshRowFromResponse(row, html, response.url);
+                    refreshRowFromResponse(row, html, response.url, 'check');
 
                     if (row.dataset.updateState === 'error') {
                         errors += 1;
@@ -313,7 +372,7 @@
             const summary = [
                 `${available} ${available === 1 ? 'Update' : 'Updates'} verfügbar`,
                 `${current} aktuell`,
-                `${errors} ${errors === 1 ? 'Fehler' : 'Fehler'}`,
+                `${errors} Fehler`,
             ].join(' · ');
 
             if (progressTitle) {
@@ -325,17 +384,104 @@
             }
             updateProgress(selected.length, selected.length, 'Alle ausgewählten Installationen wurden geprüft.', summary);
 
-            bulkRunning = false;
-            root.classList.remove('is-running');
-            filterButtons.forEach((button) => { button.disabled = false; });
-            if (search) {
-                search.disabled = false;
-            }
-            rowCheckboxes.forEach((checkbox) => {
-                checkbox.disabled = checkbox.dataset.dmCheckEligible !== '1';
-            });
+            finishBulkRun();
+        };
 
-            apply();
+        const runBulkInstall = async () => {
+            if (bulkRunning) {
+                return;
+            }
+
+            const selected = installableSelectedRows();
+            if (selected.length === 0) {
+                return;
+            }
+
+            const noun = selected.length === 1 ? 'Update' : 'Updates';
+            const confirmation = `${selected.length} ${noun} jetzt nacheinander installieren?\n\nUnmittelbar vor jeder einzelnen Installation wird ein vollständiges Sicherheitsbackup erstellt. Jede Zielinstallation prüft den vorbereiteten Composer-Plan vor dem Start erneut.`;
+
+            if (!window.confirm(confirmation)) {
+                return;
+            }
+
+            startBulkRun(selected, 'Update-Installation läuft', 'Installation wird gestartet …');
+
+            let completed = 0;
+            let installed = 0;
+            let warnings = 0;
+            let errors = 0;
+
+            for (const row of selected) {
+                const domain = row.querySelector('.dm-update-domain strong')?.textContent?.trim() || 'Installation';
+                const form = findActionForm(row, 'update-install');
+
+                row.classList.add('is-processing');
+                setRowState(row, 'running', 'Installation läuft …');
+                updateProgress(completed, selected.length, `${domain} wird aktualisiert …`);
+
+                try {
+                    if (!form) {
+                        throw new Error('Kein gültig vorbereitetes Update verfügbar.');
+                    }
+
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        body: new FormData(form),
+                        credentials: 'same-origin',
+                        redirect: 'follow',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    const html = await response.text();
+                    refreshRowFromResponse(row, html, response.url, 'install');
+
+                    if (row.dataset.updateState === 'current') {
+                        installed += 1;
+                    } else if (row.dataset.updateState === 'warning') {
+                        warnings += 1;
+                    } else {
+                        errors += 1;
+                    }
+                } catch (error) {
+                    setRowState(row, 'error', 'Installation fehlgeschlagen');
+                    errors += 1;
+                }
+
+                row.classList.remove('is-processing');
+                completed += 1;
+                updateAvailableCount();
+
+                const resultText = row.dataset.updateState === 'current'
+                    ? 'Update installiert'
+                    : stateLabel(row.dataset.updateState);
+                updateProgress(completed, selected.length, `${domain}: ${resultText}`);
+            }
+
+            const summary = [
+                `${installed} installiert`,
+                `${warnings} ${warnings === 1 ? 'Warnung' : 'Warnungen'}`,
+                `${errors} Fehler`,
+            ].join(' · ');
+
+            if (progressTitle) {
+                progressTitle.textContent = 'Update-Installation abgeschlossen';
+            }
+            progress?.classList.add('is-complete');
+            if (warnings > 0) {
+                progress?.classList.add('has-warnings');
+            }
+            if (errors > 0) {
+                progress?.classList.add('has-errors');
+            }
+            updateProgress(selected.length, selected.length, 'Alle ausgewählten Updates wurden verarbeitet.', summary);
+
+            finishBulkRun();
         };
 
         filterButtons.forEach((button) => {
@@ -376,6 +522,7 @@
         });
 
         checkSelected?.addEventListener('click', runBulkCheck);
+        installSelected?.addEventListener('click', runBulkInstall);
 
         root.addEventListener('submit', (event) => {
             const form = event.target.closest?.('.dm-updates-action-form');
@@ -410,6 +557,9 @@
             }
             if (checkSelected) {
                 checkSelected.disabled = true;
+            }
+            if (installSelected) {
+                installSelected.disabled = true;
             }
             rowCheckboxes.forEach((checkbox) => { checkbox.disabled = true; });
 
