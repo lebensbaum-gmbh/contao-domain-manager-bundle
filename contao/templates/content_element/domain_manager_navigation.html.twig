@@ -1,0 +1,26 @@
+{% extends "@Contao/content_element/_base.html.twig" %}
+
+{% use "@Contao/component/_stylesheet.html.twig" %}
+
+{% add "domain_manager_navigation_css" to stylesheets %}
+    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-navigation.css')} %}
+        {{ block('stylesheet_component') }}
+    {% endwith %}
+{% endadd %}
+
+{% block content %}
+{% if items %}
+<nav class="dm-workspace-nav" aria-label="Domain Manager">
+    <div class="dm-workspace-nav__brand">Domain Manager</div>
+    <div class="dm-workspace-nav__items">
+        {% for item in items %}
+            <a
+                class="dm-workspace-nav__item{% if item.active %} is-active{% endif %}"
+                href="{{ item.url }}"
+                {% if item.active %}aria-current="page"{% endif %}
+            >{{ item.label }}</a>
+        {% endfor %}
+    </div>
+</nav>
+{% endif %}
+{% endblock %}
