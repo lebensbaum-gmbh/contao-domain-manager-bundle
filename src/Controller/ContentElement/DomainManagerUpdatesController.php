@@ -86,6 +86,16 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
                 }
             }
 
+            if ($installation['id'] === $resultInstallationId && '' !== $installStatus) {
+                if ('success' === $installStatus) {
+                    $updateState = 'current';
+                } elseif ('success_sync_warning' === $installStatus) {
+                    $updateState = 'warning';
+                } elseif ('error' === $installStatus) {
+                    $updateState = 'error';
+                }
+            }
+
             if ('available' === $updateState) {
                 ++$availableCount;
             }
@@ -153,6 +163,7 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
             'available' => 'Update verfügbar',
             'current' => 'Aktuell',
             'error' => 'Prüfung fehlgeschlagen',
+            'warning' => 'Installiert · Synchronisation prüfen',
             'locked' => 'Pro-Funktion',
             default => 'Noch nicht geprüft',
         };
@@ -163,6 +174,7 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
         if ('' !== $installStatus) {
             return match ($installStatus) {
                 'success' => 'Update erfolgreich installiert, verifiziert und Systemdaten aktualisiert.',
+                'success_sync_warning' => 'Update erfolgreich installiert und verifiziert. Die anschließende Synchronisation der Systemdaten ist jedoch fehlgeschlagen.',
                 'error' => 'Die Update-Installation ist fehlgeschlagen. Details bleiben an der Installation erhalten.',
                 default => 'Die Update-Installation wurde verarbeitet.',
             };
