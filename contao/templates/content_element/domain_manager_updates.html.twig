@@ -14,7 +14,12 @@
 
 {% macro action(action, request_token) %}
     {% if action.method == 'post' %}
-        <form class="dm-updates-action-form" action="{{ action.url }}" method="post">
+        <form
+            class="dm-updates-action-form"
+            action="{{ action.url }}"
+            method="post"
+            data-dm-action="{{ action.name|e('html_attr') }}"
+        >
             <input type="hidden" name="REQUEST_TOKEN" value="{{ request_token }}">
             <button
                 class="dm-updates-action is-{{ action.variant }}"
@@ -39,7 +44,7 @@
         </div>
         {% if pro_enabled %}
             <div class="dm-updates-summary">
-                <strong>{{ available_count }}</strong>
+                <strong data-dm-available-count>{{ available_count }}</strong>
                 <span>{{ available_count == 1 ? 'bekanntes Update' : 'bekannte Updates' }}</span>
             </div>
         {% else %}
@@ -88,8 +93,31 @@
             <div class="dm-updates-selection-status" aria-live="polite">
                 <span><strong data-dm-selected-count>0</strong> ausgewählt</span>
                 <button type="button" data-dm-clear-selection disabled>Auswahl aufheben</button>
+                <button type="button" class="is-primary" data-dm-check-selected disabled>Ausgewählte prüfen</button>
             </div>
         </div>
+
+        <section class="dm-updates-progress" data-dm-update-progress hidden aria-live="polite">
+            <div class="dm-updates-progress-head">
+                <strong data-dm-progress-title>Update-Prüfung</strong>
+                <span data-dm-progress-counter>0 / 0</span>
+            </div>
+            <div
+                class="dm-updates-progress-track"
+                role="progressbar"
+                aria-label="Fortschritt der Update-Prüfung"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="0"
+                data-dm-progress-track
+            >
+                <span class="dm-updates-progress-bar" data-dm-progress-bar></span>
+            </div>
+            <div class="dm-updates-progress-meta">
+                <span data-dm-progress-current>Bereit.</span>
+                <span data-dm-progress-summary></span>
+            </div>
+        </section>
     {% endif %}
 
     <div class="dm-updates-list" data-dm-update-list>
@@ -97,6 +125,7 @@
             <article
                 class="dm-update-row{% if installation.id == result_installation_id %} is-result{% endif %}"
                 data-dm-update-row
+                data-installation-id="{{ installation.id }}"
                 data-update-state="{{ installation.update_state }}"
                 data-search="{{ (installation.domain ~ ' ' ~ installation.parent_domain ~ ' ' ~ installation.environment_label)|lower|e('html_attr') }}"
             >
