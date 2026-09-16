@@ -15,7 +15,3 @@ $GLOBALS['TL_LANG']['CTE']['domain_manager_updates'] = [
     'Updates',
     'Displays a dedicated workspace for managing Contao installation updates.',
 ];
-$GLOBALS['TL_LANG']['CTE']['domain_manager_navigation'] = [
-    'Domain Manager navigation',
-    'Displays navigation between the domain overview and Domain Manager workspaces.',
-];
