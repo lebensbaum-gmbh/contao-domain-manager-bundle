@@ -8,6 +8,7 @@ use Contao\ContentModel;
 use Contao\CoreBundle\Controller\ContentElement\AbstractContentElementController;
 use Contao\CoreBundle\DependencyInjection\Attribute\AsContentElement;
 use Contao\CoreBundle\Twig\FragmentTemplate;
+use Contao\FilesModel;
 use Doctrine\DBAL\Connection;
 use Lebensbaum\ContaoDomainManagerBundle\Event\InstallationFrontendExtensionEvent;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,7 +38,7 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
         $rows = $this->connection->fetchAllAssociative(
             'SELECT i.id, i.pid, i.domain, i.environment, i.system_id, i.contao_version, '
             .'CAST(i.php_version AS CHAR) AS php_version, i.last_sync, i.status, '
-            .'d.domain AS parent_domain, d.title AS parent_title '
+            .'d.domain AS parent_domain, d.title AS parent_title, d.thumbnail AS parent_thumbnail '
             .'FROM '.self::INSTALLATION_TABLE.' i '
             .'LEFT JOIN '.self::DOMAIN_TABLE.' d ON d.id = i.pid '
             .'ORDER BY d.domain, i.sorting, i.id'
@@ -60,6 +61,7 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
                 'domain' => trim((string) ($row['domain'] ?? '')),
                 'parent_domain' => trim((string) ($row['parent_domain'] ?? '')),
                 'parent_title' => trim((string) ($row['parent_title'] ?? '')),
+                'thumbnail_path' => $this->resolveThumbnailPath($row['parent_thumbnail'] ?? null),
                 'environment' => $this->normalizeEnvironment((string) ($row['environment'] ?? '')),
                 'system_id' => strtolower(trim((string) ($row['system_id'] ?? ''))),
                 'contao_version' => trim((string) ($row['contao_version'] ?? '')),
@@ -185,6 +187,21 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
             'locked' => 'Pro-Funktion',
             default => 'Noch nicht geprüft',
         };
+    }
+
+    private function resolveThumbnailPath(mixed $uuid): string
+    {
+        if (null === $uuid || '' === $uuid) {
+            return '';
+        }
+
+        try {
+            $file = FilesModel::findByUuid($uuid);
+
+            return null !== $file ? trim((string) $file->path) : '';
+        } catch (\Throwable) {
+            return '';
+        }
     }
 
     private function resultMessage(string $checkStatus, string $installStatus): string
