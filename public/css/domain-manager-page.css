@@ -1,10 +1,10 @@
 :root {
-    --dm-theme-primary: #2563eb;
-    --dm-theme-primary-hover: #1d4ed8;
-    --dm-theme-primary-soft: #eff6ff;
-    --dm-theme-accent: #e63946;
-    --dm-theme-accent-hover: #cf2f3b;
-    --dm-theme-accent-soft: #fff1f2;
+    --dm-theme-primary: #114085;
+    --dm-theme-primary-hover: #0c3269;
+    --dm-theme-primary-soft: #eef4fb;
+    --dm-theme-accent: #b2010d;
+    --dm-theme-accent-hover: #8e010a;
+    --dm-theme-accent-soft: #fff0f1;
     --dm-theme-page: #f3f6fa;
     --dm-theme-surface: #fff;
     --dm-theme-surface-soft: #f8fafc;
