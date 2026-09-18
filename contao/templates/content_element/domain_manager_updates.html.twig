@@ -151,6 +151,14 @@
                     </label>
                 {% endif %}
 
+                <div class="dm-update-thumbnail{% if not installation.thumbnail_path %} is-empty{% endif %}" aria-hidden="true">
+                    {% if installation.thumbnail_path %}
+                        <img src="{{ installation.thumbnail_path|e('html_attr') }}" alt="" loading="lazy">
+                    {% else %}
+                        <span>—</span>
+                    {% endif %}
+                </div>
+
                 <div class="dm-update-main">
                     <div class="dm-update-domain">
                         <strong>{{ installation.domain }}</strong>
