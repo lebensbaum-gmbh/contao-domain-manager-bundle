@@ -1,5 +1,5 @@
 .dm-updates {
-    --dm-updates-workspace-width: 1040px;
+    --dm-updates-workspace-width: 1280px;
     --dm-u-primary: var(--dm-theme-primary, #114085);
     --dm-u-primary-hover: var(--dm-theme-primary-hover, #0c3269);
     --dm-u-primary-soft: var(--dm-theme-primary-soft, #eef4fb);
@@ -20,9 +20,9 @@
     --dm-u-radius: var(--dm-theme-radius, 12px);
     --dm-u-shadow: var(--dm-theme-shadow, 0 8px 26px rgba(23, 32, 51, .065));
     display: grid;
-    width: min(calc(100vw - 48px), var(--dm-updates-workspace-width));
-    max-width: var(--dm-updates-workspace-width);
-    margin-inline: auto;
+    width: 100%;
+    max-width: none;
+    margin: 0;
     gap: 14px;
     color: var(--dm-u-text);
 }
