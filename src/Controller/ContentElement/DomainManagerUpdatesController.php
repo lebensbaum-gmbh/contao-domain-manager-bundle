@@ -46,6 +46,9 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
         $installations = [];
         $proEnabled = false;
         $availableCount = 0;
+        $currentCount = 0;
+        $errorCount = 0;
+        $totalCount = count($rows);
         $resultInstallationId = $request->query->getInt('dm_installation');
         $checkStatus = trim((string) $request->query->get('dm_update', ''));
         $installStatus = trim((string) $request->query->get('dm_update_install', ''));
@@ -69,6 +72,12 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
             $frontendEvent = new InstallationFrontendExtensionEvent($installation);
             $this->eventDispatcher->dispatch($frontendEvent);
             $actions = $frontendEvent->getActions();
+            $frontendMetadata = $frontendEvent->getMetadata();
+            $targetContaoVersion = trim((string) ($frontendMetadata['update_target_version'] ?? ''));
+
+            if (1 !== preg_match('/\Av?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?\z/', $targetContaoVersion)) {
+                $targetContaoVersion = '';
+            }
 
             $hasCheckAction = $this->hasAction($actions, 'update-check');
             $hasInstallAction = $this->hasAction($actions, 'update-install');
@@ -98,9 +107,15 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
 
             if ('available' === $updateState) {
                 ++$availableCount;
+            } elseif ('current' === $updateState) {
+                ++$currentCount;
+            } elseif ('error' === $updateState) {
+                ++$errorCount;
             }
 
             $installation['frontend_actions'] = $actions;
+            $installation['frontend_metadata'] = $frontendMetadata;
+            $installation['target_contao_version'] = $targetContaoVersion;
             $installation['update_state'] = $updateState;
             $installation['update_state_label'] = $this->updateStateLabel($updateState);
             $installations[] = $installation;
@@ -109,6 +124,9 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
         $template->set('installations', $installations);
         $template->set('pro_enabled', $proEnabled);
         $template->set('available_count', $availableCount);
+        $template->set('current_count', $currentCount);
+        $template->set('error_count', $errorCount);
+        $template->set('total_count', $totalCount);
         $template->set('result_installation_id', $resultInstallationId);
         $template->set('check_status', $checkStatus);
         $template->set('install_status', $installStatus);
