@@ -79,15 +79,26 @@ body.domainverwaltung-page .domain-manager-layout {
     padding-inline: 0 !important;
 }
 
-/* The updates page does not use the overview/filter grid. Some legacy page
-   layouts still leave width constraints on nested article shells, so flatten
-   the complete main-content chain to the same application width. */
+/* Updates keep their established 1280px working width, but the complete
+   article shell is centered inside the 1480px application container. */
 body.domainverwaltung-page:has(.dm-updates) #main,
-body.domainverwaltung-page:has(.dm-updates) #main > .inside,
-body.domainverwaltung-page:has(.dm-updates) #main .mod_article,
-body.domainverwaltung-page:has(.dm-updates) #main .mod_article > .inside,
-body.domainverwaltung-page:has(.dm-updates) .content-domain-manager-updates {
+body.domainverwaltung-page:has(.dm-updates) #main > .inside {
     float: none !important;
+    width: 100% !important;
+    max-width: none !important;
+}
+
+body.domainverwaltung-page:has(.dm-updates) #main > .inside > .mod_article:has(.dm-updates) {
+    width: min(calc(100vw - 48px), 1280px) !important;
+    max-width: 1280px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+body.domainverwaltung-page:has(.dm-updates) #main > .inside > .mod_article:has(.dm-updates) > .inside,
+body.domainverwaltung-page:has(.dm-updates) .content-domain-manager-updates {
     width: 100% !important;
     max-width: none !important;
     margin-left: 0 !important;
