@@ -1,55 +1,85 @@
 .dm-workspace-nav {
+    position: sticky;
+    top: 10px;
+    z-index: 40;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    margin: 0 0 1.5rem;
-    padding: .75rem 1rem;
-    border: 1px solid rgba(153, 34, 40, .18);
-    border-radius: 10px;
-    background: #fff;
+    width: min(calc(100vw - 48px), var(--dm-theme-content-width, 1480px));
+    min-height: 48px;
+    margin: 10px auto 18px;
+    padding: .45rem .75rem;
+    border: 1px solid var(--dm-theme-border, #dfe5ec);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .92);
+    box-shadow: 0 8px 24px rgba(23, 32, 51, .055);
+    backdrop-filter: blur(12px);
 }
 
 .dm-workspace-nav__brand {
-    font-weight: 700;
-    color: #992228;
+    color: var(--dm-theme-accent, #e63946);
+    font-weight: 750;
+    letter-spacing: -.01em;
 }
 
 .dm-workspace-nav__items {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: .35rem;
+    gap: .2rem;
 }
 
 .dm-workspace-nav__item {
+    position: relative;
     display: inline-flex;
     align-items: center;
-    min-height: 2.25rem;
-    padding: .45rem .8rem;
+    min-height: 34px;
+    padding: .35rem .65rem;
     border-radius: 7px;
-    color: inherit;
+    color: var(--dm-theme-text, #172033) !important;
+    font-size: .88rem;
+    font-weight: 600;
     text-decoration: none;
     transition: background-color .15s ease, color .15s ease;
 }
 
 .dm-workspace-nav__item:hover,
 .dm-workspace-nav__item:focus-visible {
-    background: rgba(153, 34, 40, .08);
+    background: var(--dm-theme-primary-soft, #eff6ff);
+    color: var(--dm-theme-primary, #2563eb) !important;
 }
 
 .dm-workspace-nav__item.is-active {
-    background: #992228;
-    color: #fff;
+    background: transparent;
+    color: var(--dm-theme-primary, #2563eb) !important;
+}
+
+.dm-workspace-nav__item.is-active::after {
+    content: '';
+    position: absolute;
+    right: .65rem;
+    bottom: .18rem;
+    left: .65rem;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--dm-theme-primary, #2563eb);
 }
 
 @media (max-width: 700px) {
     .dm-workspace-nav {
-        align-items: flex-start;
-        flex-direction: column;
+        top: 6px;
+        width: calc(100vw - 28px);
+        margin-top: 6px;
     }
 
-    .dm-workspace-nav__items {
-        width: 100%;
+    .dm-workspace-nav__brand {
+        font-size: .9rem;
+    }
+
+    .dm-workspace-nav__item {
+        min-height: 32px;
+        padding-inline: .5rem;
+        font-size: .82rem;
     }
 }
