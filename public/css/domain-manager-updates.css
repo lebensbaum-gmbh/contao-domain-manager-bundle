@@ -400,11 +400,11 @@
 
 .dm-update-row {
     display: grid;
-    grid-template-columns: minmax(17rem, 1.9fr) minmax(8rem, .65fr) minmax(10rem, .8fr) minmax(16rem, 1fr);
+    grid-template-columns: 88px minmax(17rem, 1.9fr) minmax(8rem, .65fr) minmax(10rem, .8fr) minmax(16rem, 1fr);
     align-items: center;
     gap: 16px;
-    min-height: 74px;
-    padding: 13px 15px;
+    min-height: 78px;
+    padding: 12px 15px;
     box-shadow: 0 3px 12px rgba(32, 33, 36, .035);
     transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease, transform .15s ease;
 }
@@ -419,7 +419,7 @@
 }
 
 .dm-updates.has-selection .dm-update-row {
-    grid-template-columns: 1.2rem minmax(17rem, 1.9fr) minmax(8rem, .65fr) minmax(10rem, .8fr) minmax(16rem, 1fr);
+    grid-template-columns: 1.2rem 88px minmax(17rem, 1.9fr) minmax(8rem, .65fr) minmax(10rem, .8fr) minmax(16rem, 1fr);
 }
 
 .dm-update-row.is-selected {
@@ -442,6 +442,30 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
+}
+
+.dm-update-thumbnail {
+    width: 88px;
+    height: 50px;
+    overflow: hidden;
+    border: 1px solid var(--dm-u-border-light);
+    border-radius: 8px;
+    background: var(--dm-u-surface-soft);
+}
+
+.dm-update-thumbnail img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.dm-update-thumbnail.is-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dm-u-muted);
+    font-size: .8rem;
 }
 
 .dm-update-main,
@@ -592,7 +616,7 @@
 }
 
 .dm-updates.is-running.has-selection .dm-update-row {
-    grid-template-columns: minmax(17rem, 1.9fr) minmax(8rem, .65fr) minmax(10rem, .8fr);
+    grid-template-columns: 88px minmax(17rem, 1.9fr) minmax(8rem, .65fr) minmax(10rem, .8fr);
 }
 
 @media (max-width: 1040px) {
@@ -619,23 +643,28 @@
     }
 
     .dm-update-row {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 76px 1fr 1fr;
     }
 
     .dm-updates.has-selection .dm-update-row {
-        grid-template-columns: auto 1fr 1fr;
+        grid-template-columns: auto 76px 1fr 1fr;
     }
 
     .dm-updates.is-running.has-selection .dm-update-row {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 76px 1fr 1fr;
+    }
+
+    .dm-update-thumbnail {
+        width: 76px;
+        height: 44px;
     }
 
     .dm-updates.has-selection .dm-update-main {
-        grid-column: 2 / -1;
+        grid-column: 3 / -1;
     }
 
     .dm-updates.is-running.has-selection .dm-update-main {
-        grid-column: 1 / -1;
+        grid-column: 2 / -1;
     }
 
     .dm-update-actions {
@@ -644,7 +673,7 @@
     }
 
     .dm-updates.has-selection .dm-update-actions {
-        grid-column: 2 / -1;
+        grid-column: 3 / -1;
     }
 }
 
@@ -668,28 +697,33 @@
     }
 
     .dm-update-row {
-        grid-template-columns: 1fr;
+        grid-template-columns: 64px 1fr;
     }
 
     .dm-updates.has-selection .dm-update-row {
-        grid-template-columns: auto 1fr;
+        grid-template-columns: auto 64px 1fr;
     }
 
     .dm-updates.is-running.has-selection .dm-update-row {
-        grid-template-columns: 1fr;
+        grid-template-columns: 64px 1fr;
+    }
+
+    .dm-update-thumbnail {
+        width: 64px;
+        height: 38px;
     }
 
     .dm-updates.has-selection .dm-update-main,
     .dm-updates.has-selection .dm-update-version,
     .dm-updates.has-selection .dm-update-state,
     .dm-updates.has-selection .dm-update-actions {
-        grid-column: 2;
+        grid-column: 3;
     }
 
     .dm-updates.is-running.has-selection .dm-update-main,
     .dm-updates.is-running.has-selection .dm-update-version,
     .dm-updates.is-running.has-selection .dm-update-state {
-        grid-column: 1;
+        grid-column: 2;
     }
 
     .dm-update-main {
