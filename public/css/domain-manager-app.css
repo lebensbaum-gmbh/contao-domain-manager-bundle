@@ -117,16 +117,16 @@ body.domainverwaltung-page h1 {
 }
 
 .domain-manager-overview .detail-action {
-    border-color: var(--dm-accent);
-    background: var(--dm-accent);
-    color: #fff !important;
+    border-color: color-mix(in srgb, var(--dm-accent) 34%, var(--dm-border));
+    background: #fff;
+    color: var(--dm-accent) !important;
 }
 
 .domain-manager-overview .detail-action:hover,
 .domain-manager-overview .detail-action:focus-visible {
-    border-color: var(--dm-accent-hover);
-    background: var(--dm-accent-hover);
-    color: #fff !important;
+    border-color: var(--dm-accent);
+    background: var(--dm-accent-soft);
+    color: var(--dm-accent-hover) !important;
 }
 
 @media (max-width: 1180px) {
