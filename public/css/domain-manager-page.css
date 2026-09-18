@@ -81,12 +81,12 @@ body.domainverwaltung-page h1,
 body.domainverwaltung-login-page h1,
 body.domainverwaltung-error-page h1 {
     margin: 0 0 24px;
-    color: var(--dm-theme-primary);
+    color: var(--dm-theme-text);
     font-family: inherit;
-    font-size: clamp(1.9rem, 3vw, 2.65rem);
-    font-weight: 650;
+    font-size: clamp(1.9rem, 2.4vw, 2.25rem);
+    font-weight: 750;
     letter-spacing: -.025em;
-    line-height: 1.12;
+    line-height: 1.08;
 }
 
 body.domainverwaltung-login-page .mod_article,
