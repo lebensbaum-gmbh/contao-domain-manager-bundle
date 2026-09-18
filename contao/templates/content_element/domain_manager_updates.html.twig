@@ -40,12 +40,22 @@
     <header class="dm-updates-head">
         <div>
             <h2>Updates</h2>
-            <p>Contao-Installationen zentral prüfen und Updates vorbereiten.</p>
+            <p>Contao-Installationen zentral prüfen, vorbereiten und sicher aktualisieren.</p>
         </div>
         {% if pro_enabled %}
-            <div class="dm-updates-summary">
-                <strong data-dm-available-count>{{ available_count }}</strong>
-                <span>{{ available_count == 1 ? 'bekanntes Update' : 'bekannte Updates' }}</span>
+            <div class="dm-updates-summary" aria-label="Update-Übersicht">
+                <div class="dm-updates-summary-item">
+                    <strong>{{ total_count }}</strong>
+                    <span>{{ total_count == 1 ? 'Installation' : 'Installationen' }}</span>
+                </div>
+                <div class="dm-updates-summary-item is-accent">
+                    <strong data-dm-available-count>{{ available_count }}</strong>
+                    <span>{{ available_count == 1 ? 'Update verfügbar' : 'Updates verfügbar' }}</span>
+                </div>
+                <div class="dm-updates-summary-item{% if error_count > 0 %} has-error{% endif %}">
+                    <strong>{{ error_count }}</strong>
+                    <span>{{ error_count == 1 ? 'Fehler' : 'Fehler' }}</span>
+                </div>
             </div>
         {% else %}
             <span class="dm-pro-badge">Pro</span>
@@ -153,7 +163,13 @@
 
                 <div class="dm-update-version">
                     <span>Contao</span>
-                    <strong>{{ installation.contao_version ?: '—' }}</strong>
+                    <div class="dm-update-version-line">
+                        <strong>{{ installation.contao_version ?: '—' }}</strong>
+                        {% if installation.target_contao_version %}
+                            <span class="dm-update-version-arrow" aria-hidden="true">→</span>
+                            <strong class="dm-update-version-target">{{ installation.target_contao_version }}</strong>
+                        {% endif %}
+                    </div>
                 </div>
 
                 <div class="dm-update-state is-{{ installation.update_state }}">
