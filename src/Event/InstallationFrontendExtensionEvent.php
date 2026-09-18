@@ -15,6 +15,9 @@ final class InstallationFrontendExtensionEvent
     /** @var list<array{template:string,context:array<string,mixed>}> */
     private array $sections = [];
 
+    /** @var array<string, mixed> */
+    private array $metadata = [];
+
     /** @param array<string, mixed> $installation */
     public function __construct(public readonly array $installation)
     {
@@ -101,6 +104,23 @@ final class InstallationFrontendExtensionEvent
     public function getBulkCapabilities(): array
     {
         return $this->bulkCapabilities;
+    }
+
+    public function setMetadata(string $name, mixed $value): void
+    {
+        $name = strtolower(trim($name));
+
+        if (1 !== preg_match('/\A[a-z0-9_.-]+\z/', $name)) {
+            return;
+        }
+
+        $this->metadata[$name] = $value;
+    }
+
+    /** @return array<string, mixed> */
+    public function getMetadata(): array
+    {
+        return $this->metadata;
     }
 
     /** @return list<array{template:string,context:array<string,mixed>}> */
