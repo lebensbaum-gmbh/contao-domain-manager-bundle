@@ -46,6 +46,11 @@
     };
 
     const initializeLayout = () => {
+        const updates = document.querySelector('[data-dm-updates]');
+        if (updates) {
+            markContainer();
+        }
+
         const filter = document.querySelector('[data-domain-manager-filter]');
         const overview = document.querySelector('[data-domain-manager-overview]');
 
