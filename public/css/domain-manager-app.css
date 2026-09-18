@@ -11,7 +11,7 @@ body.domainverwaltung-page #wrapper {
     max-width: none !important;
     min-height: 100vh;
     margin: 0 !important;
-    padding: 0 !important;
+    padding: 68px 0 0 !important;
 }
 
 /* The application container itself owns the page width and centering. */
@@ -77,6 +77,16 @@ body.domainverwaltung-page .domain-manager-layout {
     max-width: none !important;
     margin: 0 !important;
     padding-inline: 0 !important;
+}
+
+body.domainverwaltung-page:has(.dm-updates) .domain-manager-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+}
+
+body.domainverwaltung-page:has(.dm-updates) .domain-manager-layout-overview,
+body.domainverwaltung-page:has(.dm-updates) .domain-manager-layout-filter {
+    grid-column: 1 !important;
+    width: 100% !important;
 }
 
 body.domainverwaltung-page h1 {
@@ -147,6 +157,10 @@ body.domainverwaltung-page h1 {
 }
 
 @media (max-width: 680px) {
+    body.domainverwaltung-page #wrapper {
+        padding-top: 62px !important;
+    }
+
     body.domainverwaltung-page #container {
         width: calc(100vw - 28px) !important;
     }
