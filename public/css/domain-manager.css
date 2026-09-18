@@ -1,14 +1,14 @@
 .domain-manager-overview,
 .domain-manager-filter {
-    --dm-accent: #992228;
-    --dm-accent-hover: #7f1c22;
-    --dm-accent-soft: #f7edef;
-    --dm-text: #202124;
-    --dm-muted: #6b7280;
-    --dm-border: #e1e3e6;
-    --dm-border-light: #eceef0;
+    --dm-accent: #2563eb;
+    --dm-accent-hover: #1d4ed8;
+    --dm-accent-soft: #eff6ff;
+    --dm-text: #172033;
+    --dm-muted: #667085;
+    --dm-border: #dfe5ec;
+    --dm-border-light: #edf1f5;
     --dm-background: #fff;
-    --dm-background-soft: #f8f8f9;
+    --dm-background-soft: #f8fafc;
     --dm-success: #347a4b;
     --dm-success-soft: #edf7f0;
     --dm-warning: #9a6a1e;
@@ -16,7 +16,7 @@
     --dm-error: #a8323a;
     --dm-error-soft: #fbeff0;
     --dm-radius: 12px;
-    --dm-shadow: 0 8px 24px rgba(32, 33, 36, .055);
+    --dm-shadow: 0 8px 26px rgba(23, 32, 51, .065);
     color: var(--dm-text);
 }
 
