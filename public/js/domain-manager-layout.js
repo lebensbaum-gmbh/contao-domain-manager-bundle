@@ -45,41 +45,10 @@
         }
     };
 
-    const initializeUpdatesLayout = () => {
-        const updates = document.querySelector('[data-dm-updates]');
-
-        if (!updates || document.querySelector('[data-domain-manager-updates-layout]')) {
-            return false;
-        }
-
-        const mainInside = document.querySelector('#main > .inside');
-        const updateArticle = updates.closest('.mod_article') || updates.parentElement;
-
-        if (!mainInside || !updateArticle) {
-            return false;
-        }
-
-        const previousParent = updateArticle.parentElement;
-        const layout = document.createElement('div');
-        layout.className = 'domain-manager-layout domain-manager-layout-updates';
-        layout.dataset.domainManagerUpdatesLayout = '1';
-
-        mainInside.appendChild(layout);
-        layout.appendChild(updateArticle);
-        updateArticle.classList.add('domain-manager-layout-updates-host');
-
-        if (previousParent && previousParent !== mainInside && previousParent.children.length === 0) {
-            removeEmptyLegacyShell(previousParent);
-        }
-
-        markContainer();
-
-        return true;
-    };
-
     const initializeLayout = () => {
-        if (initializeUpdatesLayout()) {
-            return;
+        const updates = document.querySelector('[data-dm-updates]');
+        if (updates) {
+            markContainer();
         }
 
         const filter = document.querySelector('[data-domain-manager-filter]');
