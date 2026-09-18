@@ -11,15 +11,17 @@
 {% block content %}
 {% if items %}
 <nav class="dm-workspace-nav" aria-label="Domain Manager">
-    <div class="dm-workspace-nav__brand">Domain Manager</div>
-    <div class="dm-workspace-nav__items">
-        {% for item in items %}
-            <a
-                class="dm-workspace-nav__item{% if item.active %} is-active{% endif %}"
-                href="{{ item.url }}"
-                {% if item.active %}aria-current="page"{% endif %}
-            >{{ item.label }}</a>
-        {% endfor %}
+    <div class="dm-workspace-nav__inner">
+        <div class="dm-workspace-nav__brand">Domain Manager</div>
+        <div class="dm-workspace-nav__items">
+            {% for item in items %}
+                <a
+                    class="dm-workspace-nav__item{% if item.active %} is-active{% endif %}"
+                    href="{{ item.url }}"
+                    {% if item.active %}aria-current="page"{% endif %}
+                >{{ item.label }}</a>
+            {% endfor %}
+        </div>
     </div>
 </nav>
 {% endif %}
