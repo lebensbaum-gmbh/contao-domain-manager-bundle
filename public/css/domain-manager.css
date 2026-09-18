@@ -1,11 +1,11 @@
 .domain-manager-overview,
 .domain-manager-filter {
-    --dm-accent: #2563eb;
-    --dm-accent-hover: #1d4ed8;
-    --dm-accent-soft: #eff6ff;
+    --dm-accent: #114085;
+    --dm-accent-hover: #0c3269;
+    --dm-accent-soft: #eef4fb;
     --dm-text: #172033;
     --dm-muted: #667085;
-    --dm-border: #dfe5ec;
+    --dm-border: #dce3eb;
     --dm-border-light: #edf1f5;
     --dm-background: #fff;
     --dm-background-soft: #f8fafc;
@@ -85,11 +85,21 @@
 }
 
 .domain-entry {
+    position: relative;
     overflow: hidden;
     border: 1px solid var(--dm-border);
     border-radius: var(--dm-radius);
     background: var(--dm-background);
     box-shadow: var(--dm-shadow);
+}
+
+.domain-entry::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    z-index: 1;
+    width: 4px;
+    background: #b2010d;
 }
 
 .domain-summary {
@@ -143,6 +153,7 @@
 .domain-name {
     display: block;
     overflow-wrap: anywhere;
+    color: #114085;
     font-size: 1.05rem;
 }
 
