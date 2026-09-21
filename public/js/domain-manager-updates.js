@@ -281,6 +281,8 @@
             root.classList.add('is-running');
             progress?.removeAttribute('hidden');
             progress?.classList.remove('is-complete', 'has-errors', 'has-warnings');
+            progressTrack?.removeAttribute('data-dm-phase');
+            progressBar?.removeAttribute('data-dm-phase');
             previousResult?.setAttribute('hidden', 'hidden');
 
             if (progressTitle) {
