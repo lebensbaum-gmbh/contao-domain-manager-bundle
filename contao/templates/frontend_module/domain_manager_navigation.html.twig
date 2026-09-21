@@ -2,6 +2,12 @@
 
 {% use "@Contao/component/_stylesheet.html.twig" %}
 
+{% add "domain_manager_app_css" to stylesheets %}
+    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-app.css') ~ '?v=1.5.1'} %}
+        {{ block('stylesheet_component') }}
+    {% endwith %}
+{% endadd %}
+
 {% add "domain_manager_navigation_css" to stylesheets %}
     {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-navigation.css') ~ '?v=1.5.2'} %}
         {{ block('stylesheet_component') }}
