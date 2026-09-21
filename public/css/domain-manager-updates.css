@@ -1,5 +1,5 @@
 .dm-updates {
-    --dm-updates-workspace-width: 1280px;
+    --dm-updates-workspace-width: var(--dm-theme-content-width, 1480px);
     --dm-u-primary: var(--dm-theme-primary, #114085);
     --dm-u-primary-hover: var(--dm-theme-primary-hover, #0c3269);
     --dm-u-primary-soft: var(--dm-theme-primary-soft, #eef4fb);
