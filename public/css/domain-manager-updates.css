@@ -28,16 +28,6 @@
     color: var(--dm-u-text);
 }
 
-/* On the updates page, align the fixed application header to the exact same
-   centered workspace width as the update content. */
-.dm-workspace-nav__inner {
-    width: min(calc(100vw - 48px), var(--dm-updates-workspace-width)) !important;
-    max-width: var(--dm-updates-workspace-width) !important;
-    margin-inline: auto !important;
-    padding-inline: var(--dm-updates-inline-padding) !important;
-    box-sizing: border-box !important;
-}
-
 .dm-updates *,
 .dm-updates *::before,
 .dm-updates *::after {
@@ -694,10 +684,6 @@
 
 @media (max-width: 620px) {
     .dm-updates {
-        width: calc(100vw - 28px);
-    }
-
-    .dm-workspace-nav__inner {
         width: calc(100vw - 28px);
     }
 
