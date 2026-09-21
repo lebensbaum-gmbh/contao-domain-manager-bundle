@@ -8,6 +8,10 @@
     {% endwith %}
 {% endadd %}
 
+{% add "domain_manager_layout_js" to body %}
+    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-layout.js') }}" defer></script>
+{% endadd %}
+
 {% add "domain_manager_updates_js" to body %}
     <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-updates.js') }}" defer></script>
 {% endadd %}
