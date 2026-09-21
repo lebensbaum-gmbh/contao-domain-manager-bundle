@@ -79,8 +79,7 @@ body.domainverwaltung-page .domain-manager-layout {
     padding-inline: 0 !important;
 }
 
-/* Updates keep their established 1280px working width, but the complete
-   article shell is centered inside the 1480px application container. */
+/* Updates use the same 1480px application width as the domain overview. */
 body.domainverwaltung-page:has(.dm-updates) #main,
 body.domainverwaltung-page:has(.dm-updates) #main > .inside {
     float: none !important;
@@ -89,8 +88,8 @@ body.domainverwaltung-page:has(.dm-updates) #main > .inside {
 }
 
 body.domainverwaltung-page:has(.dm-updates) #main > .inside > .mod_article:has(.dm-updates) {
-    width: min(calc(100vw - 48px), 1280px) !important;
-    max-width: 1280px !important;
+    width: min(calc(100vw - 48px), var(--dm-theme-content-width, 1480px)) !important;
+    max-width: var(--dm-theme-content-width, 1480px) !important;
     margin-left: auto !important;
     margin-right: auto !important;
     padding-left: 0 !important;
