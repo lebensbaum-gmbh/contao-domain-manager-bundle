@@ -1,21 +1,23 @@
-body.domainverwaltung-page:has(.dm-updates) {
+body.domainverwaltung-page {
     --dm-updates-workspace-width: var(--dm-theme-content-width, 1480px);
     --dm-updates-inline-padding: clamp(24px, 3vw, 56px);
 }
 
-body.domainverwaltung-page:has(.dm-updates) #container {
+body.domainverwaltung-page #container {
     width: min(calc(100vw - 48px), var(--dm-updates-workspace-width)) !important;
     max-width: var(--dm-updates-workspace-width) !important;
     margin-inline: auto !important;
-    padding: 0 !important;
+    padding-inline: var(--dm-updates-inline-padding) !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
     box-sizing: border-box !important;
 }
 
-body.domainverwaltung-page:has(.dm-updates) #main,
-body.domainverwaltung-page:has(.dm-updates) #main > .inside,
-body.domainverwaltung-page:has(.dm-updates) #main > .inside > .mod_article:has(.dm-updates),
-body.domainverwaltung-page:has(.dm-updates) #main > .inside > .mod_article:has(.dm-updates) > .inside,
-body.domainverwaltung-page:has(.dm-updates) .content-domain-manager-updates {
+body.domainverwaltung-page #main,
+body.domainverwaltung-page #main > .inside,
+body.domainverwaltung-page #main > .inside > .mod_article:has(.dm-updates),
+body.domainverwaltung-page #main > .inside > .mod_article:has(.dm-updates) > .inside,
+body.domainverwaltung-page .content-domain-manager-updates {
     width: 100% !important;
     max-width: none !important;
     margin-left: 0 !important;
@@ -49,7 +51,7 @@ body.domainverwaltung-page:has(.dm-updates) .content-domain-manager-updates {
     width: 100%;
     max-width: none;
     margin: 0;
-    padding-inline: var(--dm-updates-inline-padding);
+    padding-inline: 0;
     box-sizing: border-box;
     gap: 14px;
     color: var(--dm-u-text);
@@ -57,7 +59,7 @@ body.domainverwaltung-page:has(.dm-updates) .content-domain-manager-updates {
 
 /* On the updates page, align the fixed application header to the exact same
    centered workspace width as the update content. */
-body.domainverwaltung-page:has(.dm-updates) .dm-workspace-nav__inner {
+.dm-workspace-nav__inner {
     width: min(calc(100vw - 48px), var(--dm-updates-workspace-width)) !important;
     max-width: var(--dm-updates-workspace-width) !important;
     margin-inline: auto !important;
@@ -662,7 +664,7 @@ body.domainverwaltung-page:has(.dm-updates) .dm-workspace-nav__inner {
 }
 
 @media (max-width: 1180px) {
-    body.domainverwaltung-page:has(.dm-updates) {
+    body.domainverwaltung-page {
         --dm-updates-inline-padding: clamp(18px, 4vw, 36px);
     }
 }
@@ -726,7 +728,7 @@ body.domainverwaltung-page:has(.dm-updates) .dm-workspace-nav__inner {
 }
 
 @media (max-width: 680px) {
-    body.domainverwaltung-page:has(.dm-updates) {
+    body.domainverwaltung-page {
         --dm-updates-inline-padding: 16px;
     }
 }
@@ -736,7 +738,7 @@ body.domainverwaltung-page:has(.dm-updates) .dm-workspace-nav__inner {
         width: calc(100vw - 28px);
     }
 
-    body.domainverwaltung-page:has(.dm-updates) .dm-workspace-nav__inner {
+    .dm-workspace-nav__inner {
         width: calc(100vw - 28px);
     }
 
