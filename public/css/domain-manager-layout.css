@@ -78,8 +78,28 @@ body.domainverwaltung-page .domain-manager-layout {
     max-width: none;
 }
 
-body.domainverwaltung-page .domain-manager-layout:not(.domain-manager-layout-updates) {
+body.domainverwaltung-page #main > .inside > .mod_article.domain-manager-overview-article {
+    box-sizing: border-box;
     padding-inline: clamp(24px, 3vw, 56px) !important;
+}
+
+body.domainverwaltung-page .domain-manager-layout:not(.domain-manager-layout-updates) {
+    padding-inline: 0 !important;
+}
+
+.domain-manager-layout-main {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    width: 100%;
+}
+
+.domain-manager-layout-main > .domain-manager-layout-overview {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0;
+    margin: 0 !important;
+    float: none !important;
 }
 
 /* Narrow layouts and touch-first devices get the full-width overview.
@@ -96,8 +116,12 @@ body.domainverwaltung-page .domain-manager-layout:not(.domain-manager-layout-upd
         padding-inline: clamp(18px, 4vw, 36px);
     }
 
-    body.domainverwaltung-page .domain-manager-layout:not(.domain-manager-layout-updates) {
+    body.domainverwaltung-page #main > .inside > .mod_article.domain-manager-overview-article {
         padding-inline: clamp(18px, 4vw, 36px) !important;
+    }
+
+    body.domainverwaltung-page .domain-manager-layout:not(.domain-manager-layout-updates) {
+        padding-inline: 0 !important;
     }
 
     .domain-manager-layout-filter {
@@ -228,8 +252,12 @@ body.domainverwaltung-page .domain-manager-layout:not(.domain-manager-layout-upd
         padding-inline: 16px;
     }
 
-    body.domainverwaltung-page .domain-manager-layout:not(.domain-manager-layout-updates) {
+    body.domainverwaltung-page #main > .inside > .mod_article.domain-manager-overview-article {
         padding-inline: 16px !important;
+    }
+
+    body.domainverwaltung-page .domain-manager-layout:not(.domain-manager-layout-updates) {
+        padding-inline: 0 !important;
     }
 
     .domain-manager-layout .domain-manager-filter {
