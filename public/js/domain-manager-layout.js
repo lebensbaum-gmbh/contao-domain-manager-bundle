@@ -23,6 +23,24 @@
         return null;
     };
 
+    const directChildHost = (node, parent) => {
+        let current = node;
+
+        while (current && current.parentElement && current.parentElement !== parent) {
+            current = current.parentElement;
+        }
+
+        return current && current.parentElement === parent ? current : null;
+    };
+
+    const sortByDocumentOrder = (nodes) => Array.from(new Set(nodes.filter(Boolean))).sort((left, right) => {
+        if (left === right) {
+            return 0;
+        }
+
+        return left.compareDocumentPosition(right) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
+    });
+
     const removeEmptyLegacyShell = (shell) => {
         if (!shell || shell.matches('.mod_article')) {
             return;
@@ -101,11 +119,10 @@
         layout.dataset.domainManagerLayout = '1';
 
         if (filterArticle === overviewArticle) {
-            // Both content elements can live in the same Contao article. Their data
-            // nodes are usually nested inside content-element wrappers and are not
-            // direct children of .mod_article, so insertBefore(layout, filter) would
-            // throw a DOMException. Resolve the closest sibling hosts instead and
-            // move those complete wrappers into the Domain Manager grid.
+            // The managed workspace keeps its heading/login and overview in the
+            // left column while the filter occupies the right column. Existing
+            // installations may still have these elements as ordinary siblings
+            // in the article, so collect and move their complete host wrappers.
             const hosts = findSiblingHosts(filter, overview);
             if (!hosts) {
                 return;
@@ -113,14 +130,34 @@
 
             const filterHost = hosts.filterNode;
             const overviewHost = hosts.overviewNode;
-            const filterComesFirst = Boolean(filterHost.compareDocumentPosition(overviewHost) & Node.DOCUMENT_POSITION_FOLLOWING);
+            const headlineHost = directChildHost(
+                hosts.parent.querySelector('.content-headline'),
+                hosts.parent
+            );
+            const loginHost = directChildHost(
+                hosts.parent.querySelector('.domainverwaltung-login'),
+                hosts.parent
+            );
+            const mainHosts = sortByDocumentOrder([headlineHost, loginHost, overviewHost]);
+            const allHosts = sortByDocumentOrder([...mainHosts, filterHost]);
+            const firstHost = allHosts[0];
 
-            hosts.parent.insertBefore(layout, filterComesFirst ? filterHost : overviewHost);
+            if (!firstHost) {
+                return;
+            }
+
+            const main = document.createElement('div');
+            main.className = 'domain-manager-layout-main';
+
+            hosts.parent.insertBefore(layout, firstHost);
+            layout.appendChild(main);
             layout.appendChild(filterHost);
-            layout.appendChild(overviewHost);
+
+            mainHosts.forEach((host) => main.appendChild(host));
 
             filterHost.classList.add('domain-manager-layout-filter');
             overviewHost.classList.add('domain-manager-layout-overview');
+            overviewArticle.classList.add('domain-manager-overview-article');
             markContainer();
             return;
         }
