@@ -397,9 +397,17 @@ final class SetupInstaller
             $classes[] = 'domainverwaltung-page';
         }
 
+        $groups = [];
+        foreach (StringUtil::deserialize($row['groups'] ?? null, true) as $groupId) {
+            if (is_numeric($groupId) && (int) $groupId > 0) {
+                $groups[(int) $groupId] = (int) $groupId;
+            }
+        }
+        $groups[$memberGroupId] = $memberGroupId;
+
         $this->connection->update('tl_page', [
             'protected' => 1,
-            'groups' => serialize([$memberGroupId]),
+            'groups' => serialize(array_values($groups)),
             'cssClass' => implode(' ', array_values(array_unique($classes))),
             'published' => 1,
             'tstamp' => $timestamp,
