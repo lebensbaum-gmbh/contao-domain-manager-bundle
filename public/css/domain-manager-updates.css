@@ -1,5 +1,6 @@
 .dm-updates {
     --dm-updates-workspace-width: var(--dm-theme-content-width, 1480px);
+    --dm-updates-inline-padding: clamp(24px, 3vw, 56px);
     --dm-u-primary: var(--dm-theme-primary, #114085);
     --dm-u-primary-hover: var(--dm-theme-primary-hover, #0c3269);
     --dm-u-primary-soft: var(--dm-theme-primary-soft, #eef4fb);
@@ -23,6 +24,8 @@
     width: 100%;
     max-width: none;
     margin: 0;
+    padding-inline: var(--dm-updates-inline-padding);
+    box-sizing: border-box;
     gap: 14px;
     color: var(--dm-u-text);
 }
@@ -32,6 +35,8 @@
 body.domainverwaltung-page:has(.dm-updates) .dm-workspace-nav__inner {
     width: min(calc(100vw - 48px), var(--dm-updates-workspace-width));
     max-width: var(--dm-updates-workspace-width);
+    padding-inline: var(--dm-updates-inline-padding);
+    box-sizing: border-box;
 }
 
 .dm-updates *,
@@ -630,6 +635,12 @@ body.domainverwaltung-page:has(.dm-updates) .dm-workspace-nav__inner {
     grid-template-columns: 88px minmax(17rem, 1.9fr) minmax(8rem, .65fr) minmax(10rem, .8fr);
 }
 
+@media (max-width: 1180px) {
+    .dm-updates {
+        --dm-updates-inline-padding: clamp(18px, 4vw, 36px);
+    }
+}
+
 @media (max-width: 1040px) {
     .dm-updates-head,
     .dm-updates-pro-teaser,
@@ -685,6 +696,12 @@ body.domainverwaltung-page:has(.dm-updates) .dm-workspace-nav__inner {
 
     .dm-updates.has-selection .dm-update-actions {
         grid-column: 3 / -1;
+    }
+}
+
+@media (max-width: 680px) {
+    .dm-updates {
+        --dm-updates-inline-padding: 16px;
     }
 }
 
