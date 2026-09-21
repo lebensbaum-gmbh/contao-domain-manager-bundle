@@ -79,49 +79,6 @@ body.domainverwaltung-page .domain-manager-layout {
     padding-inline: 0 !important;
 }
 
-/* Updates use the same 1480px application width as the domain overview. */
-body.domainverwaltung-page:has(.dm-updates) #main {
-    float: none !important;
-    width: 100% !important;
-    max-width: none !important;
-}
-
-body.domainverwaltung-page:has(.dm-updates) #main > .inside {
-    width: 100% !important;
-    max-width: none !important;
-    padding: 12px clamp(24px, 3vw, 56px) 48px !important;
-    box-sizing: border-box !important;
-}
-
-body.domainverwaltung-page:has(.dm-updates) #main > .inside > .mod_article:has(.dm-updates) {
-    width: min(calc(100vw - 48px), var(--dm-theme-content-width, 1480px)) !important;
-    max-width: var(--dm-theme-content-width, 1480px) !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-}
-
-body.domainverwaltung-page:has(.dm-updates) #main > .inside > .mod_article:has(.dm-updates) > .inside,
-body.domainverwaltung-page:has(.dm-updates) .content-domain-manager-updates {
-    width: 100% !important;
-    max-width: none !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-}
-
-body.domainverwaltung-page:has(.dm-updates) .domain-manager-layout {
-    grid-template-columns: minmax(0, 1fr) !important;
-}
-
-body.domainverwaltung-page:has(.dm-updates) .domain-manager-layout-overview,
-body.domainverwaltung-page:has(.dm-updates) .domain-manager-layout-filter {
-    grid-column: 1 !important;
-    width: 100% !important;
-}
-
 body.domainverwaltung-page h1 {
     margin-bottom: 16px;
 }
@@ -173,10 +130,6 @@ body.domainverwaltung-page h1 {
 }
 
 @media (max-width: 1180px) {
-    body.domainverwaltung-page:has(.dm-updates) #main > .inside {
-        padding-inline: clamp(18px, 4vw, 36px) !important;
-    }
-
     .domain-manager-layout {
         grid-template-columns: minmax(0, 1fr);
     }
@@ -204,10 +157,6 @@ body.domainverwaltung-page h1 {
 
     body.domainverwaltung-page #main > .inside {
         padding: 10px 0 36px !important;
-    }
-
-    body.domainverwaltung-page:has(.dm-updates) #main > .inside {
-        padding: 10px 16px 36px !important;
     }
 
     .domain-manager-overview .domain-summary {
