@@ -76,7 +76,6 @@
 
 body.domainverwaltung-page .domain-manager-layout {
     max-width: none;
-    padding-inline: 0;
 }
 
 /* Narrow layouts and touch-first devices get the full-width overview.
@@ -91,10 +90,6 @@ body.domainverwaltung-page .domain-manager-layout {
         grid-template-columns: minmax(0, 1fr) !important;
         gap: 18px;
         padding-inline: clamp(18px, 4vw, 36px);
-    }
-
-    body.domainverwaltung-page .domain-manager-layout {
-        padding-inline: 0;
     }
 
     .domain-manager-layout-filter {
@@ -223,10 +218,6 @@ body.domainverwaltung-page .domain-manager-layout {
 @media (max-width: 680px) {
     .domain-manager-layout {
         padding-inline: 16px;
-    }
-
-    body.domainverwaltung-page .domain-manager-layout {
-        padding-inline: 0;
     }
 
     .domain-manager-layout .domain-manager-filter {
