@@ -278,7 +278,7 @@ body.domainverwaltung-page .domain-manager-layout.domain-manager-layout-updates 
 }
 
 .domain-manager-layout-updates > .domain-manager-layout-updates-host {
-    grid-column: 1 !important;
+    grid-column: 1 / -1 !important;
     grid-row: 1 !important;
     width: 100% !important;
     max-width: none !important;
