@@ -78,6 +78,10 @@ body.domainverwaltung-page .domain-manager-layout {
     max-width: none;
 }
 
+body.domainverwaltung-page .domain-manager-layout:not(.domain-manager-layout-updates) {
+    padding-inline: clamp(24px, 3vw, 56px) !important;
+}
+
 /* Narrow layouts and touch-first devices get the full-width overview.
    The !important on the grid tracks is intentional: some host themes apply their
    own grid-template-columns to generic layout wrappers at tablet widths. */
@@ -90,6 +94,10 @@ body.domainverwaltung-page .domain-manager-layout {
         grid-template-columns: minmax(0, 1fr) !important;
         gap: 18px;
         padding-inline: clamp(18px, 4vw, 36px);
+    }
+
+    body.domainverwaltung-page .domain-manager-layout:not(.domain-manager-layout-updates) {
+        padding-inline: clamp(18px, 4vw, 36px) !important;
     }
 
     .domain-manager-layout-filter {
@@ -218,6 +226,10 @@ body.domainverwaltung-page .domain-manager-layout {
 @media (max-width: 680px) {
     .domain-manager-layout {
         padding-inline: 16px;
+    }
+
+    body.domainverwaltung-page .domain-manager-layout:not(.domain-manager-layout-updates) {
+        padding-inline: 16px !important;
     }
 
     .domain-manager-layout .domain-manager-filter {
