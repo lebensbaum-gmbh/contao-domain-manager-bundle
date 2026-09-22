@@ -24,6 +24,9 @@ Hauptdomains und zugehörige Installationen können im Backend verwaltet, mit de
 - Rechteverwaltung für Backend-Benutzergruppen
 - Frontend-Inhaltselement **Domainübersicht**
 - Frontend-Inhaltselement **Domainfilter**
+- Frontend-Inhaltselement **Updates**
+- Frontend-Modul **Domainverwaltung – Navigation**
+- automatische Aktualisierung bestehender Domain-Manager-Arbeitsbereiche auf die neue Navigation und Updates-Seite
 - responsives Standardlayout und Seitentheme
 - anpassbare CSS-Custom-Properties
 - **Ersteinrichtungs-Assistent**, der Theme, Seitenlayout, Seitenstruktur, Login, Fehlerseiten, Mitgliedergruppe und Inhaltselemente automatisch anlegt
@@ -88,13 +91,17 @@ Bei einer frischen Installation legt der Assistent automatisch an:
 - Artikel-Modul in der Hauptspalte
 - Startpunkt einer Website
 - geschützte Seite **Domainübersicht**, Alias `index`
+- geschützte Seite **Updates**, Alias `updates`
 - ungeschützte Seite **Login**, Alias `login`
 - Seite **401 – Nicht authentifiziert** mit Weiterleitung auf Login
 - Seite **403 – Zugriff verweigert** mit Standardhinweis
 - Frontend-Modul **Domainverwaltung – Login**
+- Frontend-Modul **Domainverwaltung – Navigation**
 - Artikel und Überschriften für Domainübersicht und Login
 - Inhaltselement **Domainfilter**
 - Inhaltselement **Domainübersicht**
+- Inhaltselement **Updates**
+- Navigationselemente auf Domainübersicht und Updates-Seite
 - Freigabe der Mitgliedergruppe in den Domain-Manager-Einstellungen
 - Standardwert von 30 Tagen für die Synchronisationswarnung
 
@@ -189,6 +196,7 @@ Der Ersteinrichtungs-Assistent erzeugt standardmäßig:
 ```text
 Domainverwaltung           Startpunkt einer Website
 ├── Domainübersicht        Reguläre Seite, Alias index, geschützt
+├── Updates                Reguläre Seite, Alias updates, geschützt
 ├── Login                  Reguläre Seite, Alias login, ungeschützt
 ├── 401 – Nicht authentifiziert
 │                          Weiterleitung auf Login
@@ -218,8 +226,13 @@ Geprüft werden derzeit:
 7. 401-Seite
 8. 403-Seite
 9. Login-Modul
-10. Inhaltselement Domainfilter
-11. Inhaltselement Domainübersicht
+10. Navigations-Modul
+11. Inhaltselement Domainfilter
+12. Inhaltselement Domainübersicht
+13. Seite Updates
+14. Navigation auf der Domainübersicht
+15. Inhaltselement Updates
+16. Navigation auf der Updates-Seite
 
 Zusätzlich wird geprüft, ob mindestens ein aktives Frontend-Mitglied mit erlaubter Anmeldung der Mitgliedergruppe **Domainverwaltung** zugeordnet ist.
 
