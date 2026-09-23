@@ -29,6 +29,29 @@
         let filter = 'all';
         let bulkRunning = false;
 
+        const clearTransientResultParams = () => {
+            try {
+                const url = new URL(window.location.href);
+                const params = ['dm_update', 'dm_update_install', 'dm_installation'];
+                let changed = false;
+
+                params.forEach((name) => {
+                    if (url.searchParams.has(name)) {
+                        url.searchParams.delete(name);
+                        changed = true;
+                    }
+                });
+
+                if (changed && window.history?.replaceState) {
+                    window.history.replaceState(window.history.state, '', url.href);
+                }
+            } catch (error) {
+                // A stale result URL must never block the update interface.
+            }
+        };
+
+        clearTransientResultParams();
+
         const findActionForm = (row, name) => row?.querySelector(`.dm-updates-action-form[data-dm-action="${name}"]`) || null;
 
         const stateLabel = (state) => {
