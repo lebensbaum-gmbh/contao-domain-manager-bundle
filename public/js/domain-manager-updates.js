@@ -526,57 +526,117 @@
         checkSelected?.addEventListener('click', runBulkCheck);
         installSelected?.addEventListener('click', runBulkInstall);
 
+        const runSingleAction = async (form, row, actionName) => {
+            const domain = row.querySelector('.dm-update-domain strong')?.textContent?.trim() || 'Installation';
+            const isInstall = actionName === 'update-install';
+            const title = isInstall ? 'Update-Installation läuft' : 'Update-Prüfung läuft';
+            const startText = isInstall
+                ? `${domain} wird aktualisiert …`
+                : `${domain} wird geprüft …`;
+
+            startBulkRun([row], title, startText);
+            row.classList.add('is-processing');
+            setRowState(row, 'running', isInstall ? 'Installation läuft …' : 'Prüfung läuft …');
+
+            let errors = 0;
+            let warnings = 0;
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    credentials: 'same-origin',
+                    redirect: 'follow',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const html = await response.text();
+                refreshRowFromResponse(row, html, response.url, isInstall ? 'install' : 'check');
+
+                if (row.dataset.updateState === 'error') {
+                    errors = 1;
+                } else if (row.dataset.updateState === 'warning') {
+                    warnings = 1;
+                }
+            } catch (error) {
+                setRowState(
+                    row,
+                    'error',
+                    isInstall ? 'Installation fehlgeschlagen' : 'Prüfung fehlgeschlagen'
+                );
+                errors = 1;
+            }
+
+            row.classList.remove('is-processing');
+            updateAvailableCount();
+
+            if (progressTitle) {
+                progressTitle.textContent = isInstall
+                    ? 'Update-Installation abgeschlossen'
+                    : 'Update-Prüfung abgeschlossen';
+            }
+
+            progress?.classList.add('is-complete');
+            if (warnings > 0) {
+                progress?.classList.add('has-warnings');
+            }
+            if (errors > 0) {
+                progress?.classList.add('has-errors');
+            }
+
+            const resultText = isInstall
+                ? (row.dataset.updateState === 'current' ? 'Update installiert' : stateLabel(row.dataset.updateState))
+                : stateLabel(row.dataset.updateState);
+            const summary = errors > 0
+                ? '1 Fehler'
+                : warnings > 0
+                    ? '1 Warnung'
+                    : isInstall
+                        ? 'Update erfolgreich verarbeitet'
+                        : 'Prüfung erfolgreich abgeschlossen';
+
+            updateProgress(1, 1, `${domain}: ${resultText}`, summary);
+
+            if (isInstall && progressCounter && errors === 0) {
+                progressCounter.textContent = 'Schritt 6 / 6';
+            }
+
+            finishBulkRun();
+        };
+
         root.addEventListener('submit', (event) => {
             const form = event.target.closest?.('.dm-updates-action-form');
             if (!form || bulkRunning) {
                 return;
             }
 
-            const button = form.querySelector('button[type="submit"]');
-            if (!button) {
+            const actionName = String(form.dataset.dmAction || '').trim();
+
+            if (!['update-check', 'update-install'].includes(actionName)) {
                 return;
             }
+
+            const button = form.querySelector('button[type="submit"]');
+            const row = form.closest('[data-dm-update-row]');
+
+            if (!button || !row) {
+                return;
+            }
+
+            event.preventDefault();
 
             const confirmText = button.dataset.dmConfirm || '';
             if (confirmText && !window.confirm(confirmText)) {
-                event.preventDefault();
                 return;
             }
 
-            const row = form.closest('[data-dm-update-row]');
-            rows.forEach((candidate) => {
-                candidate.hidden = candidate !== row;
-            });
-            filterButtons.forEach((candidate) => { candidate.disabled = true; });
-            if (search) {
-                search.disabled = true;
-            }
-            if (selectVisible) {
-                selectVisible.disabled = true;
-            }
-            if (clearSelection) {
-                clearSelection.disabled = true;
-            }
-            if (checkSelected) {
-                checkSelected.disabled = true;
-            }
-            if (installSelected) {
-                installSelected.disabled = true;
-            }
-            rowCheckboxes.forEach((checkbox) => { checkbox.disabled = true; });
-
-            const label = button.dataset.dmActionLabel || button.textContent.trim();
-            button.disabled = true;
-            button.textContent = `${label} …`;
-
-            form.closest('.dm-update-actions')?.querySelectorAll('button, a').forEach((action) => {
-                if (action !== button) {
-                    action.setAttribute('aria-disabled', 'true');
-                    if ('BUTTON' === action.tagName) {
-                        action.disabled = true;
-                    }
-                }
-            });
+            void runSingleAction(form, row, actionName);
         });
 
         updateAvailableCount();
