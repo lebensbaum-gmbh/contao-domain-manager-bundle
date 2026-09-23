@@ -1,22 +1,25 @@
 :root {
-    --dm-theme-primary: #315f7d;
-    --dm-theme-primary-hover: #274c64;
-    --dm-theme-primary-soft: #edf4f8;
-    --dm-theme-page: #f4f7f9;
+    --dm-theme-primary: #114085;
+    --dm-theme-primary-hover: #0c3269;
+    --dm-theme-primary-soft: #eef4fb;
+    --dm-theme-accent: #b2010d;
+    --dm-theme-accent-hover: #8e010a;
+    --dm-theme-accent-soft: #fff0f1;
+    --dm-theme-page: #f3f6fa;
     --dm-theme-surface: #fff;
-    --dm-theme-surface-soft: #f7f9fa;
-    --dm-theme-text: #2d3338;
-    --dm-theme-muted: #68727a;
-    --dm-theme-border: #d9dfe3;
-    --dm-theme-border-light: #e8ecef;
-    --dm-theme-success: #26734d;
-    --dm-theme-success-soft: #edf8f2;
-    --dm-theme-warning: #956515;
-    --dm-theme-warning-soft: #fff8e6;
-    --dm-theme-error: #a43c3c;
-    --dm-theme-error-soft: #fff0f0;
-    --dm-theme-radius: 8px;
-    --dm-theme-shadow: 0 1px 3px rgba(0, 0, 0, .06);
+    --dm-theme-surface-soft: #f8fafc;
+    --dm-theme-text: #172033;
+    --dm-theme-muted: #667085;
+    --dm-theme-border: #dfe5ec;
+    --dm-theme-border-light: #edf1f5;
+    --dm-theme-success: #347a4b;
+    --dm-theme-success-soft: #edf7f0;
+    --dm-theme-warning: #9a6a1e;
+    --dm-theme-warning-soft: #fff7e8;
+    --dm-theme-error: #a8323a;
+    --dm-theme-error-soft: #fbeff0;
+    --dm-theme-radius: 12px;
+    --dm-theme-shadow: 0 8px 26px rgba(23, 32, 51, .065);
     --dm-theme-content-width: 1480px;
     --dm-theme-font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
 }
@@ -78,12 +81,12 @@ body.domainverwaltung-page h1,
 body.domainverwaltung-login-page h1,
 body.domainverwaltung-error-page h1 {
     margin: 0 0 24px;
-    color: var(--dm-theme-primary);
+    color: var(--dm-theme-text);
     font-family: inherit;
-    font-size: clamp(1.9rem, 3vw, 2.65rem);
-    font-weight: 650;
+    font-size: clamp(1.9rem, 2.4vw, 2.25rem);
+    font-weight: 750;
     letter-spacing: -.025em;
-    line-height: 1.12;
+    line-height: 1.08;
 }
 
 body.domainverwaltung-login-page .mod_article,

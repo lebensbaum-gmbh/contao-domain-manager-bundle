@@ -23,6 +23,24 @@
         return null;
     };
 
+    const directChildHost = (node, parent) => {
+        let current = node;
+
+        while (current && current.parentElement && current.parentElement !== parent) {
+            current = current.parentElement;
+        }
+
+        return current && current.parentElement === parent ? current : null;
+    };
+
+    const sortByDocumentOrder = (nodes) => Array.from(new Set(nodes.filter(Boolean))).sort((left, right) => {
+        if (left === right) {
+            return 0;
+        }
+
+        return left.compareDocumentPosition(right) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
+    });
+
     const removeEmptyLegacyShell = (shell) => {
         if (!shell || shell.matches('.mod_article')) {
             return;
@@ -45,7 +63,43 @@
         }
     };
 
+    const initializeUpdatesLayout = () => {
+        const updates = document.querySelector('[data-dm-updates]');
+
+        if (!updates || document.querySelector('[data-domain-manager-updates-layout]')) {
+            return false;
+        }
+
+        const mainInside = document.querySelector('#main > .inside');
+        const updateArticle = updates.closest('.mod_article') || updates.parentElement;
+
+        if (!mainInside || !updateArticle) {
+            return false;
+        }
+
+        const previousParent = updateArticle.parentElement;
+        const layout = document.createElement('div');
+        layout.className = 'domain-manager-layout domain-manager-layout-updates';
+        layout.dataset.domainManagerUpdatesLayout = '1';
+
+        mainInside.appendChild(layout);
+        layout.appendChild(updateArticle);
+        updateArticle.classList.add('domain-manager-layout-updates-host');
+
+        if (previousParent && previousParent !== mainInside && previousParent.children.length === 0) {
+            removeEmptyLegacyShell(previousParent);
+        }
+
+        markContainer();
+
+        return true;
+    };
+
     const initializeLayout = () => {
+        if (initializeUpdatesLayout()) {
+            return;
+        }
+
         const filter = document.querySelector('[data-domain-manager-filter]');
         const overview = document.querySelector('[data-domain-manager-overview]');
 
@@ -65,11 +119,10 @@
         layout.dataset.domainManagerLayout = '1';
 
         if (filterArticle === overviewArticle) {
-            // Both content elements can live in the same Contao article. Their data
-            // nodes are usually nested inside content-element wrappers and are not
-            // direct children of .mod_article, so insertBefore(layout, filter) would
-            // throw a DOMException. Resolve the closest sibling hosts instead and
-            // move those complete wrappers into the Domain Manager grid.
+            // The managed workspace keeps its heading/login and overview in the
+            // left column while the filter occupies the right column. Existing
+            // installations may still have these elements as ordinary siblings
+            // in the article, so collect and move their complete host wrappers.
             const hosts = findSiblingHosts(filter, overview);
             if (!hosts) {
                 return;
@@ -77,14 +130,34 @@
 
             const filterHost = hosts.filterNode;
             const overviewHost = hosts.overviewNode;
-            const filterComesFirst = Boolean(filterHost.compareDocumentPosition(overviewHost) & Node.DOCUMENT_POSITION_FOLLOWING);
+            const headlineHost = directChildHost(
+                hosts.parent.querySelector('.content-headline'),
+                hosts.parent
+            );
+            const loginHost = directChildHost(
+                hosts.parent.querySelector('.domainverwaltung-login'),
+                hosts.parent
+            );
+            const mainHosts = sortByDocumentOrder([headlineHost, loginHost, overviewHost]);
+            const allHosts = sortByDocumentOrder([...mainHosts, filterHost]);
+            const firstHost = allHosts[0];
 
-            hosts.parent.insertBefore(layout, filterComesFirst ? filterHost : overviewHost);
+            if (!firstHost) {
+                return;
+            }
+
+            const main = document.createElement('div');
+            main.className = 'domain-manager-layout-main';
+
+            hosts.parent.insertBefore(layout, firstHost);
+            layout.appendChild(main);
             layout.appendChild(filterHost);
-            layout.appendChild(overviewHost);
+
+            mainHosts.forEach((host) => main.appendChild(host));
 
             filterHost.classList.add('domain-manager-layout-filter');
             overviewHost.classList.add('domain-manager-layout-overview');
+            overviewArticle.classList.add('domain-manager-overview-article');
             markContainer();
             return;
         }

@@ -39,37 +39,38 @@ Die Pro-Version erweitert die Free-Version um Automatisierung, Monitoring und Be
 | Status des letzten automatischen Laufs | – | ✓ |
 | Letzter erfolgreicher automatischer Lauf | – | ✓ |
 | Hinweis bei ausbleibendem Cron-Lauf | – | ✓ |
-| Verfügbarkeit der Website regelmäßig prüfen | – | geplant |
-| Ausfall und Wiederherstellung erkennen | – | geplant |
-| Contao-Updates innerhalb der verwendeten Versionslinie erkennen | – | geplant |
-| Contao-Updates zentral aus der Domainübersicht vorbereiten und ausführen | – | geplant |
-| PHP-Supportphase und Supportende überwachen | – | geplant |
-| SSL-Zertifikat und Ablaufdatum überwachen | – | geplant |
+| Verfügbarkeit der Website regelmäßig prüfen | – | ✓ |
+| Ausfall und Wiederherstellung erkennen | – | ✓ |
+| Contao-Updates innerhalb der verwendeten Versionslinie erkennen | – | ✓ |
+| Contao-Updates zentral aus der Domainübersicht vorbereiten und ausführen | – | ✓ |
+| PHP-Supportphase und Supportende überwachen | – | ✓ |
+| SSL-Zertifikat und Ablaufdatum überwachen | – | ✓ |
 | System-Info-Erreichbarkeit überwachen | – | geplant |
-| Änderungen an Contao-, PHP- und Systemwerten erkennen | – | geplant |
-| Neue relevante Contao-Log-Ereignisse erkennen | – | geplant |
+| Änderungen an Contao-, PHP- und Systemwerten erkennen | – | ✓ |
+| Neue relevante Contao-Log-Ereignisse erkennen | – | ✓ |
 | Wiederkehrende Log-Fehler nach Fehlerbild zusammenfassen | – | geplant |
-| E-Mail-Benachrichtigungen bei relevanten Zustandsänderungen | – | geplant |
+| E-Mail-Benachrichtigungen bei relevanten Zustandsänderungen | – | ✓ |
 | Zusammenfassungen, z. B. Wochenbericht | – | geplant |
-| Status- und Ereignishistorie | – | später |
+| Status- und Ereignishistorie | – | ✓ |
 
-## Geplante Contao-Update-Funktion
+## Contao-Update-Funktion
 
-Die Pro-Version soll verfügbare Contao-Updates nicht nur erkennen, sondern ein Update direkt aus der zentralen Domainübersicht vorbereiten und bewusst durch den Benutzer starten können.
+Die Pro-Version erkennt verfügbare Contao-Patchupdates innerhalb des installierten `major.minor`-Zweigs und kann sie bewusst aus der zentralen Updates-Oberfläche gestartet installieren.
 
-Zum Zielbild gehören insbesondere:
+Der abgesicherte Ablauf umfasst:
 
-- Prüfung, ob die Zielinstallation für ein Update erreichbar und ausreichend konfiguriert ist
-- vorbereitende Sicherheits- bzw. Wiederherstellungsstrategie vor dem Update
-- definierter Wartungsmodus während des Updatevorgangs
-- Ausführung der Composer-/Contao-Aktualisierung auf der Zielinstallation
-- Ausführung notwendiger Contao-Migrationen
-- technische Nachkontrolle nach dem Update
+- Ermittlung der verfügbaren Zielversion
+- nicht-destruktive Composer-Vorprüfung
+- Unterstützung auch für exakt festgeschriebene Contao-Versionen in der `composer.json`
+- vollständiges Sicherheitsbackup unmittelbar vor der Installation
+- erneute Prüfung des vorbereiteten Composer-Paketplans vor dem eigentlichen Update
+- Composer-Aktualisierung auf die vorbereitete Zielversion
+- Verifizierung der tatsächlich installierten Contao-Version
+- Ausführung notwendiger Contao-Datenbankmigrationen
 - erneute Synchronisierung der Systemdaten
-- unmittelbare Monitoring-Prüfung auf Erreichbarkeit, HTTP-Fehler und neue Log-Fehler
-- nachvollziehbarer Update-Status bzw. Update-Verlauf in der Domainverwaltung
+- sichtbare Fortschrittsphasen für Backup, Vorprüfung, Composer, Verifizierung, Datenbank und Abschluss
 
-Ein automatisches, unbeaufsichtigtes Einspielen von Contao-Updates ist zunächst **nicht** das Ziel. Der Updatevorgang soll bewusst aus der Pro-Oberfläche gestartet werden. Insbesondere Backup, Wiederherstellung und Rollback müssen vor einer Umsetzung technisch zuverlässig gelöst sein.
+Ein automatisches, unbeaufsichtigtes Einspielen von Contao-Updates ist bewusst **nicht** vorgesehen. Der Updatevorgang wird durch den Benutzer gestartet und bleibt auf Patchupdates innerhalb desselben Contao-Versionszweigs beschränkt.
 
 ## Log-Monitoring – Zielbild
 
@@ -129,16 +130,16 @@ lebensbaum/contao-domain-manager-pro-bundle
 
 ## Upgrade- und Versionsstrategie
 
-Version 1.5.1 ist bereits veröffentlicht und enthält die automatische Cron-basierte Synchronisierung. Diese veröffentlichte Version bleibt unverändert und weiterhin nutzbar.
+Die veröffentlichte 1.x-Linie (zuletzt v1.6.0) enthält noch die automatische Cron-basierte Synchronisierung und bleibt unverändert und weiterhin nutzbar.
 
-Die automatische Synchronisierung wird daher nicht innerhalb eines normalen Patch- oder Minor-Updates der 1.x-Serie entfernt. Der Free-/Pro-Schnitt ist für eine neue Hauptversion vorgesehen, voraussichtlich **2.0.0**.
+Die automatische Synchronisierung wird daher nicht innerhalb eines normalen Patch- oder Minor-Updates der 1.x-Serie entfernt. Der Free-/Pro-Schnitt wird mit der neuen Hauptversion **2.0.0** eingeführt.
 
 Damit gilt:
 
 - bestehende Installationen auf 1.x verlieren durch ein normales Update keine Funktion
 - Composer-Anforderungen wie `^1.5` wechseln nicht automatisch auf 2.x
-- v1.5.1 bleibt als stabiler Referenzstand erhalten
+- die stabile 1.x-Linie bleibt als Referenzstand erhalten
 - die 2.x-Free-Version startet mit einer klaren, bewusst vereinfachten Produktstruktur
 - Automatik-spezifische Datenfelder werden beim ersten Umbau zunächst kompatibel erhalten, damit vorhandene Daten nicht unnötig zerstört werden
 
-Der bereits unter MIT veröffentlichte 1.5.1-Code bleibt selbstverständlich weiterhin unter dieser Lizenz nutzbar.
+Der bereits unter MIT veröffentlichte 1.x-Code bleibt selbstverständlich weiterhin unter dieser Lizenz nutzbar.

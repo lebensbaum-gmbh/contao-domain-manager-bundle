@@ -12,7 +12,9 @@ use Contao\CoreBundle\Twig\FragmentTemplate;
 use Contao\FilesModel;
 use Contao\StringUtil;
 use Doctrine\DBAL\Connection;
+use Lebensbaum\ContaoDomainManagerBundle\Event\InstallationFrontendExtensionEvent;
 use Lebensbaum\ContaoDomainManagerBundle\Event\InstallationHealthEvaluationEvent;
+use Lebensbaum\ContaoDomainManagerBundle\Event\OverviewFrontendExtensionEvent;
 use Lebensbaum\ContaoDomainManagerBundle\Health\InstallationHealthEvaluator;
 use Lebensbaum\ContaoDomainManagerBundle\Settings\DomainManagerSettings;
 use Lebensbaum\ContaoDomainManagerBundle\Util\SystemValueNormalizer;
@@ -92,6 +94,12 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
                     $healthEvent->getIssues(),
                     $healthEvent->getInfoMessages()
                 );
+
+                $frontendEvent = new InstallationFrontendExtensionEvent($installation);
+                $this->eventDispatcher->dispatch($frontendEvent);
+                $installation['frontend_actions'] = $frontendEvent->getActions();
+                $installation['frontend_bulk_capabilities'] = $frontendEvent->getBulkCapabilities();
+                $installation['frontend_sections'] = $frontendEvent->getSections();
 
                 $installations[] = $installation;
 
@@ -177,6 +185,9 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
             ];
         }
 
+        $overviewFrontendEvent = new OverviewFrontendExtensionEvent($domains);
+        $this->eventDispatcher->dispatch($overviewFrontendEvent);
+
         $contaoVersions = array_keys($allContaoVersions);
         $phpVersions = array_keys($allPhpVersions);
         natcasesort($contaoVersions);
@@ -188,7 +199,8 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
         $template->set('php_versions', array_values($phpVersions));
         $template->set('environments', $allEnvironments);
         $template->set('can_sync', $canSync);
-        $template->set('external_services', array_values($externalServices));
+        $template->set('external_services', []);
+        $template->set('frontend_bulk_actions', $overviewFrontendEvent->getBulkActions());
         $response = $template->getResponse();
         $response->headers->set('Cache-Control', 'private, no-store, max-age=0');
 
