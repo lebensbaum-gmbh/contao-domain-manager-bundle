@@ -603,8 +603,8 @@
 
             updateProgress(1, 1, `${domain}: ${resultText}`, summary);
 
-            if (isInstall && progressCounter && errors === 0) {
-                progressCounter.textContent = 'Schritt 6 / 6';
+            if (progressCounter && errors === 0) {
+                progressCounter.textContent = isInstall ? 'Schritt 6 / 6' : 'Abgeschlossen';
             }
 
             finishBulkRun();
