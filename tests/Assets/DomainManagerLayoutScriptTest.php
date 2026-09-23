@@ -14,7 +14,8 @@ final class DomainManagerLayoutScriptTest extends TestCase
 
         self::assertIsString($script);
         self::assertStringContainsString('const hosts = findSiblingHosts(filter, overview);', $script);
-        self::assertStringContainsString('hosts.parent.insertBefore(layout, filterComesFirst ? filterHost : overviewHost);', $script);
+        self::assertStringContainsString('hosts.parent.insertBefore(layout, firstHost);', $script);
+        self::assertStringContainsString("main.className = 'domain-manager-layout-main';", $script);
         self::assertStringNotContainsString('filterArticle.insertBefore(layout, filter);', $script);
     }
 }
