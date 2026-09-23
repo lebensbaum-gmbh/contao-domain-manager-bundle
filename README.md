@@ -370,9 +370,9 @@ Frontend-Aktionen zur Einzel- und Sammelsynchronisation werden unabhängig von d
 
 ## Free / Pro
 
-Die bisher veröffentlichte Version 1.5.1 enthält bereits eine Cron-basierte automatische Synchronisierung. Diese Version bleibt als veröffentlichter 1.x-Stand unverändert nutzbar.
+Die veröffentlichte 1.x-Linie (zuletzt v1.6.0) enthält noch die Cron-basierte automatische Synchronisierung und bleibt unverändert nutzbar.
 
-Für die nächste Hauptversion ist eine klare Aufteilung vorgesehen:
+Mit Version 2.0 wird die klare Aufteilung umgesetzt:
 
 - **Free / Core:** komplette Domainverwaltung und manuelle Synchronisierung
 - **Pro:** automatische Synchronisierung, Monitoring und Benachrichtigungen
@@ -383,7 +383,7 @@ Weitere Details stehen in [`docs/free-pro-matrix.md`](docs/free-pro-matrix.md).
 
 Stabile Versionen werden über Packagist veröffentlicht. Entwicklungsstände wie `dev-main` oder Feature-Branches sind ausschließlich für Tests gedacht.
 
-Der Free-/Pro-Schnitt ist als neue Hauptversion vorgesehen, damit bestehende 1.x-Installationen nicht durch ein normales Update Funktionen verlieren.
+Der Free-/Pro-Schnitt wird mit Version 2.0 eingeführt, damit bestehende 1.x-Installationen nicht durch ein normales Update Funktionen verlieren.
 
 ## Lizenz
 
