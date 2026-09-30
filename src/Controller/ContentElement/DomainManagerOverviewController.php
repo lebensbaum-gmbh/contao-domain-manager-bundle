@@ -240,6 +240,8 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
             'environment' => $environment,
             'environment_label' => $this->environmentLabel($environment),
             'system_id' => trim((string) ($row['system_id'] ?? '')),
+            'system_info_version' => trim((string) ($row['system_info_version'] ?? '')),
+            'system_info_capabilities' => $this->decodeCapabilities($row['system_info_capabilities'] ?? null),
             'document_root' => SystemValueNormalizer::webrootLabel((string) ($row['document_root'] ?? '')),
             'contao_version' => $contaoVersion,
             'php_version' => $phpVersion,
@@ -345,6 +347,33 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
         }
 
         return $services;
+    }
+
+    /** @return list<string> */
+    private function decodeCapabilities(mixed $value): array
+    {
+        if (!is_string($value) || '' === trim($value)) {
+            return [];
+        }
+
+        $decoded = json_decode($value, true);
+        if (!is_array($decoded)) {
+            return [];
+        }
+
+        $capabilities = [];
+        foreach ($decoded as $capability) {
+            if (!is_string($capability)) {
+                continue;
+            }
+
+            $capability = strtolower(trim($capability));
+            if (1 === preg_match('/\A[a-z0-9_]+\z/', $capability)) {
+                $capabilities[$capability] = $capability;
+            }
+        }
+
+        return array_values($capabilities);
     }
 
     private function isChecked(mixed $value): bool
