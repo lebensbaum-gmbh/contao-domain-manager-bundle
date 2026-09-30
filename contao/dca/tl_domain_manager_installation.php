@@ -102,6 +102,12 @@ $GLOBALS['TL_DCA']['tl_domain_manager_installation'] = [
             'eval' => ['maxlength' => 32, 'tl_class' => 'w50'],
             'sql' => "varchar(32) NOT NULL default ''",
         ],
+        'system_info_version' => [
+            'sql' => "varchar(64) NOT NULL default ''",
+        ],
+        'system_info_capabilities' => [
+            'sql' => 'text NULL',
+        ],
         'document_root' => [
             'exclude' => false,
             'inputType' => 'text',
