@@ -11,3 +11,7 @@ $GLOBALS['TL_LANG']['CTE']['domain_manager_filter'] = [
     'Domainfilter',
     'Filtert die Domainübersicht nach aktuellem Ziel, Trakked, Contao-Version, PHP-Version und Umgebung.',
 ];
+$GLOBALS['TL_LANG']['CTE']['domain_manager_updates'] = [
+    'Updates',
+    'Zeigt eine eigenständige Arbeitsansicht für die Update-Verwaltung der Contao-Installationen an.',
+];

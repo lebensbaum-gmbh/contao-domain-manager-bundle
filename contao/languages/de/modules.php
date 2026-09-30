@@ -22,3 +22,9 @@ $GLOBALS['TL_LANG']['MOD']['domain_manager_setup'] = [
     'Ersteinrichtung',
     'Empfohlene Domainverwaltungs-Struktur prüfen und automatisch einrichten.',
 ];
+
+$GLOBALS['TL_LANG']['FMD']['domain_manager'] = 'Domainverwaltung';
+$GLOBALS['TL_LANG']['FMD']['domain_manager_navigation'] = [
+    'Domain-Manager-Navigation',
+    'Zeigt die Navigation zwischen Domainübersicht und den Arbeitsbereichen des Domain Managers an.',
+];

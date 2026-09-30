@@ -103,6 +103,28 @@ final class SetupInspector
             );
         }
 
+        $updatesPageId = null;
+        if (null !== $rootPageId) {
+            $updatesPageId = $this->findId(
+                "SELECT p.id
+                 FROM tl_page p
+                 INNER JOIN tl_article a ON a.pid = p.id
+                 INNER JOIN tl_content c ON c.pid = a.id AND c.ptable = 'tl_article'
+                 WHERE p.pid = ? AND p.type = 'regular' AND c.type = 'domain_manager_updates'
+                 ORDER BY p.id LIMIT 1",
+                [$rootPageId]
+            );
+
+            if (null === $updatesPageId) {
+                $updatesPageId = $this->findId(
+                    "SELECT id FROM tl_page
+                     WHERE pid = ? AND type = 'regular' AND alias = 'updates'
+                     ORDER BY id LIMIT 1",
+                    [$rootPageId]
+                );
+            }
+        }
+
         $loginPageId = null;
         if (null !== $rootPageId) {
             $loginPageId = $this->findId(
@@ -158,8 +180,19 @@ final class SetupInspector
             );
         }
 
+        $navigationModuleId = null;
+        if (null !== $themeId) {
+            $navigationModuleId = $this->findId(
+                "SELECT id FROM tl_module
+                 WHERE pid = ? AND type = 'domain_manager_navigation'
+                 ORDER BY id LIMIT 1",
+                [$themeId]
+            );
+        }
+
         $filterElementId = null;
         $overviewElementId = null;
+        $overviewNavigationElementId = null;
         if (null !== $overviewPageId) {
             $filterElementId = $this->findId(
                 "SELECT c.id
@@ -177,6 +210,41 @@ final class SetupInspector
                  ORDER BY c.id LIMIT 1",
                 [$overviewPageId]
             );
+
+            if (null !== $navigationModuleId) {
+                $overviewNavigationElementId = $this->findId(
+                    "SELECT c.id
+                     FROM tl_content c
+                     INNER JOIN tl_article a ON a.id = c.pid AND c.ptable = 'tl_article'
+                     WHERE a.pid = ? AND c.type = 'module' AND c.module = ?
+                     ORDER BY c.id LIMIT 1",
+                    [$overviewPageId, $navigationModuleId]
+                );
+            }
+        }
+
+        $updatesElementId = null;
+        $updatesNavigationElementId = null;
+        if (null !== $updatesPageId) {
+            $updatesElementId = $this->findId(
+                "SELECT c.id
+                 FROM tl_content c
+                 INNER JOIN tl_article a ON a.id = c.pid AND c.ptable = 'tl_article'
+                 WHERE a.pid = ? AND c.type = 'domain_manager_updates'
+                 ORDER BY c.id LIMIT 1",
+                [$updatesPageId]
+            );
+
+            if (null !== $navigationModuleId) {
+                $updatesNavigationElementId = $this->findId(
+                    "SELECT c.id
+                     FROM tl_content c
+                     INNER JOIN tl_article a ON a.id = c.pid AND c.ptable = 'tl_article'
+                     WHERE a.pid = ? AND c.type = 'module' AND c.module = ?
+                     ORDER BY c.id LIMIT 1",
+                    [$updatesPageId, $navigationModuleId]
+                );
+            }
         }
 
         $items = [
@@ -185,12 +253,17 @@ final class SetupInspector
             $this->resultItem('layout', 'Seitenlayout', 'Seitenlayout der Domainverwaltung', $layoutId),
             $this->resultItem('root_page', 'Startpunkt einer Website', 'Startpunkt der Domainverwaltung', $rootPageId),
             $this->resultItem('overview_page', 'Seite Domainübersicht', 'Alias index', $overviewPageId),
+            $this->resultItem('updates_page', 'Seite Updates', 'Alias updates', $updatesPageId),
             $this->resultItem('login_page', 'Seite Login', 'Alias login', $loginPageId),
             $this->resultItem('error_401_page', '401 – Nicht authentifiziert', 'Seitentyp 401 unter demselben Startpunkt', $error401PageId),
             $this->resultItem('error_403_page', '403 – Zugriff verweigert', 'Seitentyp 403 unter demselben Startpunkt', $error403PageId),
             $this->resultItem('login_module', 'Login-Modul', 'Login-Formular der Domainverwaltung', $loginModuleId),
+            $this->resultItem('navigation_module', 'Navigations-Modul', 'Automatische Domain-Manager-Navigation', $navigationModuleId),
             $this->resultItem('filter_element', 'Inhaltselement Domainfilter', 'Domainfilter auf der Übersichtsseite', $filterElementId),
             $this->resultItem('overview_element', 'Inhaltselement Domainübersicht', 'Domainübersicht auf der Übersichtsseite', $overviewElementId),
+            $this->resultItem('overview_navigation_element', 'Navigation Domainübersicht', 'Navigation auf der Übersichtsseite', $overviewNavigationElementId),
+            $this->resultItem('updates_element', 'Inhaltselement Updates', 'Update-Verwaltung auf der Updates-Seite', $updatesElementId),
+            $this->resultItem('updates_navigation_element', 'Navigation Updates', 'Navigation auf der Updates-Seite', $updatesNavigationElementId),
         ];
 
         $missing = array_values(array_map(

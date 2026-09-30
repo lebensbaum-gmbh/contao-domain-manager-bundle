@@ -17,6 +17,7 @@ final class SetupInstaller
     private const THEME_NAME = 'Domainverwaltung';
     private const LAYOUT_NAME = 'Domainverwaltung';
     private const LOGIN_MODULE_NAME = 'Domainverwaltung – Login';
+    private const NAVIGATION_MODULE_NAME = 'Domainverwaltung – Navigation';
 
     public function __construct(
         private readonly Connection $connection,
@@ -64,14 +65,23 @@ final class SetupInstaller
             $overviewPageId = $this->existingId($items, 'overview_page')
                 ?? $this->createOverviewPage($rootPageId, $memberGroupId, $timestamp, $created);
 
+            $updatesPageId = $this->existingId($items, 'updates_page')
+                ?? $this->createUpdatesPage($rootPageId, $memberGroupId, $timestamp, $created);
+
             $loginPageId = $this->existingId($items, 'login_page')
                 ?? $this->createLoginPage($rootPageId, $timestamp, $created);
 
             $loginModuleId = $this->existingId($items, 'login_module')
                 ?? $this->createLoginModule($themeId, $overviewPageId, $timestamp, $created);
 
+            $navigationModuleId = $this->existingId($items, 'navigation_module')
+                ?? $this->createNavigationModule($themeId, $timestamp, $created);
+
             $this->ensureLoginModuleConfiguration($loginModuleId, $overviewPageId, $timestamp);
-            $this->ensureOverviewContent($overviewPageId, $loginModuleId, $timestamp, $created);
+            $this->ensureWorkspacePageConfiguration($overviewPageId, $memberGroupId, $timestamp);
+            $this->ensureWorkspacePageConfiguration($updatesPageId, $memberGroupId, $timestamp);
+            $this->ensureOverviewContent($overviewPageId, $loginModuleId, $navigationModuleId, $timestamp, $created);
+            $this->ensureUpdatesContent($updatesPageId, $navigationModuleId, $timestamp, $created);
             $this->ensureLoginContent($loginPageId, $loginModuleId, $timestamp, $created);
 
             $error401PageId = $this->existingId($items, 'error_401_page')
@@ -279,6 +289,31 @@ final class SetupInstaller
         return $id;
     }
 
+    private function createUpdatesPage(
+        int $rootPageId,
+        int $memberGroupId,
+        int $timestamp,
+        array &$created,
+    ): int {
+        $this->connection->insert('tl_page', [
+            'pid' => $rootPageId,
+            'sorting' => $this->nextSorting('tl_page', $rootPageId),
+            'tstamp' => $timestamp,
+            'title' => 'Updates',
+            'type' => 'regular',
+            'alias' => 'updates',
+            'pageTitle' => 'Updates',
+            'protected' => 1,
+            'groups' => serialize([$memberGroupId]),
+            'cssClass' => 'domainverwaltung-page',
+            'published' => 1,
+        ]);
+        $id = $this->lastInsertId('Seite Updates');
+        $created[] = 'Seite Updates';
+
+        return $id;
+    }
+
     private function createLoginPage(int $rootPageId, int $timestamp, array &$created): int
     {
         $this->connection->insert('tl_page', [
@@ -319,6 +354,20 @@ final class SetupInstaller
         return $id;
     }
 
+    private function createNavigationModule(int $themeId, int $timestamp, array &$created): int
+    {
+        $this->connection->insert('tl_module', [
+            'pid' => $themeId,
+            'tstamp' => $timestamp,
+            'name' => self::NAVIGATION_MODULE_NAME,
+            'type' => 'domain_manager_navigation',
+        ]);
+        $id = $this->lastInsertId('Domain-Manager-Navigation');
+        $created[] = 'Navigations-Modul';
+
+        return $id;
+    }
+
     private function ensureLoginModuleConfiguration(
         int $loginModuleId,
         int $overviewPageId,
@@ -331,18 +380,66 @@ final class SetupInstaller
         ], ['id' => $loginModuleId]);
     }
 
+    private function ensureWorkspacePageConfiguration(int $pageId, int $memberGroupId, int $timestamp): void
+    {
+        $row = $this->connection->fetchAssociative(
+            'SELECT cssClass, groups FROM tl_page WHERE id = ? LIMIT 1',
+            [$pageId]
+        );
+
+        if (false === $row) {
+            throw new RuntimeException('Eine Seite der Domainverwaltung ist nicht mehr vorhanden.');
+        }
+
+        $classes = preg_split('/\s+/', trim((string) ($row['cssClass'] ?? ''))) ?: [];
+        $classes = array_values(array_filter($classes));
+        if (!in_array('domainverwaltung-page', $classes, true)) {
+            $classes[] = 'domainverwaltung-page';
+        }
+
+        $groups = [];
+        foreach (StringUtil::deserialize($row['groups'] ?? null, true) as $groupId) {
+            if (is_numeric($groupId) && (int) $groupId > 0) {
+                $groups[(int) $groupId] = (int) $groupId;
+            }
+        }
+        $groups[$memberGroupId] = $memberGroupId;
+
+        $this->connection->update('tl_page', [
+            'protected' => 1,
+            'groups' => serialize(array_values($groups)),
+            'cssClass' => implode(' ', array_values(array_unique($classes))),
+            'published' => 1,
+            'tstamp' => $timestamp,
+        ], ['id' => $pageId]);
+    }
+
     private function ensureOverviewContent(
         int $pageId,
         int $loginModuleId,
+        int $navigationModuleId,
         int $timestamp,
         array &$created,
     ): void {
         $articleId = $this->ensureArticle($pageId, 'Domainübersicht', $timestamp, $created);
 
+        $this->ensureModuleElement($articleId, $navigationModuleId, 64, $timestamp, $created, 'Navigations-Inhaltselement');
         $this->ensureHeadline($articleId, 'Domainübersicht', 128, $timestamp, $created);
-        $this->ensureModuleElement($articleId, $loginModuleId, 256, $timestamp, $created);
+        $this->ensureModuleElement($articleId, $loginModuleId, 256, $timestamp, $created, 'Login-Inhaltselement');
         $this->ensureSimpleContentElement($articleId, 'domain_manager_filter', 384, $timestamp, 'Inhaltselement Domainfilter', $created);
         $this->ensureSimpleContentElement($articleId, 'domain_manager_overview', 512, $timestamp, 'Inhaltselement Domainübersicht', $created);
+    }
+
+    private function ensureUpdatesContent(
+        int $pageId,
+        int $navigationModuleId,
+        int $timestamp,
+        array &$created,
+    ): void {
+        $articleId = $this->ensureArticle($pageId, 'Updates', $timestamp, $created);
+
+        $this->ensureModuleElement($articleId, $navigationModuleId, 64, $timestamp, $created, 'Navigations-Inhaltselement Updates');
+        $this->ensureSimpleContentElement($articleId, 'domain_manager_updates', 128, $timestamp, 'Inhaltselement Updates', $created);
     }
 
     private function ensureLoginContent(
@@ -353,7 +450,7 @@ final class SetupInstaller
     ): void {
         $articleId = $this->ensureArticle($pageId, 'Login', $timestamp, $created);
         $this->ensureHeadline($articleId, 'Domainverwaltung', 128, $timestamp, $created);
-        $this->ensureModuleElement($articleId, $loginModuleId, 256, $timestamp, $created);
+        $this->ensureModuleElement($articleId, $loginModuleId, 256, $timestamp, $created, 'Login-Inhaltselement');
     }
 
     private function createError401Page(
@@ -486,6 +583,7 @@ final class SetupInstaller
         int $sorting,
         int $timestamp,
         array &$created,
+        string $label = 'Modul-Inhaltselement',
     ): void {
         $existing = $this->connection->fetchOne(
             "SELECT id FROM tl_content
@@ -506,8 +604,8 @@ final class SetupInstaller
             'type' => 'module',
             'module' => $moduleId,
         ]);
-        $this->lastInsertId('Login-Inhaltselement');
-        $created[] = 'Login-Inhaltselement';
+        $this->lastInsertId($label);
+        $created[] = $label;
     }
 
     private function ensureSimpleContentElement(

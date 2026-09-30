@@ -79,6 +79,7 @@ final class SystemInfoClientTest extends TestCase
         $client = $this->createClient(new MockResponse(json_encode([
             'api_version' => 1,
             'system_info_version' => '1.3.0',
+            'capabilities' => ['backup', 'update_prepare', 'update_progress'],
             'system_id' => self::SYSTEM_ID,
             'contao_version' => '5.7.13',
             'php_version' => '8.5.3-nmm1',
@@ -95,6 +96,7 @@ final class SystemInfoClientTest extends TestCase
 
         self::assertSame(1, $data['api_version']);
         self::assertSame('1.3.0', $data['system_info_version']);
+        self::assertSame(['backup', 'update_prepare', 'update_progress'], $data['capabilities']);
         self::assertSame('5.7.13', $data['contao_version']);
         self::assertSame('8.5.3-nmm1', $data['php_version']);
     }

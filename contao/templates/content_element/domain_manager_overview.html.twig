@@ -2,6 +2,32 @@
 
 {% use "@Contao/component/_stylesheet.html.twig" %}
 
+{% macro frontend_actions(actions, request_token) %}
+    {% for action in actions %}
+        {% set action_class = 'detail-action domain-manager-frontend-action is-' ~ action.variant %}
+        {% if action.method == 'post' %}
+            <form class="domain-manager-inline-action" action="{{ action.url }}" method="post">
+                <input type="hidden" name="REQUEST_TOKEN" value="{{ request_token }}">
+                <button
+                    class="{{ action_class }}"
+                    type="submit"
+                    name="dm_action"
+                    value="{{ action.name }}"
+                    {% if action.confirm %}onclick="return confirm('{{ action.confirm|e('js') }}')"{% endif %}
+                >{{ action.label }}</button>
+            </form>
+        {% else %}
+            <a
+                class="{{ action_class }}"
+                href="{{ action.url }}"
+                {% if action.confirm %}onclick="return confirm('{{ action.confirm|e('js') }}')"{% endif %}
+            >{{ action.label }}</a>
+        {% endif %}
+    {% endfor %}
+{% endmacro %}
+
+{% import _self as dm %}
+
 {% add "domain_manager_css" to stylesheets %}
     {% with {file: asset('bundles/contaodomainmanager/css/domain-manager.css')} %}
         {{ block('stylesheet_component') }}
@@ -26,6 +52,28 @@
                 {% if service.url %}
                     <a class="domain-manager-trakked-link domain-manager-service-link" href="{{ service.url }}" target="_blank" rel="noopener noreferrer">Zu {{ service.name }} <span aria-hidden="true">↗</span></a>
                 {% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if frontend_bulk_actions %}
+        <form id="domain-manager-bulk-actions-form" class="domain-manager-bulk-form" method="post">
+            <input type="hidden" name="REQUEST_TOKEN" value="{{ contao.request_token }}">
+        </form>
+        <div class="domain-manager-bulk-actions" data-dm-bulk-actions>
+            <span class="domain-manager-bulk-label">Ausgewählte Installationen</span>
+            {% for action in frontend_bulk_actions %}
+                <button
+                    class="domain-manager-bulk-action is-{{ action.variant }}"
+                    type="submit"
+                    form="domain-manager-bulk-actions-form"
+                    formaction="{{ action.url }}"
+                    formmethod="post"
+                    name="dm_bulk_action"
+                    value="{{ action.name }}"
+                    data-dm-required-capability="{{ action.capability }}"
+                    {% if action.confirm %}onclick="return confirm('{{ action.confirm|e('js') }}')"{% endif %}
+                >{{ action.label }}</button>
             {% endfor %}
         </div>
     {% endif %}
@@ -104,6 +152,7 @@
                     <section
                         class="installation installation-featured is-target"
                         data-dm-installation
+                        data-installation-id="{{ installation.id }}"
                         data-search="{{ installation.domain|lower|e('html_attr') }}"
                         data-contao="{{ installation.contao_version|e('html_attr') }}"
                         data-php="{{ installation.php_version|e('html_attr') }}"
@@ -113,6 +162,18 @@
                     >
                         <div class="target-head">
                             <div>
+                                {% if installation.frontend_bulk_capabilities %}
+                                    <input
+                                        class="domain-manager-installation-select"
+                                        type="checkbox"
+                                        name="installation_ids[]"
+                                        value="{{ installation.id }}"
+                                        form="domain-manager-bulk-actions-form"
+                                        data-dm-installation-select
+                                        data-dm-capabilities="{{ installation.frontend_bulk_capabilities|join(' ')|e('html_attr') }}"
+                                        aria-label="{{ installation.domain }} auswählen"
+                                    >
+                                {% endif %}
                                 <span class="detail-kicker">Aktuelles Ziel</span>
                                 <h3 class="target-domain">
                                     <a href="{{ installation.frontend_url }}" target="_blank" rel="noopener">{{ installation.domain }}</a>
@@ -136,10 +197,11 @@
                                     {% endif %}
                                 </div>
 
-                                {% if installation.backend_url or installation.manager_url %}
+                                {% if installation.backend_url or installation.manager_url or installation.frontend_actions %}
                                     <div class="detail-actions">
                                         {% if installation.backend_url %}<a class="detail-action" href="{{ installation.backend_url }}" target="_blank" rel="noopener noreferrer">Contao-Backend <span aria-hidden="true">↗</span></a>{% endif %}
                                         {% if installation.manager_url %}<a class="detail-action" href="{{ installation.manager_url }}" target="_blank" rel="noopener noreferrer">Contao-Manager <span aria-hidden="true">↗</span></a>{% endif %}
+                                        {{ dm.frontend_actions(installation.frontend_actions, contao.request_token) }}
                                     </div>
                                 {% endif %}
                             </div>
@@ -178,6 +240,10 @@
                                 <p class="no-notes">Keine Bemerkungen hinterlegt.</p>
                             {% endif %}
                         </div>
+
+                        {% for section in installation.frontend_sections %}
+                            {% include section.template with section.context only %}
+                        {% endfor %}
                     </section>
                 {% else %}
                     <div class="no-target">Für diese Hauptdomain ist kein aktuelles Ziel festgelegt.</div>
@@ -194,6 +260,7 @@
                             <details
                                 class="installation installation-item"
                                 data-dm-installation
+                                data-installation-id="{{ installation.id }}"
                                 data-search="{{ installation.domain|lower|e('html_attr') }}"
                                 data-contao="{{ installation.contao_version|e('html_attr') }}"
                                 data-php="{{ installation.php_version|e('html_attr') }}"
@@ -202,7 +269,21 @@
                                 data-services="{{ installation.external_service_ids|join(' ')|e('html_attr') }}"
                             >
                                 <summary class="installation-row">
-                                    <span class="installation-domain"><a href="{{ installation.frontend_url }}" target="_blank" rel="noopener">{{ installation.domain }}</a></span>
+                                    <span class="installation-domain">
+                                        {% if installation.frontend_bulk_capabilities %}
+                                            <input
+                                                class="domain-manager-installation-select"
+                                                type="checkbox"
+                                                name="installation_ids[]"
+                                                value="{{ installation.id }}"
+                                                form="domain-manager-bulk-actions-form"
+                                                data-dm-installation-select
+                                                data-dm-capabilities="{{ installation.frontend_bulk_capabilities|join(' ')|e('html_attr') }}"
+                                                aria-label="{{ installation.domain }} auswählen"
+                                            >
+                                        {% endif %}
+                                        <a href="{{ installation.frontend_url }}" target="_blank" rel="noopener">{{ installation.domain }}</a>
+                                    </span>
                                     <span class="installation-environment">{{ installation.environment_label }}</span>
                                     <span class="installation-contao">{{ installation.contao_version }}</span>
                                     <span class="installation-php">{{ installation.php_version }}</span>
@@ -246,12 +327,17 @@
                                         {% if installation.notes %}<p>{{ installation.notes|nl2br }}</p>{% else %}<p class="no-notes">Keine Bemerkungen hinterlegt.</p>{% endif %}
                                     </div>
 
-                                    {% if installation.backend_url or installation.manager_url %}
+                                    {% if installation.backend_url or installation.manager_url or installation.frontend_actions %}
                                         <div class="installation-detail-actions">
                                             {% if installation.backend_url %}<a class="detail-action" href="{{ installation.backend_url }}" target="_blank" rel="noopener noreferrer">Contao-Backend <span aria-hidden="true">↗</span></a>{% endif %}
                                             {% if installation.manager_url %}<a class="detail-action" href="{{ installation.manager_url }}" target="_blank" rel="noopener noreferrer">Contao-Manager <span aria-hidden="true">↗</span></a>{% endif %}
+                                            {{ dm.frontend_actions(installation.frontend_actions, contao.request_token) }}
                                         </div>
                                     {% endif %}
+
+                                    {% for section in installation.frontend_sections %}
+                                        {% include section.template with section.context only %}
+                                    {% endfor %}
                                 </div>
                             </details>
                         {% endfor %}

@@ -76,7 +76,30 @@
 
 body.domainverwaltung-page .domain-manager-layout {
     max-width: none;
-    padding-inline: 0;
+}
+
+body.domainverwaltung-page #main > .inside > .mod_article.domain-manager-overview-article {
+    box-sizing: border-box;
+    padding-inline: clamp(24px, 3vw, 56px) !important;
+}
+
+body.domainverwaltung-page .domain-manager-layout:not(.domain-manager-layout-updates) {
+    padding-inline: 0 !important;
+}
+
+.domain-manager-layout-main {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    width: 100%;
+}
+
+.domain-manager-layout-main > .domain-manager-layout-overview {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0;
+    margin: 0 !important;
+    float: none !important;
 }
 
 /* Narrow layouts and touch-first devices get the full-width overview.
@@ -93,8 +116,12 @@ body.domainverwaltung-page .domain-manager-layout {
         padding-inline: clamp(18px, 4vw, 36px);
     }
 
-    body.domainverwaltung-page .domain-manager-layout {
-        padding-inline: 0;
+    body.domainverwaltung-page #main > .inside > .mod_article.domain-manager-overview-article {
+        padding-inline: clamp(18px, 4vw, 36px) !important;
+    }
+
+    body.domainverwaltung-page .domain-manager-layout:not(.domain-manager-layout-updates) {
+        padding-inline: 0 !important;
     }
 
     .domain-manager-layout-filter {
@@ -225,8 +252,12 @@ body.domainverwaltung-page .domain-manager-layout {
         padding-inline: 16px;
     }
 
-    body.domainverwaltung-page .domain-manager-layout {
-        padding-inline: 0;
+    body.domainverwaltung-page #main > .inside > .mod_article.domain-manager-overview-article {
+        padding-inline: 16px !important;
+    }
+
+    body.domainverwaltung-page .domain-manager-layout:not(.domain-manager-layout-updates) {
+        padding-inline: 0 !important;
     }
 
     .domain-manager-layout .domain-manager-filter {
@@ -266,3 +297,46 @@ body.domainverwaltung-page .domain-manager-layout {
         margin-top: 14px;
     }
 }
+
+/* Updates use the same centered workspace shell and inner spacing as the domain overview. */
+body.domainverwaltung-page .domain-manager-layout.domain-manager-layout-updates {
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin-inline: auto !important;
+    padding-inline: clamp(24px, 3vw, 56px) !important;
+    box-sizing: border-box;
+}
+
+.domain-manager-layout-updates > .domain-manager-layout-updates-host {
+    grid-column: 1 / -1 !important;
+    grid-row: 1 !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    float: none !important;
+}
+
+.domain-manager-layout-updates-host > .inside,
+.domain-manager-layout-updates-host .content-domain-manager-updates {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding-inline: 0 !important;
+    box-sizing: border-box;
+}
+
+@media (max-width: 1180px) {
+    body.domainverwaltung-page .domain-manager-layout.domain-manager-layout-updates {
+        padding-inline: clamp(18px, 4vw, 36px) !important;
+    }
+}
+
+@media (max-width: 680px) {
+    body.domainverwaltung-page .domain-manager-layout.domain-manager-layout-updates {
+        padding-inline: 16px !important;
+    }
+}
+

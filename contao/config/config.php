@@ -6,6 +6,7 @@ $GLOBALS['TL_PERMISSIONS'][] = 'domain_manager_permissions';
 $GLOBALS['TL_CSS'][] = 'bundles/contaodomainmanager/css/domain-manager-page.css';
 $GLOBALS['TL_CSS'][] = 'bundles/contaodomainmanager/css/domain-manager-app.css';
 $GLOBALS['TL_CSS'][] = 'bundles/contaodomainmanager/css/domain-manager-sync-all.css';
+$GLOBALS['TL_JAVASCRIPT'][] = 'bundles/contaodomainmanager/js/domain-manager-actions.js';
 
 $GLOBALS['BE_MOD']['domain_manager'] ??= [];
 $GLOBALS['BE_MOD']['domain_manager']['domain_manager_domains'] = [

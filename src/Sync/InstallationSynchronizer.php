@@ -65,6 +65,9 @@ final class InstallationSynchronizer
             $phpVersionFull = SystemValueNormalizer::phpVersionFull($systemInfo['php_version']);
             $documentRoot = trim((string) ($systemInfo['document_root'] ?? ''));
             $databaseName = trim((string) ($systemInfo['database_name'] ?? ''));
+            $systemInfoVersion = trim((string) ($systemInfo['system_info_version'] ?? ''));
+            $capabilities = is_array($systemInfo['capabilities'] ?? null) ? $systemInfo['capabilities'] : [];
+            $capabilitiesJson = json_encode(array_values($capabilities), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
             $oldContaoVersion = trim((string) $installation['contao_version']);
             $oldPhpVersionFull = trim((string) ($installation['php_version_full'] ?? ''));
 
@@ -72,6 +75,8 @@ final class InstallationSynchronizer
                 'contao_version' => $contaoVersion,
                 'php_version' => $phpVersion,
                 'php_version_full' => $phpVersionFull,
+                'system_info_version' => $systemInfoVersion,
+                'system_info_capabilities' => false !== $capabilitiesJson ? $capabilitiesJson : '[]',
                 'last_sync' => $timestamp,
                 'sync_status' => 'success',
                 'sync_message' => 'Systeminformationen erfolgreich aktualisiert.',

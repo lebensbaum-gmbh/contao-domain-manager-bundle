@@ -60,6 +60,44 @@ final class SystemInfoClient
             }
         }
 
+        $capabilities = [];
+        if (array_key_exists('capabilities', $data)) {
+            if (!is_array($data['capabilities'])) {
+                throw new SystemInfoConnectionException(
+                    'response',
+                    'invalid_capabilities',
+                    'Die System-Info-Antwort enthält ungültige Funktionsangaben.',
+                    200,
+                    'Endpoint: '.self::ENDPOINT_PATH,
+                );
+            }
+
+            foreach ($data['capabilities'] as $capability) {
+                if (!is_string($capability)) {
+                    throw new SystemInfoConnectionException(
+                        'response',
+                        'invalid_capabilities',
+                        'Die System-Info-Antwort enthält ungültige Funktionsangaben.',
+                        200,
+                        'Endpoint: '.self::ENDPOINT_PATH,
+                    );
+                }
+
+                $capability = strtolower(trim($capability));
+                if (1 !== preg_match('/\A[a-z0-9_]+\z/', $capability)) {
+                    throw new SystemInfoConnectionException(
+                        'response',
+                        'invalid_capabilities',
+                        'Die System-Info-Antwort enthält ungültige Funktionsangaben.',
+                        200,
+                        'Endpoint: '.self::ENDPOINT_PATH,
+                    );
+                }
+
+                $capabilities[$capability] = $capability;
+            }
+        }
+
         return [
             'system_id' => $data['system_id'],
             'contao_version' => $data['contao_version'],
@@ -70,6 +108,7 @@ final class SystemInfoClient
             'generated_at' => $data['generated_at'],
             'api_version' => isset($data['api_version']) && is_int($data['api_version']) ? $data['api_version'] : null,
             'system_info_version' => isset($data['system_info_version']) ? trim($data['system_info_version']) : '',
+            'capabilities' => array_values($capabilities),
         ];
     }
 }
