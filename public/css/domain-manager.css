@@ -290,17 +290,22 @@
     line-height: 1.1;
 }
 
-.status-badge.is-current,
-.environment-badge {
+.status-badge.is-current {
     border-color: color-mix(in srgb, var(--dm-accent) 25%, transparent);
     background: var(--dm-accent-soft);
     color: var(--dm-accent);
 }
 
+.environment-badge {
+    border-color: var(--dm-border);
+    background: var(--dm-background-soft);
+    color: var(--dm-muted);
+}
+
 .status-badge.is-tracked {
-    border-color: color-mix(in srgb, var(--dm-success) 25%, transparent);
-    background: var(--dm-success-soft);
-    color: var(--dm-success);
+    border-color: color-mix(in srgb, var(--dm-text) 16%, var(--dm-border));
+    background: var(--dm-background-soft);
+    color: var(--dm-text);
 }
 
 .status-badge.is-untracked {
