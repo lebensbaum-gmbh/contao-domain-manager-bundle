@@ -154,3 +154,65 @@ body.domainverwaltung-page h1 {
         height: 41px;
     }
 }
+
+
+/* maintend product branding ------------------------------------------------- */
+body.domainverwaltung-page #main > .inside::before,
+body.domainverwaltung-login-page #main > .inside::before,
+body.domainverwaltung-error-page #main > .inside::before {
+    content: "";
+    display: block;
+    width: min(220px, 52vw);
+    aspect-ratio: 1462.73 / 272.28;
+    margin: 2px 0 22px;
+    background: url("../branding/maintend-logo.svg") left center / contain no-repeat;
+}
+
+body.domainverwaltung-login-page #main > .inside::before,
+body.domainverwaltung-error-page #main > .inside::before {
+    margin-right: auto;
+    margin-left: auto;
+}
+
+/* Navy communicates structure; petrol communicates interaction/current state. */
+body.domainverwaltung-page .domain-entry {
+    border-left: 4px solid var(--dm-theme-text);
+}
+
+body.domainverwaltung-page .domain-entry[open] {
+    border-left-color: var(--dm-theme-primary);
+}
+
+body.domainverwaltung-page .domain-name {
+    color: var(--dm-theme-text);
+}
+
+body.domainverwaltung-page .domain-entry:hover .domain-name,
+body.domainverwaltung-page .domain-entry:focus-within .domain-name {
+    color: var(--dm-theme-primary);
+}
+
+body.domainverwaltung-page .domain-version,
+body.domainverwaltung-page .domain-php {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 26px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: .8rem;
+    font-weight: 650;
+    line-height: 1.1;
+}
+
+body.domainverwaltung-page .domain-version {
+    border: 1px solid color-mix(in srgb, var(--dm-theme-primary) 22%, var(--dm-theme-border));
+    background: var(--dm-theme-primary-soft);
+    color: color-mix(in srgb, var(--dm-theme-primary) 78%, var(--dm-theme-text));
+}
+
+body.domainverwaltung-page .domain-php {
+    border: 1px solid var(--dm-theme-border);
+    background: var(--dm-theme-surface-soft);
+    color: var(--dm-theme-muted);
+}
