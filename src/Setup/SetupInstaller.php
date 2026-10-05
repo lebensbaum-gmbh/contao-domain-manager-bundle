@@ -216,9 +216,9 @@ final class SetupInstaller
             'pid' => 0,
             'sorting' => $this->nextSorting('tl_page', 0),
             'tstamp' => $timestamp,
-            'title' => 'Domainverwaltung',
+            'title' => 'maintend',
             'type' => 'root',
-            'pageTitle' => 'Domainverwaltung',
+            'pageTitle' => 'maintend',
             'dns' => $hostname,
             'language' => 'de',
             'fallback' => 1,
@@ -288,7 +288,7 @@ final class SetupInstaller
             'title' => 'Login',
             'type' => 'regular',
             'alias' => 'login',
-            'pageTitle' => 'Domainverwaltung – Login',
+            'pageTitle' => 'maintend – Login',
             'robots' => 'noindex,nofollow',
             'cssClass' => 'domainverwaltung-login-page',
             'published' => 1,
@@ -352,7 +352,7 @@ final class SetupInstaller
         array &$created,
     ): void {
         $articleId = $this->ensureArticle($pageId, 'Login', $timestamp, $created);
-        $this->ensureHeadline($articleId, 'Domainverwaltung', 128, $timestamp, $created);
+        $this->ensureHeadline($articleId, 'maintend', 128, $timestamp, $created);
         $this->ensureModuleElement($articleId, $loginModuleId, 256, $timestamp, $created);
     }
 
@@ -423,7 +423,7 @@ final class SetupInstaller
             'sorting' => 128,
             'tstamp' => $timestamp,
             'type' => 'text',
-            'text' => '<h1>Zugriff verweigert</h1><p>Sie sind angemeldet, besitzen jedoch keine Berechtigung für die Domainverwaltung.</p>',
+            'text' => '<h1>Zugriff verweigert</h1><p>Sie sind angemeldet, besitzen jedoch keine Berechtigung für maintend.</p>',
         ]);
         $this->lastInsertId('Inhalt der 403-Seite');
         $created[] = 'Inhalt der 403-Seite';
@@ -723,9 +723,9 @@ final class SetupInstaller
             $user = BackendUser::getInstance();
             $name = trim((string) $user->name);
 
-            return '' !== $name ? $name : 'Contao Domain Manager';
+            return '' !== $name ? $name : 'maintend';
         } catch (Throwable) {
-            return 'Contao Domain Manager';
+            return 'maintend';
         }
     }
 }
