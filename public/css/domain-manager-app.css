@@ -157,21 +157,135 @@ body.domainverwaltung-page h1 {
 
 
 /* maintend product branding ------------------------------------------------- */
-body.domainverwaltung-page #main > .inside::before,
-body.domainverwaltung-login-page #main > .inside::before,
-body.domainverwaltung-error-page #main > .inside::before {
+body.domainverwaltung-page #header,
+body.domainverwaltung-login-page #header,
+body.domainverwaltung-error-page #header {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-bottom: 1px solid var(--dm-theme-border);
+    background: var(--dm-theme-surface);
+}
+
+body.domainverwaltung-page #header > .inside,
+body.domainverwaltung-login-page #header > .inside,
+body.domainverwaltung-error-page #header > .inside {
+    display: flex;
+    align-items: center;
+    gap: 36px;
+    width: min(calc(100vw - 48px), var(--dm-theme-content-width, 1480px));
+    min-height: 64px;
+    margin-inline: auto;
+}
+
+body.domainverwaltung-page #header > .inside::before,
+body.domainverwaltung-login-page #header > .inside::before,
+body.domainverwaltung-error-page #header > .inside::before {
     content: "";
     display: block;
-    width: min(220px, 52vw);
+    flex: 0 0 auto;
+    width: 184px;
     aspect-ratio: 1462.73 / 272.28;
-    margin: 2px 0 22px;
     background: url("../branding/maintend-logo.svg") left center / contain no-repeat;
 }
 
-body.domainverwaltung-login-page #main > .inside::before,
-body.domainverwaltung-error-page #main > .inside::before {
-    margin-right: auto;
+body.domainverwaltung-page #header .mod_navigation,
+body.domainverwaltung-login-page #header .mod_navigation,
+body.domainverwaltung-error-page #header .mod_navigation {
     margin-left: auto;
+}
+
+body.domainverwaltung-page #header .mod_navigation ul,
+body.domainverwaltung-login-page #header .mod_navigation ul,
+body.domainverwaltung-error-page #header .mod_navigation ul {
+    display: flex;
+    align-items: stretch;
+    gap: 26px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+body.domainverwaltung-page #header .mod_navigation li,
+body.domainverwaltung-login-page #header .mod_navigation li,
+body.domainverwaltung-error-page #header .mod_navigation li {
+    display: flex;
+    align-items: stretch;
+    margin: 0;
+    padding: 0;
+}
+
+body.domainverwaltung-page #header .mod_navigation a,
+body.domainverwaltung-page #header .mod_navigation strong.active,
+body.domainverwaltung-login-page #header .mod_navigation a,
+body.domainverwaltung-login-page #header .mod_navigation strong.active,
+body.domainverwaltung-error-page #header .mod_navigation a,
+body.domainverwaltung-error-page #header .mod_navigation strong.active {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 64px;
+    color: var(--dm-theme-text);
+    font-weight: 650;
+    text-decoration: none;
+}
+
+body.domainverwaltung-page #header .mod_navigation a:hover,
+body.domainverwaltung-page #header .mod_navigation a:focus-visible,
+body.domainverwaltung-login-page #header .mod_navigation a:hover,
+body.domainverwaltung-login-page #header .mod_navigation a:focus-visible,
+body.domainverwaltung-error-page #header .mod_navigation a:hover,
+body.domainverwaltung-error-page #header .mod_navigation a:focus-visible {
+    color: var(--dm-theme-primary);
+}
+
+body.domainverwaltung-page #header .mod_navigation strong.active {
+    color: var(--dm-theme-text);
+}
+
+body.domainverwaltung-page #header .mod_navigation strong.active::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: var(--dm-theme-primary);
+}
+
+@media (max-width: 680px) {
+    body.domainverwaltung-page #header > .inside,
+    body.domainverwaltung-login-page #header > .inside,
+    body.domainverwaltung-error-page #header > .inside {
+        width: calc(100vw - 28px);
+        min-height: 58px;
+        gap: 18px;
+    }
+
+    body.domainverwaltung-page #header > .inside::before,
+    body.domainverwaltung-login-page #header > .inside::before,
+    body.domainverwaltung-error-page #header > .inside::before {
+        width: 142px;
+    }
+
+    body.domainverwaltung-page #header .mod_navigation ul,
+    body.domainverwaltung-login-page #header .mod_navigation ul,
+    body.domainverwaltung-error-page #header .mod_navigation ul {
+        gap: 14px;
+    }
+
+    body.domainverwaltung-page #header .mod_navigation a,
+    body.domainverwaltung-page #header .mod_navigation strong.active,
+    body.domainverwaltung-login-page #header .mod_navigation a,
+    body.domainverwaltung-login-page #header .mod_navigation strong.active,
+    body.domainverwaltung-error-page #header .mod_navigation a,
+    body.domainverwaltung-error-page #header .mod_navigation strong.active {
+        min-height: 58px;
+        font-size: .9rem;
+    }
 }
 
 /* Navy communicates structure; petrol communicates interaction/current state. */
