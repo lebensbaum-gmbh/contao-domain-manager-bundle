@@ -40,7 +40,7 @@ final class BackendMenuListener
 
         $request = $this->requestStack->getCurrentRequest();
         $label = $GLOBALS['TL_LANG']['MOD']['domain_manager_setup'][0] ?? 'Ersteinrichtung';
-        $title = $GLOBALS['TL_LANG']['MOD']['domain_manager_setup'][1] ?? 'Domainverwaltung automatisch einrichten und prüfen.';
+        $title = $GLOBALS['TL_LANG']['MOD']['domain_manager_setup'][1] ?? 'maintend automatisch einrichten und prüfen.';
 
         $node = $event->getFactory()
             ->createItem('domain_manager_setup', ['route' => SetupController::class])

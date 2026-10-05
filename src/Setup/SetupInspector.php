@@ -158,6 +158,49 @@ final class SetupInspector
             );
         }
 
+        $navigationModuleId = null;
+        if (null !== $layoutId) {
+            try {
+                $serializedModules = $this->connection->fetchOne(
+                    'SELECT modules FROM tl_layout WHERE id = ? LIMIT 1',
+                    [$layoutId]
+                );
+                $layoutModules = StringUtil::deserialize($serializedModules, true);
+
+                foreach ($layoutModules as $layoutModule) {
+                    if (!is_array($layoutModule) || 'header' !== ($layoutModule['col'] ?? null)) {
+                        continue;
+                    }
+
+                    $moduleId = (int) ($layoutModule['mod'] ?? 0);
+                    if ($moduleId < 1) {
+                        continue;
+                    }
+
+                    $moduleType = $this->connection->fetchOne(
+                        'SELECT type FROM tl_module WHERE id = ? LIMIT 1',
+                        [$moduleId]
+                    );
+
+                    if (in_array($moduleType, ['navigation', 'customnav'], true)) {
+                        $navigationModuleId = $moduleId;
+                        break;
+                    }
+                }
+            } catch (Throwable) {
+                $navigationModuleId = null;
+            }
+        }
+
+        if (null === $navigationModuleId && null === $layoutId && null !== $themeId) {
+            $navigationModuleId = $this->findId(
+                "SELECT id FROM tl_module
+                 WHERE pid = ? AND type = 'navigation' AND name = ?
+                 ORDER BY id LIMIT 1",
+                [$themeId, 'maintend – Navigation']
+            );
+        }
+
         $filterElementId = null;
         $overviewElementId = null;
         if (null !== $overviewPageId) {
@@ -181,14 +224,15 @@ final class SetupInspector
 
         $items = [
             $this->resultItem('member_group', 'Frontend-Mitgliedergruppe', 'Domainverwaltung', $memberGroupId),
-            $this->resultItem('theme', 'Theme', 'Theme der Domainverwaltung', $themeId),
-            $this->resultItem('layout', 'Seitenlayout', 'Seitenlayout der Domainverwaltung', $layoutId),
-            $this->resultItem('root_page', 'Startpunkt einer Website', 'Startpunkt der Domainverwaltung', $rootPageId),
+            $this->resultItem('theme', 'Theme', 'Theme der maintend-Installation', $themeId),
+            $this->resultItem('layout', 'Seitenlayout', 'Seitenlayout der maintend-Installation', $layoutId),
+            $this->resultItem('root_page', 'Startpunkt einer Website', 'Startpunkt von maintend', $rootPageId),
             $this->resultItem('overview_page', 'Seite Domainübersicht', 'Alias index', $overviewPageId),
             $this->resultItem('login_page', 'Seite Login', 'Alias login', $loginPageId),
             $this->resultItem('error_401_page', '401 – Nicht authentifiziert', 'Seitentyp 401 unter demselben Startpunkt', $error401PageId),
             $this->resultItem('error_403_page', '403 – Zugriff verweigert', 'Seitentyp 403 unter demselben Startpunkt', $error403PageId),
-            $this->resultItem('login_module', 'Login-Modul', 'Login-Formular der Domainverwaltung', $loginModuleId),
+            $this->resultItem('navigation_module', 'Navigationsmodul', 'maintend-Navigation im Kopfbereich', $navigationModuleId),
+            $this->resultItem('login_module', 'Login-Modul', 'Login-Formular von maintend', $loginModuleId),
             $this->resultItem('filter_element', 'Inhaltselement Domainfilter', 'Domainfilter auf der Übersichtsseite', $filterElementId),
             $this->resultItem('overview_element', 'Inhaltselement Domainübersicht', 'Domainübersicht auf der Übersichtsseite', $overviewElementId),
         ];

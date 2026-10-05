@@ -1,6 +1,6 @@
 {
     "name": "lebensbaum/contao-domain-manager-bundle",
-    "description": "Zentrale Verwaltung, Synchronisation und Überwachung mehrerer Contao-Installationen",
+    "description": "maintend – zentrale Verwaltung, Synchronisation und Wartung mehrerer Contao-Installationen",
     "type": "contao-bundle",
     "license": "MIT",
     "require": {
@@ -23,12 +23,13 @@
         "contao-manager-plugin": "Lebensbaum\\ContaoDomainManagerBundle\\ContaoManager\\Plugin"
     },
     "keywords": [
+        "maintend",
         "contao",
         "domain-management",
         "monitoring",
         "system-information"
     ],
-    "homepage": "https://github.com/lebensbaum-gmbh/contao-domain-manager-bundle",
+    "homepage": "https://maintend.de",
     "support": {
         "issues": "https://github.com/lebensbaum-gmbh/contao-domain-manager-bundle/issues",
         "source": "https://github.com/lebensbaum-gmbh/contao-domain-manager-bundle"

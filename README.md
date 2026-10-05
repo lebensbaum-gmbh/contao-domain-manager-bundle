@@ -1,6 +1,6 @@
-# Contao Domain Manager
+# maintend
 
-Der **Contao Domain Manager** ermöglicht die zentrale Verwaltung und Synchronisation mehrerer Contao-Installationen in einer eigenen Contao-Installation.
+**maintend** ermöglicht die zentrale Verwaltung und Synchronisation mehrerer Contao-Installationen in einer eigenen Contao-Installation.
 
 Hauptdomains und zugehörige Installationen können im Backend verwaltet, mit den jeweiligen Zielsystemen verbunden und deren Systeminformationen zentral aktualisiert werden. Für das Frontend stehen eine geschützte Domainübersicht und umfangreiche Filter zur Verfügung.
 
@@ -44,7 +44,7 @@ Für jede überwachte Zielinstallation wird zusätzlich benötigt:
 
 ## Empfohlener Aufbau
 
-Der Domain Manager sollte bevorzugt in einer **eigenen, separaten Contao-Installation** betrieben werden. Dadurch bleibt die Verwaltungsoberfläche von normalen Websites getrennt und der Ersteinrichtungs-Assistent kann eine dafür optimierte Seitenstruktur anlegen.
+maintend sollte bevorzugt in einer **eigenen, separaten Contao-Installation** betrieben werden. Dadurch bleibt die Verwaltungsoberfläche von normalen Websites getrennt und der Ersteinrichtungs-Assistent kann eine dafür optimierte Seitenstruktur anlegen.
 
 Beispiel für eine eigene Subdomain:
 
@@ -54,7 +54,7 @@ domainverwaltung.<ihre-domain.tld>
 
 Der DocumentRoot der Contao-Installation sollte auf `/public` zeigen.
 
-## Installation des Domain Managers
+## Installation von maintend
 
 ### 1. Frisches Contao installieren
 
@@ -62,7 +62,7 @@ Installiere eine normale Contao-5.7-Installation, verbinde die Datenbank und leg
 
 Es ist **nicht erforderlich**, vorher ein Theme, Seitenlayout, Seitenbaum oder Frontend-Modul anzulegen.
 
-### 2. Domain Manager installieren
+### 2. maintend installieren
 
 Installiere über den **Contao Manager**:
 
@@ -225,7 +225,7 @@ Zusätzlich wird geprüft, ob mindestens ein aktives Frontend-Mitglied mit erlau
 
 ## Status & Warnungen
 
-Der Domain Manager bewertet Installationen mit **OK**, **Hinweis** oder **Fehler**. Die Hauptdomain übernimmt jeweils den schlechtesten Status ihrer Installationen.
+maintend bewertet Installationen mit **OK**, **Hinweis** oder **Fehler**. Die Hauptdomain übernimmt jeweils den schlechtesten Status ihrer Installationen.
 
 Typische Bewertungen:
 
@@ -268,7 +268,7 @@ Mehrere Filter können kombiniert werden. Eine Hauptdomain bleibt sichtbar, soba
 
 ## Gestaltung / CSS
 
-Der Domain Manager liefert mehrere Stylesheets mit:
+maintend liefert mehrere Stylesheets mit:
 
 - Komponenten-Styling für Domainübersicht und Domainfilter
 - responsivem Layout

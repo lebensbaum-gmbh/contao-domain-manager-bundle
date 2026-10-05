@@ -21,7 +21,7 @@ body.domainverwaltung-page #container {
     max-width: var(--dm-theme-content-width, 1480px) !important;
     min-height: 0 !important;
     margin-inline: auto !important;
-    padding: 0 !important;
+    padding: 26px 0 0 !important;
 }
 
 body.domainverwaltung-page #main {
@@ -51,7 +51,7 @@ body.domainverwaltung-page #main > .inside {
     width: 100% !important;
     max-width: none !important;
     margin: 0 !important;
-    padding: 12px 0 48px !important;
+    padding: 0 0 48px !important;
 }
 
 body.domainverwaltung-page #main > .inside > .mod_article {
@@ -105,17 +105,43 @@ body.domainverwaltung-page h1 {
     line-height: 1.2;
 }
 
-.domain-manager-overview .detail-action {
+.domain-manager-overview .domain-manager-global-actions .domain-manager-trakked-link {
+    border-color: var(--dm-accent);
+    background: var(--dm-background);
+    color: var(--dm-text) !important;
+}
+
+.domain-manager-overview .domain-manager-global-actions .domain-manager-trakked-link:hover,
+.domain-manager-overview .domain-manager-global-actions .domain-manager-trakked-link:focus-visible {
+    border-color: var(--dm-accent);
+    background: var(--dm-accent-soft);
+    color: var(--dm-accent-hover) !important;
+}
+
+.domain-manager-overview .domain-sync-button {
     border-color: var(--dm-accent);
     background: var(--dm-accent);
-    color: #fff !important;
+    color: #fff;
+}
+
+.domain-manager-overview .domain-sync-button:hover,
+.domain-manager-overview .domain-sync-button:focus-visible {
+    border-color: var(--dm-accent-hover);
+    background: var(--dm-accent-hover);
+    color: #fff;
+}
+
+.domain-manager-overview .detail-action {
+    border-color: var(--dm-accent);
+    background: var(--dm-background);
+    color: var(--dm-text) !important;
 }
 
 .domain-manager-overview .detail-action:hover,
 .domain-manager-overview .detail-action:focus-visible {
-    border-color: var(--dm-accent-hover);
-    background: var(--dm-accent-hover);
-    color: #fff !important;
+    border-color: var(--dm-accent);
+    background: var(--dm-accent-soft);
+    color: var(--dm-accent-hover) !important;
 }
 
 @media (max-width: 1180px) {
@@ -138,10 +164,11 @@ body.domainverwaltung-page h1 {
 @media (max-width: 680px) {
     body.domainverwaltung-page #container {
         width: calc(100vw - 28px) !important;
+        padding-top: 18px !important;
     }
 
     body.domainverwaltung-page #main > .inside {
-        padding: 10px 0 36px !important;
+        padding: 0 0 36px !important;
     }
 
     .domain-manager-overview .domain-summary {
@@ -153,4 +180,264 @@ body.domainverwaltung-page h1 {
         width: 72px;
         height: 41px;
     }
+}
+
+
+/* maintend product branding ------------------------------------------------- */
+body.domainverwaltung-page #header,
+body.domainverwaltung-login-page #header,
+body.domainverwaltung-error-page #header {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-bottom: 1px solid var(--dm-theme-border);
+    background: var(--dm-theme-surface);
+}
+
+body.domainverwaltung-page #header > .inside,
+body.domainverwaltung-login-page #header > .inside,
+body.domainverwaltung-error-page #header > .inside {
+    display: flex;
+    align-items: center;
+    gap: 36px;
+    width: min(calc(100vw - 48px), var(--dm-theme-content-width, 1480px));
+    height: 56px !important;
+    min-height: 56px !important;
+    max-height: 56px !important;
+    margin-inline: auto;
+    padding: 0 !important;
+}
+
+body.domainverwaltung-page #header > .inside::before,
+body.domainverwaltung-login-page #header > .inside::before,
+body.domainverwaltung-error-page #header > .inside::before {
+    content: "";
+    display: block;
+    flex: 0 0 auto;
+    width: 166px;
+    aspect-ratio: 1462.73 / 272.28;
+    background: url("../branding/maintend-logo.svg") left center / contain no-repeat;
+}
+
+body.domainverwaltung-page #header .mod_navigation,
+body.domainverwaltung-login-page #header .mod_navigation,
+body.domainverwaltung-error-page #header .mod_navigation {
+    height: 56px !important;
+    margin: 0 0 0 auto !important;
+    padding: 0 !important;
+}
+
+body.domainverwaltung-page #header .mod_navigation ul,
+body.domainverwaltung-login-page #header .mod_navigation ul,
+body.domainverwaltung-error-page #header .mod_navigation ul {
+    display: flex;
+    align-items: stretch;
+    gap: 26px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+body.domainverwaltung-page #header .mod_navigation li,
+body.domainverwaltung-login-page #header .mod_navigation li,
+body.domainverwaltung-error-page #header .mod_navigation li {
+    display: flex;
+    align-items: stretch;
+    margin: 0;
+    padding: 0;
+}
+
+body.domainverwaltung-page #header .mod_navigation a,
+body.domainverwaltung-page #header .mod_navigation strong.active,
+body.domainverwaltung-login-page #header .mod_navigation a,
+body.domainverwaltung-login-page #header .mod_navigation strong.active,
+body.domainverwaltung-error-page #header .mod_navigation a,
+body.domainverwaltung-error-page #header .mod_navigation strong.active {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 56px;
+    color: var(--dm-theme-text);
+    font-weight: 650;
+    text-decoration: none;
+}
+
+body.domainverwaltung-page #header .mod_navigation a:hover,
+body.domainverwaltung-page #header .mod_navigation a:focus-visible,
+body.domainverwaltung-login-page #header .mod_navigation a:hover,
+body.domainverwaltung-login-page #header .mod_navigation a:focus-visible,
+body.domainverwaltung-error-page #header .mod_navigation a:hover,
+body.domainverwaltung-error-page #header .mod_navigation a:focus-visible {
+    color: var(--dm-theme-primary);
+}
+
+body.domainverwaltung-page #header .mod_navigation strong.active {
+    color: var(--dm-theme-text);
+}
+
+body.domainverwaltung-page #header .mod_navigation strong.active::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: var(--dm-theme-primary);
+}
+
+@media (max-width: 680px) {
+    body.domainverwaltung-page #header > .inside,
+    body.domainverwaltung-login-page #header > .inside,
+    body.domainverwaltung-error-page #header > .inside {
+        width: calc(100vw - 28px);
+        height: 52px !important;
+        min-height: 52px !important;
+        max-height: 52px !important;
+        gap: 18px;
+    }
+
+    body.domainverwaltung-page #header > .inside::before,
+    body.domainverwaltung-login-page #header > .inside::before,
+    body.domainverwaltung-error-page #header > .inside::before {
+        width: 142px;
+    }
+
+    body.domainverwaltung-page #header .mod_navigation ul,
+    body.domainverwaltung-login-page #header .mod_navigation ul,
+    body.domainverwaltung-error-page #header .mod_navigation ul {
+        gap: 14px;
+    }
+
+    body.domainverwaltung-page #header .mod_navigation a,
+    body.domainverwaltung-page #header .mod_navigation strong.active,
+    body.domainverwaltung-login-page #header .mod_navigation a,
+    body.domainverwaltung-login-page #header .mod_navigation strong.active,
+    body.domainverwaltung-error-page #header .mod_navigation a,
+    body.domainverwaltung-error-page #header .mod_navigation strong.active {
+        min-height: 52px;
+        font-size: .9rem;
+    }
+}
+
+/* Navy communicates structure; petrol communicates interaction/current state. */
+body.domainverwaltung-page .domain-entry {
+    border-left: 4px solid var(--dm-theme-text) !important;
+    background: var(--dm-theme-surface) !important;
+}
+
+body.domainverwaltung-page .domain-entry[open] {
+    border-left-color: var(--dm-theme-primary) !important;
+}
+
+body.domainverwaltung-page .domain-entry[open] > .domain-summary {
+    background: var(--dm-theme-surface-soft) !important;
+    border-bottom-color: var(--dm-theme-border-light) !important;
+}
+
+body.domainverwaltung-page .domain-name,
+body.domainverwaltung-page .domain-name a,
+body.domainverwaltung-page .target-domain a,
+body.domainverwaltung-page .installation-domain a {
+    color: var(--dm-theme-text);
+    text-decoration: none;
+}
+
+body.domainverwaltung-page .domain-entry:hover .domain-name,
+body.domainverwaltung-page .domain-entry:hover .domain-name a,
+body.domainverwaltung-page .domain-entry:focus-within .domain-name,
+body.domainverwaltung-page .domain-entry:focus-within .domain-name a,
+body.domainverwaltung-page .target-domain a:hover,
+body.domainverwaltung-page .target-domain a:focus-visible,
+body.domainverwaltung-page .installation-domain a:hover,
+body.domainverwaltung-page .installation-domain a:focus-visible {
+    color: var(--dm-theme-primary);
+}
+
+body.domainverwaltung-page .domain-version,
+body.domainverwaltung-page .domain-php {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 26px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: .8rem;
+    font-weight: 650;
+    line-height: 1.1;
+}
+
+body.domainverwaltung-page .domain-version {
+    border: 1px solid color-mix(in srgb, var(--dm-theme-primary) 22%, var(--dm-theme-border));
+    background: var(--dm-theme-primary-soft);
+    color: color-mix(in srgb, var(--dm-theme-primary) 78%, var(--dm-theme-text));
+}
+
+body.domainverwaltung-page .domain-php {
+    border: 1px solid var(--dm-theme-border);
+    background: var(--dm-theme-surface-soft);
+    color: var(--dm-theme-muted);
+}
+
+body.domainverwaltung-page .installation-featured.is-target {
+    border-left: 4px solid var(--dm-theme-text) !important;
+    background: var(--dm-theme-surface) !important;
+}
+
+body.domainverwaltung-page .installation-featured.is-target .detail-kicker {
+    color: var(--dm-theme-text) !important;
+}
+
+body.domainverwaltung-page .installation-featured.is-target .status-badge.is-current {
+    border-color: var(--dm-theme-text) !important;
+    background: var(--dm-theme-text) !important;
+    color: #fff !important;
+}
+
+
+/* Neutralize legacy Domain Manager card accents that may still be present in
+   existing Contao themes. Keep only maintend navy/petrol interaction states. */
+html body.domainverwaltung-page .domain-manager-overview .domain-entry > .domain-summary,
+html body.domainverwaltung-page .domain-manager-overview .domain-entry > .domain-summary:hover,
+html body.domainverwaltung-page .domain-manager-overview .domain-entry > .domain-summary:focus-visible {
+    border-left: 0 !important;
+    box-shadow: none !important;
+}
+
+html body.domainverwaltung-page .domain-manager-overview .domain-entry > .domain-summary {
+    background: var(--dm-theme-surface) !important;
+}
+
+html body.domainverwaltung-page .domain-manager-overview .domain-entry > .domain-summary:hover,
+html body.domainverwaltung-page .domain-manager-overview .domain-entry > .domain-summary:focus-visible {
+    background: var(--dm-theme-primary-soft) !important;
+}
+
+html body.domainverwaltung-page .domain-manager-overview .domain-entry[open] > .domain-summary {
+    background: var(--dm-theme-surface-soft) !important;
+}
+
+html body.domainverwaltung-page .domain-manager-overview .domain-entry::before,
+html body.domainverwaltung-page .domain-manager-overview .domain-entry::after,
+html body.domainverwaltung-page .domain-manager-overview .domain-summary::before,
+html body.domainverwaltung-page .domain-manager-overview .domain-summary::after {
+    border: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+}
+
+html body.domainverwaltung-page .domain-manager-overview .installation.installation-featured.is-target {
+    border: 1px solid var(--dm-theme-border) !important;
+    border-left: 4px solid var(--dm-theme-text) !important;
+    background: #f3f5f6 !important;
+    box-shadow: none !important;
+}
+
+html body.domainverwaltung-page .domain-manager-overview .installation.installation-featured.is-target::before,
+html body.domainverwaltung-page .domain-manager-overview .installation.installation-featured.is-target::after {
+    border: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
 }

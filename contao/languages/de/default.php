@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-$GLOBALS['TL_LANG']['CTE']['domain_manager'] = 'Domainverwaltung';
+$GLOBALS['TL_LANG']['CTE']['domain_manager'] = 'maintend';
 $GLOBALS['TL_LANG']['CTE']['domain_manager_overview'] = [
     'Domainübersicht',
-    'Zeigt die Hauptdomains und Contao-Installationen aus dem Domain-Manager an.',
+    'Zeigt die Hauptdomains und Contao-Installationen aus maintend an.',
 ];
 $GLOBALS['TL_LANG']['CTE']['domain_manager_filter'] = [
     'Domainfilter',

@@ -83,7 +83,7 @@ final class SetupController extends AbstractBackendController
         $errorMessages = $request->getSession()->getFlashBag()->get('domain_manager_setup_error');
 
         return $this->render('@ContaoDomainManager/backend/setup.html.twig', [
-            'title' => 'Domain Manager – Ersteinrichtung',
+            'title' => 'maintend – Ersteinrichtung',
             'headline' => 'Ersteinrichtung',
             'setup' => $setup,
             'default_hostname' => $request->getHost(),
