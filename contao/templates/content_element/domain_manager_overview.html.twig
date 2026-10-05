@@ -40,11 +40,18 @@
     {% endwith %}
 {% endadd %}
 
+{% add "domain_manager_navigation_css" to stylesheets %}
+    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-navigation.css') ~ '?v=maintend-1'} %}
+        {{ block('stylesheet_component') }}
+    {% endwith %}
+{% endadd %}
+
 {% add "domain_manager_js" to body %}
     <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager.js') }}" defer></script>
 {% endadd %}
 
 {% block content %}
+{% include "@Contao/components/domain_manager_workspace_navigation.html.twig" %}
 <div class="domain-manager-overview" data-domain-manager-overview>
     {% if frontend_bulk_actions %}
         <form id="domain-manager-bulk-actions-form" class="domain-manager-bulk-form" method="post">
