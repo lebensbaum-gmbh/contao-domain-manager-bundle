@@ -20,16 +20,6 @@
 
 {% block content %}
 <div class="domain-manager-overview" data-domain-manager-overview>
-    {% if external_services %}
-        <div class="domain-manager-global-actions">
-            {% for service in external_services %}
-                {% if service.url %}
-                    <a class="domain-manager-trakked-link domain-manager-service-link" href="{{ service.url }}" target="_blank" rel="noopener noreferrer">Zu {{ service.name }} <span aria-hidden="true">↗</span></a>
-                {% endif %}
-            {% endfor %}
-        </div>
-    {% endif %}
-
     <div class="domain-manager-list">
     {% for domain in domains %}
         <details
