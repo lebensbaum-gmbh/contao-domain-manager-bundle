@@ -52,6 +52,7 @@ final class SetupInstaller
                 ?? $this->createTheme($timestamp, $created);
 
             $navigationModuleId = $this->existingId($items, 'navigation_module')
+                ?? $this->findNavigationModule($themeId)
                 ?? $this->createNavigationModule($themeId, $timestamp, $created);
 
             $layoutId = $this->existingId($items, 'layout')
@@ -191,6 +192,22 @@ final class SetupInstaller
         return $id;
     }
 
+    private function findNavigationModule(int $themeId): ?int
+    {
+        $id = $this->connection->fetchOne(
+            "SELECT id FROM tl_module
+             WHERE pid = ? AND type = 'navigation' AND name = ?
+             ORDER BY id LIMIT 1",
+            [$themeId, self::NAVIGATION_MODULE_NAME]
+        );
+
+        if (false === $id || (int) $id < 1) {
+            return null;
+        }
+
+        return (int) $id;
+    }
+
     private function createNavigationModule(int $themeId, int $timestamp, array &$created): int
     {
         $this->connection->insert('tl_module', [
@@ -239,7 +256,7 @@ final class SetupInstaller
         int $timestamp,
     ): void {
         $row = $this->connection->fetchAssociative(
-            'SELECT `rows`, `modules` FROM `tl_layout` WHERE `id` = ? LIMIT 1',
+            'SELECT `name`, `rows`, `modules` FROM `tl_layout` WHERE `id` = ? LIMIT 1',
             [$layoutId]
         );
 
@@ -251,16 +268,35 @@ final class SetupInstaller
         $hasNavigation = false;
         $hasArticles = false;
 
-        foreach ($modules as $module) {
+        foreach ($modules as $index => $module) {
             if (!is_array($module)) {
                 continue;
             }
 
-            if ((int) ($module['mod'] ?? -1) === $navigationModuleId && 'header' === ($module['col'] ?? null)) {
+            $moduleId = (int) ($module['mod'] ?? -1);
+            $column = (string) ($module['col'] ?? '');
+
+            if ($moduleId === $navigationModuleId && 'header' === $column) {
                 $hasNavigation = true;
             }
 
-            if (0 === (int) ($module['mod'] ?? -1) && 'main' === ($module['col'] ?? null)) {
+            if ('header' === $column && $moduleId > 0 && $moduleId !== $navigationModuleId) {
+                $moduleType = $this->connection->fetchOne(
+                    'SELECT type FROM tl_module WHERE id = ? LIMIT 1',
+                    [$moduleId]
+                );
+
+                if ('domain_manager_navigation' === $moduleType) {
+                    $modules[$index] = [
+                        'mod' => $navigationModuleId,
+                        'col' => 'header',
+                        'enable' => 1,
+                    ];
+                    $hasNavigation = true;
+                }
+            }
+
+            if (0 === $moduleId && 'main' === $column) {
                 $hasArticles = true;
             }
         }
@@ -278,9 +314,14 @@ final class SetupInstaller
             $rows = '2rwh';
         }
 
+        $layoutName = trim((string) ($row['name'] ?? ''));
+        $maintendLayoutName = in_array($layoutName, ['Domainverwaltung', 'Domain Manager', 'Domain Manager Anwendung'], true)
+            ? 'maintend – Anwendung'
+            : $layoutName;
+
         $this->connection->executeStatement(
-            'UPDATE `tl_layout` SET `rows` = ?, `modules` = ?, `tstamp` = ? WHERE `id` = ?',
-            [$rows, serialize($modules), $timestamp, $layoutId]
+            'UPDATE `tl_layout` SET `name` = ?, `rows` = ?, `modules` = ?, `tstamp` = ? WHERE `id` = ?',
+            [$maintendLayoutName, $rows, serialize($modules), $timestamp, $layoutId]
         );
     }
 
