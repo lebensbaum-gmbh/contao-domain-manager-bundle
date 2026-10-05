@@ -304,7 +304,7 @@ body.domainverwaltung-page .domain-manager-layout.domain-manager-layout-updates 
     width: 100% !important;
     max-width: none !important;
     margin-inline: auto !important;
-    padding-inline: clamp(24px, 3vw, 56px) !important;
+    padding-inline: 0 !important;
     box-sizing: border-box;
 }
 
@@ -330,13 +330,13 @@ body.domainverwaltung-page .domain-manager-layout.domain-manager-layout-updates 
 
 @media (max-width: 1180px) {
     body.domainverwaltung-page .domain-manager-layout.domain-manager-layout-updates {
-        padding-inline: clamp(18px, 4vw, 36px) !important;
+        padding-inline: 0 !important;
     }
 }
 
 @media (max-width: 680px) {
     body.domainverwaltung-page .domain-manager-layout.domain-manager-layout-updates {
-        padding-inline: 16px !important;
+        padding-inline: 0 !important;
     }
 }
 
