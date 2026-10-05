@@ -441,3 +441,20 @@ html body.domainverwaltung-page .domain-manager-overview .installation.installat
     background: none !important;
     box-shadow: none !important;
 }
+
+
+/* Workspace header is rendered directly by the Domainübersicht/Updates content
+   elements. Suppress legacy layout header modules from earlier installations. */
+body.domainverwaltung-page #header {
+    display: none !important;
+}
+
+body.domainverwaltung-page #wrapper {
+    padding-top: 56px !important;
+}
+
+@media (max-width: 700px) {
+    body.domainverwaltung-page #wrapper {
+        padding-top: 52px !important;
+    }
+}
