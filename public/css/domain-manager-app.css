@@ -51,7 +51,7 @@ body.domainverwaltung-page #main > .inside {
     width: 100% !important;
     max-width: none !important;
     margin: 0 !important;
-    padding: 12px 0 48px !important;
+    padding: 30px 0 48px !important;
 }
 
 body.domainverwaltung-page #main > .inside > .mod_article {
@@ -167,7 +167,7 @@ body.domainverwaltung-page h1 {
     }
 
     body.domainverwaltung-page #main > .inside {
-        padding: 10px 0 36px !important;
+        padding: 20px 0 36px !important;
     }
 
     .domain-manager-overview .domain-summary {
@@ -202,7 +202,7 @@ body.domainverwaltung-error-page #header > .inside {
     align-items: center;
     gap: 36px;
     width: min(calc(100vw - 48px), var(--dm-theme-content-width, 1480px));
-    min-height: 64px;
+    min-height: 56px;
     margin-inline: auto;
 }
 
@@ -212,7 +212,7 @@ body.domainverwaltung-error-page #header > .inside::before {
     content: "";
     display: block;
     flex: 0 0 auto;
-    width: 184px;
+    width: 166px;
     aspect-ratio: 1462.73 / 272.28;
     background: url("../branding/maintend-logo.svg") left center / contain no-repeat;
 }
@@ -252,7 +252,7 @@ body.domainverwaltung-error-page #header .mod_navigation strong.active {
     position: relative;
     display: flex;
     align-items: center;
-    min-height: 64px;
+    min-height: 56px;
     color: var(--dm-theme-text);
     font-weight: 650;
     text-decoration: none;
@@ -316,11 +316,17 @@ body.domainverwaltung-page #header .mod_navigation strong.active::after {
 
 /* Navy communicates structure; petrol communicates interaction/current state. */
 body.domainverwaltung-page .domain-entry {
-    border-left: 4px solid var(--dm-theme-text);
+    border-left: 4px solid var(--dm-theme-text) !important;
+    background: var(--dm-theme-surface) !important;
 }
 
 body.domainverwaltung-page .domain-entry[open] {
-    border-left-color: var(--dm-theme-primary);
+    border-left-color: var(--dm-theme-primary) !important;
+}
+
+body.domainverwaltung-page .domain-entry[open] > .domain-summary {
+    background: var(--dm-theme-surface-soft) !important;
+    border-bottom-color: var(--dm-theme-border-light) !important;
 }
 
 body.domainverwaltung-page .domain-name,
@@ -365,4 +371,19 @@ body.domainverwaltung-page .domain-php {
     border: 1px solid var(--dm-theme-border);
     background: var(--dm-theme-surface-soft);
     color: var(--dm-theme-muted);
+}
+
+body.domainverwaltung-page .installation-featured.is-target {
+    border-left: 4px solid var(--dm-theme-text) !important;
+    background: var(--dm-theme-surface) !important;
+}
+
+body.domainverwaltung-page .installation-featured.is-target .detail-kicker {
+    color: var(--dm-theme-text) !important;
+}
+
+body.domainverwaltung-page .installation-featured.is-target .status-badge.is-current {
+    border-color: var(--dm-theme-text) !important;
+    background: var(--dm-theme-text) !important;
+    color: #fff !important;
 }
