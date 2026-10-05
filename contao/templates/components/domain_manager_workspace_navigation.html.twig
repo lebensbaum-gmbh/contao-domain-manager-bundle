@@ -1,0 +1,18 @@
+{% if workspace_navigation %}
+<nav class="dm-workspace-nav" aria-label="maintend Navigation">
+    <div class="dm-workspace-nav__inner">
+        <a class="dm-workspace-nav__brand" href="{{ workspace_navigation[0].url }}">
+            <img src="{{ asset('bundles/contaodomainmanager/branding/maintend-logo.svg') }}" alt="maintend">
+        </a>
+        <div class="dm-workspace-nav__items">
+            {% for item in workspace_navigation %}
+                <a
+                    class="dm-workspace-nav__item{% if item.active %} is-active{% endif %}"
+                    href="{{ item.url }}"
+                    {% if item.active %}aria-current="page"{% endif %}
+                >{{ item.label }}</a>
+            {% endfor %}
+        </div>
+    </div>
+</nav>
+{% endif %}
