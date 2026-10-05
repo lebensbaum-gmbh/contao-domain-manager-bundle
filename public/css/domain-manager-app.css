@@ -387,3 +387,49 @@ body.domainverwaltung-page .installation-featured.is-target .status-badge.is-cur
     background: var(--dm-theme-text) !important;
     color: #fff !important;
 }
+
+
+/* Neutralize legacy Domain Manager card accents that may still be present in
+   existing Contao themes. Keep only maintend navy/petrol interaction states. */
+html body.domainverwaltung-page .domain-manager-overview .domain-entry > .domain-summary,
+html body.domainverwaltung-page .domain-manager-overview .domain-entry > .domain-summary:hover,
+html body.domainverwaltung-page .domain-manager-overview .domain-entry > .domain-summary:focus-visible {
+    border-left: 0 !important;
+    box-shadow: none !important;
+}
+
+html body.domainverwaltung-page .domain-manager-overview .domain-entry > .domain-summary {
+    background: var(--dm-theme-surface) !important;
+}
+
+html body.domainverwaltung-page .domain-manager-overview .domain-entry > .domain-summary:hover,
+html body.domainverwaltung-page .domain-manager-overview .domain-entry > .domain-summary:focus-visible {
+    background: var(--dm-theme-primary-soft) !important;
+}
+
+html body.domainverwaltung-page .domain-manager-overview .domain-entry[open] > .domain-summary {
+    background: var(--dm-theme-surface-soft) !important;
+}
+
+html body.domainverwaltung-page .domain-manager-overview .domain-entry::before,
+html body.domainverwaltung-page .domain-manager-overview .domain-entry::after,
+html body.domainverwaltung-page .domain-manager-overview .domain-summary::before,
+html body.domainverwaltung-page .domain-manager-overview .domain-summary::after {
+    border: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+}
+
+html body.domainverwaltung-page .domain-manager-overview .installation.installation-featured.is-target {
+    border: 1px solid var(--dm-theme-border) !important;
+    border-left: 4px solid var(--dm-theme-text) !important;
+    background: #f3f5f6 !important;
+    box-shadow: none !important;
+}
+
+html body.domainverwaltung-page .domain-manager-overview .installation.installation-featured.is-target::before,
+html body.domainverwaltung-page .domain-manager-overview .installation.installation-featured.is-target::after {
+    border: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+}
