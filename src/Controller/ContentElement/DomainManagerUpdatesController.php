@@ -9,8 +9,10 @@ use Contao\CoreBundle\Controller\ContentElement\AbstractContentElementController
 use Contao\CoreBundle\DependencyInjection\Attribute\AsContentElement;
 use Contao\CoreBundle\Twig\FragmentTemplate;
 use Contao\FilesModel;
+use Contao\PageModel;
 use Doctrine\DBAL\Connection;
 use Lebensbaum\ContaoDomainManagerBundle\Event\InstallationFrontendExtensionEvent;
+use Lebensbaum\ContaoDomainManagerBundle\Frontend\FrontendWorkspaceNavigation;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -27,6 +29,7 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
     public function __construct(
         private readonly Connection $connection,
         private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly FrontendWorkspaceNavigation $workspaceNavigation,
     ) {
     }
 
@@ -133,6 +136,9 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
         $template->set('check_status', $checkStatus);
         $template->set('install_status', $installStatus);
         $template->set('result_message', $this->resultMessage($checkStatus, $installStatus));
+        $page = $request->attributes->get('pageModel');
+        $pageId = $page instanceof PageModel ? (int) $page->id : (is_numeric($page) ? (int) $page : 0);
+        $template->set('workspace_navigation', $this->workspaceNavigation->build($pageId));
 
         $response = $template->getResponse();
         $response->headers->set('Cache-Control', 'private, no-store, max-age=0');
