@@ -1,20 +1,20 @@
 .dm-updates {
-    --dm-u-primary: var(--dm-theme-primary, #114085);
-    --dm-u-primary-hover: var(--dm-theme-primary-hover, #0c3269);
-    --dm-u-primary-soft: var(--dm-theme-primary-soft, #eef4fb);
-    --dm-u-accent: var(--dm-theme-accent, #b2010d);
-    --dm-u-accent-soft: var(--dm-theme-accent-soft, #fff0f1);
-    --dm-u-text: var(--dm-theme-text, #172033);
-    --dm-u-muted: var(--dm-theme-muted, #667085);
-    --dm-u-border: var(--dm-theme-border, #e1e3e6);
-    --dm-u-border-light: var(--dm-theme-border-light, #eceef0);
+    --dm-u-primary: var(--dm-theme-primary, #4da5a7);
+    --dm-u-primary-hover: var(--dm-theme-primary-hover, #3f8f91);
+    --dm-u-primary-soft: var(--dm-theme-primary-soft, #edf7f7);
+    --dm-u-accent: var(--dm-theme-primary, #4da5a7);
+    --dm-u-accent-soft: var(--dm-theme-primary-soft, #edf7f7);
+    --dm-u-text: var(--dm-theme-text, #293d4b);
+    --dm-u-muted: var(--dm-theme-muted, #6f7d85);
+    --dm-u-border: var(--dm-theme-border, #dce4e6);
+    --dm-u-border-light: var(--dm-theme-border-light, #e9eef0);
     --dm-u-surface: var(--dm-theme-surface, #fff);
-    --dm-u-surface-soft: var(--dm-theme-surface-soft, #f8f8f9);
-    --dm-u-success: var(--dm-theme-success, #347a4b);
+    --dm-u-surface-soft: var(--dm-theme-surface-soft, #f7f9f9);
+    --dm-u-success: var(--dm-theme-success, #3f8f68);
     --dm-u-success-soft: var(--dm-theme-success-soft, #edf7f0);
-    --dm-u-warning: var(--dm-theme-warning, #9a6a1e);
+    --dm-u-warning: var(--dm-theme-warning, #b77b1f);
     --dm-u-warning-soft: var(--dm-theme-warning-soft, #fff7e8);
-    --dm-u-error: var(--dm-theme-error, #a8323a);
+    --dm-u-error: var(--dm-theme-error, #c65353);
     --dm-u-error-soft: var(--dm-theme-error-soft, #fbeff0);
     --dm-u-radius: var(--dm-theme-radius, 12px);
     --dm-u-shadow: var(--dm-theme-shadow, 0 8px 26px rgba(23, 32, 51, .065));
@@ -56,7 +56,7 @@
     position: absolute;
     inset: 0 auto 0 0;
     width: 4px;
-    background: #b2010d;
+    background: var(--dm-u-text);
 }
 
 .dm-updates-head {
@@ -253,7 +253,7 @@
     justify-content: space-between;
     gap: 18px;
     padding: 12px 14px;
-    border-left: 4px solid #b2010d;
+    border-left: 4px solid var(--dm-u-primary);
 }
 
 .dm-updates-tabs {
