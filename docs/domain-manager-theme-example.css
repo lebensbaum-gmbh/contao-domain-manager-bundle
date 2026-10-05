@@ -1,7 +1,7 @@
 /*
- * Example overrides for the Contao Domain Manager frontend theme.
+ * Example overrides for the maintend frontend theme.
  *
- * Copy the declarations you need into a stylesheet of your own Contao theme.
+ * Copy the declarations you need into a stylesheet of your own Contao theme. maintend ships with its own navy/petrol defaults; this file demonstrates optional white-label overrides.
  * Do not edit the bundle CSS directly, because updates can overwrite it.
  */
 
