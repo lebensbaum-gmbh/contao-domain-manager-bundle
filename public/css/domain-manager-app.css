@@ -105,6 +105,19 @@ body.domainverwaltung-page h1 {
     line-height: 1.2;
 }
 
+.domain-manager-overview .domain-sync-button {
+    border-color: var(--dm-accent);
+    background: var(--dm-accent);
+    color: #fff;
+}
+
+.domain-manager-overview .domain-sync-button:hover,
+.domain-manager-overview .domain-sync-button:focus-visible {
+    border-color: var(--dm-accent-hover);
+    background: var(--dm-accent-hover);
+    color: #fff;
+}
+
 .domain-manager-overview .detail-action {
     border-color: var(--dm-accent);
     background: var(--dm-accent);
