@@ -159,7 +159,40 @@ final class SetupInspector
         }
 
         $navigationModuleId = null;
-        if (null !== $themeId) {
+        if (null !== $layoutId) {
+            try {
+                $serializedModules = $this->connection->fetchOne(
+                    'SELECT modules FROM tl_layout WHERE id = ? LIMIT 1',
+                    [$layoutId]
+                );
+                $layoutModules = StringUtil::deserialize($serializedModules, true);
+
+                foreach ($layoutModules as $layoutModule) {
+                    if (!is_array($layoutModule) || 'header' !== ($layoutModule['col'] ?? null)) {
+                        continue;
+                    }
+
+                    $moduleId = (int) ($layoutModule['mod'] ?? 0);
+                    if ($moduleId < 1) {
+                        continue;
+                    }
+
+                    $moduleType = $this->connection->fetchOne(
+                        'SELECT type FROM tl_module WHERE id = ? LIMIT 1',
+                        [$moduleId]
+                    );
+
+                    if (in_array($moduleType, ['navigation', 'customnav'], true)) {
+                        $navigationModuleId = $moduleId;
+                        break;
+                    }
+                }
+            } catch (Throwable) {
+                $navigationModuleId = null;
+            }
+        }
+
+        if (null === $navigationModuleId && null !== $themeId) {
             $navigationModuleId = $this->findId(
                 "SELECT id FROM tl_module
                  WHERE pid = ? AND type = 'navigation' AND name = ?
