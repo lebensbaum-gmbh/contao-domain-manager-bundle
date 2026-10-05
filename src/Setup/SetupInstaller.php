@@ -278,11 +278,10 @@ final class SetupInstaller
             $rows = '2rw';
         }
 
-        $this->connection->update('tl_layout', [
-            'rows' => $rows,
-            'modules' => serialize($modules),
-            'tstamp' => $timestamp,
-        ], ['id' => $layoutId]);
+        $this->connection->executeStatement(
+            'UPDATE `tl_layout` SET `rows` = ?, `modules` = ?, `tstamp` = ? WHERE `id` = ?',
+            [$rows, serialize($modules), $timestamp, $layoutId]
+        );
     }
 
     private function createRootPage(
