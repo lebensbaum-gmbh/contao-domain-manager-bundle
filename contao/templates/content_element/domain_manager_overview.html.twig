@@ -40,22 +40,19 @@
     {% endwith %}
 {% endadd %}
 
+{% add "domain_manager_navigation_css" to stylesheets %}
+    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-navigation.css') ~ '?v=maintend-1'} %}
+        {{ block('stylesheet_component') }}
+    {% endwith %}
+{% endadd %}
+
 {% add "domain_manager_js" to body %}
     <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager.js') }}" defer></script>
 {% endadd %}
 
 {% block content %}
+{% include "@Contao/components/domain_manager_workspace_navigation.html.twig" %}
 <div class="domain-manager-overview" data-domain-manager-overview>
-    {% if external_services %}
-        <div class="domain-manager-global-actions">
-            {% for service in external_services %}
-                {% if service.url %}
-                    <a class="domain-manager-trakked-link domain-manager-service-link" href="{{ service.url }}" target="_blank" rel="noopener noreferrer">Zu {{ service.name }} <span aria-hidden="true">↗</span></a>
-                {% endif %}
-            {% endfor %}
-        </div>
-    {% endif %}
-
     {% if frontend_bulk_actions %}
         <form id="domain-manager-bulk-actions-form" class="domain-manager-bulk-form" method="post">
             <input type="hidden" name="REQUEST_TOKEN" value="{{ contao.request_token }}">
@@ -188,13 +185,6 @@
                                     </span>
                                     {% if installation.environment_label %}<span class="environment-badge">{{ installation.environment_label }}</span>{% endif %}
                                     <span class="status-badge is-current">Aktuelles Ziel</span>
-                                    {% if installation.external_services %}
-                                        {% for service in installation.external_services %}
-                                            <span class="status-badge is-tracked">{{ service.name }}</span>
-                                        {% endfor %}
-                                    {% else %}
-                                        <span class="status-badge is-untracked">Kein externer Dienst</span>
-                                    {% endif %}
                                 </div>
 
                                 {% if installation.backend_url or installation.manager_url or installation.frontend_actions %}
@@ -292,11 +282,6 @@
                                             <span class="health-dot" aria-hidden="true"></span>
                                             {{ installation.health.label }}{% if installation.health.issue_count > 0 %} · {{ installation.health.issue_count }}{% endif %}
                                         </span>
-                                        {% if installation.external_services %}
-                                            {% for service in installation.external_services %}<span class="status-badge is-tracked">{{ service.name }}</span>{% endfor %}
-                                        {% else %}
-                                            <span class="status-badge is-untracked">Kein externer Dienst</span>
-                                        {% endif %}
                                         <span class="installation-toggle" aria-hidden="true">›</span>
                                     </span>
                                 </summary>

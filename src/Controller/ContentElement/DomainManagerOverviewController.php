@@ -10,12 +10,14 @@ use Contao\CoreBundle\DependencyInjection\Attribute\AsContentElement;
 use Contao\CoreBundle\Security\ContaoCorePermissions;
 use Contao\CoreBundle\Twig\FragmentTemplate;
 use Contao\FilesModel;
+use Contao\PageModel;
 use Contao\StringUtil;
 use Doctrine\DBAL\Connection;
 use Lebensbaum\ContaoDomainManagerBundle\Event\InstallationFrontendExtensionEvent;
 use Lebensbaum\ContaoDomainManagerBundle\Event\InstallationHealthEvaluationEvent;
 use Lebensbaum\ContaoDomainManagerBundle\Event\OverviewFrontendExtensionEvent;
 use Lebensbaum\ContaoDomainManagerBundle\Health\InstallationHealthEvaluator;
+use Lebensbaum\ContaoDomainManagerBundle\Frontend\FrontendWorkspaceNavigation;
 use Lebensbaum\ContaoDomainManagerBundle\Settings\DomainManagerSettings;
 use Lebensbaum\ContaoDomainManagerBundle\Util\SystemValueNormalizer;
 use Symfony\Component\HttpFoundation\Request;
@@ -42,6 +44,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
         private readonly AuthorizationCheckerInterface $authorizationChecker,
         private readonly InstallationHealthEvaluator $healthEvaluator,
         private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly FrontendWorkspaceNavigation $workspaceNavigation,
     ) {
     }
 
@@ -201,6 +204,9 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
         $template->set('can_sync', $canSync);
         $template->set('external_services', []);
         $template->set('frontend_bulk_actions', $overviewFrontendEvent->getBulkActions());
+        $page = $request->attributes->get('pageModel');
+        $pageId = $page instanceof PageModel ? (int) $page->id : (is_numeric($page) ? (int) $page : 0);
+        $template->set('workspace_navigation', $this->workspaceNavigation->build($pageId));
         $response = $template->getResponse();
         $response->headers->set('Cache-Control', 'private, no-store, max-age=0');
 
