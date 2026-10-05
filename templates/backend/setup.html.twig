@@ -4,7 +4,7 @@
     <div class="tl_listing_container">
         <div style="padding:20px 24px;max-width:1100px">
             <p style="margin:0 0 18px;color:var(--text-color, #555)">
-                Der Assistent prüft, welche Bausteine der empfohlenen Domainverwaltung bereits vorhanden sind.
+                Der Assistent prüft, welche Bausteine der empfohlenen maintend-Installation bereits vorhanden sind.
                 Vorhandene Bausteine werden wiederverwendet; angelegt wird nur, was fehlt.
             </p>
 
@@ -84,7 +84,7 @@
 
                         {% if needs_hostname %}
                             <div class="widget" style="max-width:520px;margin:0 0 14px">
-                                <label for="dm_setup_hostname" style="display:block;font-weight:600;margin:0 0 5px">Hostname der Domainverwaltung</label>
+                                <label for="dm_setup_hostname" style="display:block;font-weight:600;margin:0 0 5px">Hostname für maintend</label>
                                 <input
                                     type="text"
                                     id="dm_setup_hostname"
@@ -95,7 +95,7 @@
                                     required
                                 >
                                 <p class="tl_help" style="margin-top:5px">
-                                    Der Hostname wird nur beim Anlegen eines neuen Startpunkts verwendet. Empfohlen ist eine eigene (Sub-)Domain für die Domainverwaltung.
+                                    Der Hostname wird nur beim Anlegen eines neuen Startpunkts verwendet. Empfohlen ist eine eigene (Sub-)Domain für maintend.
                                 </p>
                             </div>
                         {% else %}
@@ -105,7 +105,7 @@
                         <button
                             type="submit"
                             class="tl_submit"
-                            onclick="return confirm('Fehlende Bausteine der Domainverwaltung automatisch ergänzen?')"
+                            onclick="return confirm('Fehlende Bausteine von maintend automatisch ergänzen?')"
                         >Einrichtung vervollständigen</button>
                     </form>
                 </div>
@@ -113,7 +113,7 @@
                 <div class="tl_box" style="padding:16px 18px;max-width:900px">
                     <strong>Einrichtung vollständig</strong>
                     <p style="margin:8px 0 0">
-                        Theme, Seitenstruktur, Login und Domain-Manager-Inhaltselemente wurden erkannt.
+                        Theme, Seitenstruktur, Login und maintend-Inhaltselemente wurden erkannt.
                         {% if setup.frontend_access.ready %}
                             Der Frontend-Zugang ist ebenfalls vorbereitet.
                         {% else %}
