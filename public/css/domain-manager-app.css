@@ -21,7 +21,7 @@ body.domainverwaltung-page #container {
     max-width: var(--dm-theme-content-width, 1480px) !important;
     min-height: 0 !important;
     margin-inline: auto !important;
-    padding: 0 !important;
+    padding: 26px 0 0 !important;
 }
 
 body.domainverwaltung-page #main {
@@ -51,7 +51,7 @@ body.domainverwaltung-page #main > .inside {
     width: 100% !important;
     max-width: none !important;
     margin: 0 !important;
-    padding: 30px 0 48px !important;
+    padding: 0 0 48px !important;
 }
 
 body.domainverwaltung-page #main > .inside > .mod_article {
@@ -164,10 +164,11 @@ body.domainverwaltung-page h1 {
 @media (max-width: 680px) {
     body.domainverwaltung-page #container {
         width: calc(100vw - 28px) !important;
+        padding-top: 18px !important;
     }
 
     body.domainverwaltung-page #main > .inside {
-        padding: 20px 0 36px !important;
+        padding: 0 0 36px !important;
     }
 
     .domain-manager-overview .domain-summary {
@@ -202,8 +203,11 @@ body.domainverwaltung-error-page #header > .inside {
     align-items: center;
     gap: 36px;
     width: min(calc(100vw - 48px), var(--dm-theme-content-width, 1480px));
-    min-height: 56px;
+    height: 56px !important;
+    min-height: 56px !important;
+    max-height: 56px !important;
     margin-inline: auto;
+    padding: 0 !important;
 }
 
 body.domainverwaltung-page #header > .inside::before,
@@ -220,7 +224,9 @@ body.domainverwaltung-error-page #header > .inside::before {
 body.domainverwaltung-page #header .mod_navigation,
 body.domainverwaltung-login-page #header .mod_navigation,
 body.domainverwaltung-error-page #header .mod_navigation {
-    margin-left: auto;
+    height: 56px !important;
+    margin: 0 0 0 auto !important;
+    padding: 0 !important;
 }
 
 body.domainverwaltung-page #header .mod_navigation ul,
@@ -287,7 +293,9 @@ body.domainverwaltung-page #header .mod_navigation strong.active::after {
     body.domainverwaltung-login-page #header > .inside,
     body.domainverwaltung-error-page #header > .inside {
         width: calc(100vw - 28px);
-        min-height: 58px;
+        height: 52px !important;
+        min-height: 52px !important;
+        max-height: 52px !important;
         gap: 18px;
     }
 
@@ -309,7 +317,7 @@ body.domainverwaltung-page #header .mod_navigation strong.active::after {
     body.domainverwaltung-login-page #header .mod_navigation strong.active,
     body.domainverwaltung-error-page #header .mod_navigation a,
     body.domainverwaltung-error-page #header .mod_navigation strong.active {
-        min-height: 58px;
+        min-height: 52px;
         font-size: .9rem;
     }
 }
