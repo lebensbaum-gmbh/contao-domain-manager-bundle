@@ -239,7 +239,7 @@ final class SetupInstaller
         int $timestamp,
     ): void {
         $row = $this->connection->fetchAssociative(
-            'SELECT rows, modules FROM tl_layout WHERE id = ? LIMIT 1',
+            'SELECT `rows`, `modules` FROM `tl_layout` WHERE `id` = ? LIMIT 1',
             [$layoutId]
         );
 
