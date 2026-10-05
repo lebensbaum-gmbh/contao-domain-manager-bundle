@@ -9,7 +9,13 @@
 {% endadd %}
 
 {% add "domain_manager_updates_css" to stylesheets %}
-    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-updates.css') ~ '?v=1.5.3'} %}
+    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-updates.css') ~ '?v=maintend-1'} %}
+        {{ block('stylesheet_component') }}
+    {% endwith %}
+{% endadd %}
+
+{% add "domain_manager_navigation_css" to stylesheets %}
+    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-navigation.css') ~ '?v=maintend-1'} %}
         {{ block('stylesheet_component') }}
     {% endwith %}
 {% endadd %}
@@ -46,6 +52,7 @@
 {% import _self as dm %}
 
 {% block content %}
+{% include "@Contao/components/domain_manager_workspace_navigation.html.twig" %}
 <div class="dm-updates{% if pro_enabled %} has-selection{% endif %}" data-dm-updates>
     <header class="dm-updates-head">
         <div>
