@@ -192,7 +192,7 @@ final class SetupInspector
             }
         }
 
-        if (null === $navigationModuleId && null !== $themeId) {
+        if (null === $navigationModuleId && null === $layoutId && null !== $themeId) {
             $navigationModuleId = $this->findId(
                 "SELECT id FROM tl_module
                  WHERE pid = ? AND type = 'navigation' AND name = ?
