@@ -17,6 +17,7 @@ final class SetupInstaller
     private const THEME_NAME = 'Domainverwaltung';
     private const LAYOUT_NAME = 'Domainverwaltung';
     private const LOGIN_MODULE_NAME = 'Domainverwaltung – Login';
+    private const NAVIGATION_MODULE_NAME = 'maintend – Navigation';
 
     public function __construct(
         private readonly Connection $connection,
@@ -50,8 +51,13 @@ final class SetupInstaller
             $themeId = $this->existingId($items, 'theme')
                 ?? $this->createTheme($timestamp, $created);
 
+            $navigationModuleId = $this->existingId($items, 'navigation_module')
+                ?? $this->createNavigationModule($themeId, $timestamp, $created);
+
             $layoutId = $this->existingId($items, 'layout')
-                ?? $this->createLayout($themeId, $timestamp, $created);
+                ?? $this->createLayout($themeId, $navigationModuleId, $timestamp, $created);
+
+            $this->ensureLayoutConfiguration($layoutId, $navigationModuleId, $timestamp);
 
             $rootPageId = $this->existingId($items, 'root_page');
             if (null === $rootPageId) {
@@ -66,6 +72,8 @@ final class SetupInstaller
 
             $loginPageId = $this->existingId($items, 'login_page')
                 ?? $this->createLoginPage($rootPageId, $timestamp, $created);
+
+            $this->ensureLoginPageConfiguration($loginPageId, $timestamp);
 
             $loginModuleId = $this->existingId($items, 'login_module')
                 ?? $this->createLoginModule($themeId, $overviewPageId, $timestamp, $created);
@@ -125,7 +133,7 @@ final class SetupInstaller
 
         $rootPageId = $this->existingId($this->indexItems($before['items']), 'root_page');
         if (null === $rootPageId) {
-            throw new RuntimeException('Der Startpunkt der Domainverwaltung konnte nicht ermittelt werden.');
+            throw new RuntimeException('Der Startpunkt von maintend konnte nicht ermittelt werden.');
         }
 
         $created = [];
@@ -183,8 +191,26 @@ final class SetupInstaller
         return $id;
     }
 
-    private function createLayout(int $themeId, int $timestamp, array &$created): int
+    private function createNavigationModule(int $themeId, int $timestamp, array &$created): int
     {
+        $this->connection->insert('tl_module', [
+            'pid' => $themeId,
+            'tstamp' => $timestamp,
+            'name' => self::NAVIGATION_MODULE_NAME,
+            'type' => 'navigation',
+        ]);
+        $id = $this->lastInsertId('Navigationsmodul');
+        $created[] = 'Navigationsmodul';
+
+        return $id;
+    }
+
+    private function createLayout(
+        int $themeId,
+        int $navigationModuleId,
+        int $timestamp,
+        array &$created,
+    ): int {
         $this->connection->executeStatement(
             'INSERT INTO `tl_layout` (`pid`, `tstamp`, `name`, `type`, `rows`, `cols`, `modules`, `template`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             [
@@ -192,9 +218,10 @@ final class SetupInstaller
                 $timestamp,
                 self::LAYOUT_NAME,
                 'default',
-                '1rw',
+                '2rw',
                 '1cl',
                 serialize([
+                    ['mod' => $navigationModuleId, 'col' => 'header', 'enable' => 1],
                     ['mod' => 0, 'col' => 'main', 'enable' => 1],
                 ]),
                 'fe_page',
@@ -204,6 +231,58 @@ final class SetupInstaller
         $created[] = 'Seitenlayout';
 
         return $id;
+    }
+
+    private function ensureLayoutConfiguration(
+        int $layoutId,
+        int $navigationModuleId,
+        int $timestamp,
+    ): void {
+        $row = $this->connection->fetchAssociative(
+            'SELECT rows, modules FROM tl_layout WHERE id = ? LIMIT 1',
+            [$layoutId]
+        );
+
+        if (false === $row) {
+            throw new RuntimeException('Das Seitenlayout von maintend ist nicht mehr vorhanden.');
+        }
+
+        $modules = StringUtil::deserialize($row['modules'] ?? null, true);
+        $hasNavigation = false;
+        $hasArticles = false;
+
+        foreach ($modules as $module) {
+            if (!is_array($module)) {
+                continue;
+            }
+
+            if ((int) ($module['mod'] ?? -1) === $navigationModuleId && 'header' === ($module['col'] ?? null)) {
+                $hasNavigation = true;
+            }
+
+            if (0 === (int) ($module['mod'] ?? -1) && 'main' === ($module['col'] ?? null)) {
+                $hasArticles = true;
+            }
+        }
+
+        if (!$hasNavigation) {
+            array_unshift($modules, ['mod' => $navigationModuleId, 'col' => 'header', 'enable' => 1]);
+        }
+
+        if (!$hasArticles) {
+            $modules[] = ['mod' => 0, 'col' => 'main', 'enable' => 1];
+        }
+
+        $rows = (string) ($row['rows'] ?? '');
+        if ('' === $rows || '1rw' === $rows) {
+            $rows = '2rw';
+        }
+
+        $this->connection->update('tl_layout', [
+            'rows' => $rows,
+            'modules' => serialize($modules),
+            'tstamp' => $timestamp,
+        ], ['id' => $layoutId]);
     }
 
     private function createRootPage(
@@ -240,7 +319,7 @@ final class SetupInstaller
         );
 
         if (false === $row) {
-            throw new RuntimeException('Der Startpunkt der Domainverwaltung ist nicht mehr vorhanden.');
+            throw new RuntimeException('Der Startpunkt von maintend ist nicht mehr vorhanden.');
         }
 
         if ((int) $row['layout'] === $layoutId && 1 === (int) $row['includeLayout']) {
@@ -291,12 +370,21 @@ final class SetupInstaller
             'pageTitle' => 'maintend – Login',
             'robots' => 'noindex,nofollow',
             'cssClass' => 'domainverwaltung-login-page',
+            'hide' => 1,
             'published' => 1,
         ]);
         $id = $this->lastInsertId('Seite Login');
         $created[] = 'Seite Login';
 
         return $id;
+    }
+
+    private function ensureLoginPageConfiguration(int $loginPageId, int $timestamp): void
+    {
+        $this->connection->update('tl_page', [
+            'hide' => 1,
+            'tstamp' => $timestamp,
+        ], ['id' => $loginPageId]);
     }
 
     private function createLoginModule(
@@ -597,7 +685,7 @@ final class SetupInstaller
 
         if (false !== $existing && (int) $existing > 0) {
             throw new RuntimeException(sprintf(
-                'Der Hostname „%s“ wird bereits von einem anderen Startpunkt verwendet. Bitte für die Domainverwaltung eine eigene (Sub-)Domain verwenden.',
+                'Der Hostname „%s“ wird bereits von einem anderen Startpunkt verwendet. Bitte für maintend eine eigene (Sub-)Domain verwenden.',
                 $hostname
             ));
         }
@@ -618,7 +706,7 @@ final class SetupInstaller
             || str_starts_with($hostname, '.')
             || str_ends_with($hostname, '.')
         ) {
-            throw new RuntimeException('Bitte einen gültigen Hostnamen für die Domainverwaltung angeben.');
+            throw new RuntimeException('Bitte einen gültigen Hostnamen für maintend angeben.');
         }
 
         return $hostname;
