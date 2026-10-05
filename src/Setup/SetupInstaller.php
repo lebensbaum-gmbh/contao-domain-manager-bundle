@@ -218,7 +218,7 @@ final class SetupInstaller
                 $timestamp,
                 self::LAYOUT_NAME,
                 'default',
-                '2rw',
+                '2rwh',
                 '1cl',
                 serialize([
                     ['mod' => $navigationModuleId, 'col' => 'header', 'enable' => 1],
@@ -274,8 +274,8 @@ final class SetupInstaller
         }
 
         $rows = (string) ($row['rows'] ?? '');
-        if ('' === $rows || '1rw' === $rows) {
-            $rows = '2rw';
+        if ('' === $rows || '1rw' === $rows || '2rw' === $rows) {
+            $rows = '2rwh';
         }
 
         $this->connection->executeStatement(
