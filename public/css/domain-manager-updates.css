@@ -306,7 +306,7 @@
     gap: 16px;
     padding: 10px 14px;
     border-color: color-mix(in srgb, var(--dm-u-primary) 16%, var(--dm-u-border));
-    border-left: 4px solid #b2010d;
+    border-left: 4px solid var(--dm-u-primary);
     background: color-mix(in srgb, var(--dm-u-primary-soft) 62%, #fff);
 }
 
