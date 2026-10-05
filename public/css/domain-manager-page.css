@@ -78,7 +78,7 @@ body.domainverwaltung-page h1,
 body.domainverwaltung-login-page h1,
 body.domainverwaltung-error-page h1 {
     margin: 0 0 24px;
-    color: var(--dm-theme-primary);
+    color: var(--dm-theme-text);
     font-family: inherit;
     font-size: clamp(1.9rem, 3vw, 2.65rem);
     font-weight: 650;
