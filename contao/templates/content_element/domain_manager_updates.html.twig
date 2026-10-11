@@ -231,6 +231,9 @@
                                 </summary>
                                 <div class="dm-update-error-body">
                                     <p>{{ detail.error_text }}</p>
+                                    {% if installation.update_state == 'check_failed' %}
+                                        <p class="dm-update-error-context">Diese Meldung dokumentiert die letzte Composer-Prüfung. Sie bedeutet nicht, dass die Website ausgefallen ist.</p>
+                                    {% endif %}
                                     {% if detail.has_backup %}
                                         <p class="dm-update-backup-note">Ein vor dem Update erstelltes Sicherheitsbackup ist vorhanden.</p>
                                     {% endif %}
