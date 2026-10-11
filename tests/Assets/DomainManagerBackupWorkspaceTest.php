@@ -23,6 +23,28 @@ final class DomainManagerBackupWorkspaceTest extends TestCase
         self::assertStringContainsString('Der normale Restore benötigt eine startfähige Contao-Installation.', $template);
     }
 
+    public function testBackupProgressIsShownImmediatelyAndUpdatedFromConfirmedResponse(): void
+    {
+        $template = file_get_contents(__DIR__.'/../../contao/templates/content_element/domain_manager_updates.html.twig');
+        $script = file_get_contents(__DIR__.'/../../public/js/domain-manager-updates.js');
+        $styles = file_get_contents(__DIR__.'/../../public/css/domain-manager-updates.css');
+
+        self::assertIsString($template);
+        self::assertIsString($script);
+        self::assertIsString($styles);
+        self::assertStringContainsString('data-dm-backup-progress', $template);
+        self::assertStringContainsString('data-dm-backup-result', $template);
+        self::assertStringContainsString("backup_workspace.backups|length == 1 ? 'Sicherung' : 'Sicherungen'", $template);
+        self::assertStringContainsString("button.textContent = 'Sicherung läuft …';", $script);
+        self::assertStringContainsString("progressElement.classList.add('is-running')", $script);
+        self::assertStringContainsString("responseUrl.searchParams.get('dm_backup_create')", $script);
+        self::assertStringContainsString("resultId !== installationId", $script);
+        self::assertStringContainsString("panel.replaceWith(replacement)", $script);
+        self::assertStringContainsString('Der Sicherungsstatus ist unklar.', $script);
+        self::assertStringContainsString('.dm-backup-progress.is-running', $styles);
+        self::assertStringContainsString('prefers-reduced-motion: reduce', $styles);
+    }
+
     public function testControllerDistinguishesConfirmationFromRecoveryFailure(): void
     {
         $class = new \ReflectionClass(
