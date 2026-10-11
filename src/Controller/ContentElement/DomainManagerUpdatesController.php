@@ -52,6 +52,7 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
         $availableCount = 0;
         $currentCount = 0;
         $errorCount = 0;
+        $checkFailureCount = 0;
         $totalCount = count($rows);
         $resultInstallationId = $request->query->getInt('dm_installation');
         $checkStatus = trim((string) $request->query->get('dm_update', ''));
@@ -92,13 +93,15 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
 
             $updateState = $hasInstallAction ? 'available' : ($hasCheckAction ? 'unknown' : 'locked');
 
-            // Persistent errors remain visible after navigating away or reloading.
-            // A historical check from a different Contao version must not cause a false alert.
+            // A failed Composer check is not the same as a failed installation.
+            // Both remain visible, but get different severity and counts.
             if ($hasCheckAction && null !== $updateDetails
                 && true === ($updateDetails['relevant'] ?? false)
                 && '' !== (string) ($updateDetails['error_heading'] ?? '')
             ) {
-                $updateState = 'error';
+                $updateState = 'error' === ($updateDetails['status'] ?? '')
+                    ? 'error'
+                    : 'check_failed';
             }
 
             if ($installation['id'] === $resultInstallationId && '' !== $checkStatus) {
@@ -107,7 +110,7 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
                 } elseif ('up_to_date' === $checkStatus) {
                     $updateState = 'current';
                 } elseif (in_array($checkStatus, ['blocked', 'error'], true)) {
-                    $updateState = 'error';
+                    $updateState = 'check_failed';
                 }
             }
 
@@ -127,6 +130,8 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
                 ++$currentCount;
             } elseif ('error' === $updateState) {
                 ++$errorCount;
+            } elseif ('check_failed' === $updateState) {
+                ++$checkFailureCount;
             }
 
             $installation['frontend_actions'] = $actions;
@@ -143,6 +148,7 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
         $template->set('available_count', $availableCount);
         $template->set('current_count', $currentCount);
         $template->set('error_count', $errorCount);
+        $template->set('check_failure_count', $checkFailureCount);
         $template->set('total_count', $totalCount);
         $template->set('result_installation_id', $resultInstallationId);
         $template->set('check_status', $checkStatus);
@@ -200,7 +206,8 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
         return match ($state) {
             'available' => 'Update verfügbar',
             'current' => 'Aktuell',
-            'error' => 'Aktion fehlgeschlagen',
+            'error' => 'Update fehlgeschlagen',
+            'check_failed' => 'Prüfung fehlgeschlagen',
             'warning' => 'Installiert · Synchronisation prüfen',
             'locked' => 'Pro-Funktion',
             default => 'Noch nicht geprüft',
