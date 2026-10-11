@@ -9,7 +9,7 @@
 {% endadd %}
 
 {% add "domain_manager_updates_css" to stylesheets %}
-    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-updates.css') ~ '?v=maintend-4'} %}
+    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-updates.css') ~ '?v=maintend-5'} %}
         {{ block('stylesheet_component') }}
     {% endwith %}
 {% endadd %}
@@ -25,7 +25,7 @@
 {% endadd %}
 
 {% add "domain_manager_updates_js" to body %}
-    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-updates.js') ~ '?v=1.5.8' }}" defer></script>
+    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-updates.js') ~ '?v=1.5.9' }}" defer></script>
 {% endadd %}
 
 {% macro action(action, request_token) %}
@@ -99,6 +99,11 @@
     {% if result_message %}
         <div class="dm-updates-result {{ install_status == 'error' or check_status in ['error', 'blocked'] ? 'is-error' : 'is-success' }}" role="status">
             <strong>{{ result_message }}</strong>
+        </div>
+    {% endif %}
+    {% if backup_result_message %}
+        <div class="dm-updates-result {{ backup_result_error ? 'is-error' : 'is-success' }}" role="status">
+            <strong>{{ backup_result_message }}</strong>
         </div>
     {% endif %}
 
@@ -220,9 +225,10 @@
                 </div>
 
                 {% set detail = installation.update_details %}
-                {% if detail and (detail.error_heading or detail.operations|length > 0) %}
+                {% set backup_workspace = installation.frontend_metadata.backup_workspace ?? null %}
+                {% if (detail and (detail.error_heading or detail.operations|length > 0)) or backup_workspace %}
                     <div class="dm-update-extra" data-dm-update-extra>
-                        {% if detail.error_heading %}
+                        {% if detail and detail.error_heading %}
                             <details class="dm-update-error-inline{% if installation.update_state == 'error' %} is-installation-error{% endif %}">
                                 <summary>
                                     <strong>{{ installation.update_state == 'error' ? 'Update fehlgeschlagen' : 'Letzte Update-Prüfung fehlgeschlagen' }}</strong>
@@ -241,7 +247,7 @@
                             </details>
                         {% endif %}
 
-                        {% if detail.operations|length > 0 %}
+                        {% if detail and detail.operations|length > 0 %}
                             <details class="dm-update-plan" data-dm-update-plan>
                                 <summary>
                                     <span>
@@ -284,6 +290,75 @@
                                         {% endfor %}
                                         </tbody>
                                     </table>
+                                </div>
+                            </details>
+                        {% endif %}
+
+                        {% if backup_workspace %}
+                            <details class="dm-update-backups" data-dm-update-backups{% if installation.id == backup_result_installation_id %} open{% endif %}>
+                                <summary>
+                                    <span><strong>Sicherungen</strong> <span class="dm-update-backups-count">{{ backup_workspace.backups|length }} erfasst</span></span>
+                                    <span class="dm-update-backups-expand">Anzeigen</span>
+                                </summary>
+                                <div class="dm-update-backups-body">
+                                    <div class="dm-update-backups-intro">
+                                        <p>Die Liste enthält die letzten in maintend erfassten Sicherungen. Ob alle Dateien noch auf dem Zielserver liegen, wird erst beim Wiederherstellen geprüft.</p>
+                                        <form action="{{ backup_workspace.create_url }}" method="post" class="dm-backup-create-form">
+                                            <input type="hidden" name="REQUEST_TOKEN" value="{{ contao.request_token }}">
+                                            <input type="hidden" name="maintend_csrf" value="{{ backup_workspace.csrf_create }}">
+                                            <button type="submit" class="dm-backup-button is-create">Jetzt sichern</button>
+                                        </form>
+                                    </div>
+                                    {% if not backup_workspace.history_available %}
+                                        <p class="dm-update-backup-empty">Die Sicherungshistorie konnte nicht geladen werden.</p>
+                                    {% elseif backup_workspace.backups is empty %}
+                                        <p class="dm-update-backup-empty">Bisher sind keine Sicherungen erfasst.</p>
+                                    {% else %}
+                                        <div class="dm-update-backup-list">
+                                            {% for backup in backup_workspace.backups %}
+                                                <div class="dm-update-backup-item">
+                                                    <div class="dm-update-backup-item-main">
+                                                        <strong>
+                                                            {% if backup.source == 'pre_update' %}Vor Update
+                                                            {% elseif backup.source == 'pre_restore' %}Vor Wiederherstellung
+                                                            {% elseif backup.source == 'scheduled' %}Geplante Sicherung
+                                                            {% else %}Manuelle Sicherung{% endif %}
+                                                        </strong>
+                                                        {% if backup.created_at > 0 %}
+                                                            <span>{{ backup.created_at|date('d.m.Y, H.i') }} Uhr</span>
+                                                        {% endif %}
+                                                        <span>Contao {{ backup.contao_version ?: '—' }}</span>
+                                                        <span>{{ (backup.project_size / 1048576)|number_format(1, ',', '.') }} MB Projekt</span>
+                                                        <span>{{ (backup.database_size / 1024)|number_format(0, ',', '.') }} KB Datenbank</span>
+                                                        <span class="dm-update-backup-status{% if backup.status != 'success' %} is-incomplete{% endif %}">{{ backup.status == 'success' ? 'Erfolgreich' : (backup.status == 'error' ? 'Fehlgeschlagen' : 'In Bearbeitung') }}</span>
+                                                    </div>
+                                                    {% if backup.restore_url %}
+                                                        <details class="dm-update-backup-restore">
+                                                            <summary>Wiederherstellen</summary>
+                                                            <div class="dm-update-backup-warning">
+                                                                <strong>Achtung: Vollständige Wiederherstellung</strong>
+                                                                <p>Projektdateien, Composer-Pakete und Datenbank werden auf den Stand dieser Sicherung zurückgesetzt. Änderungen seitdem können verloren gehen. Vor dem Restore wird automatisch eine zusätzliche Sicherheitskopie erstellt.</p>
+                                                                <p>Der normale Restore benötigt eine startfähige Contao-Installation. Ist die Zielseite nach einem Fehler nicht mehr erreichbar, kann eine manuelle Wiederherstellung über Hosting/SSH nötig sein.</p>
+                                                                <form action="{{ backup.restore_url }}" method="post" class="dm-backup-restore-form">
+                                                                    <input type="hidden" name="REQUEST_TOKEN" value="{{ contao.request_token }}">
+                                                                    <input type="hidden" name="maintend_csrf" value="{{ backup_workspace.csrf_restore }}">
+                                                                    <label>
+                                                                        Zur Bestätigung die Domain <strong>{{ installation.domain }}</strong> eingeben:
+                                                                        <input type="text" name="confirm_domain" required autocomplete="off" spellcheck="false" placeholder="{{ installation.domain }}">
+                                                                    </label>
+                                                                    <label class="dm-backup-acknowledge">
+                                                                        <input type="checkbox" name="acknowledge_restore" value="1" required>
+                                                                        <span>Ich verstehe, dass Daten und Dateien auf den Sicherungsstand zurückgesetzt werden.</span>
+                                                                    </label>
+                                                                    <button type="submit" class="dm-backup-button is-destructive">Diese Sicherung wiederherstellen</button>
+                                                                </form>
+                                                            </div>
+                                                        </details>
+                                                    {% endif %}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </details>
                         {% endif %}
