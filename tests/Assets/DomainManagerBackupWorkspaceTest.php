@@ -36,6 +36,9 @@ final class DomainManagerBackupWorkspaceTest extends TestCase
         self::assertStringContainsString('data-dm-backup-result', $template);
         self::assertStringContainsString("backup_workspace.backups|length == 1 ? 'Sicherung' : 'Sicherungen'", $template);
         self::assertStringContainsString("button.textContent = 'Sicherung läuft …';", $script);
+        self::assertStringContainsString("backupRunning = true;", $script);
+        self::assertStringContainsString("button.disabled = true;", $script);
+        self::assertStringContainsString("window.clearInterval(timer);", $script);
         self::assertStringContainsString("progressElement.classList.add('is-running')", $script);
         self::assertStringContainsString("responseUrl.searchParams.get('dm_backup_create')", $script);
         self::assertStringContainsString("resultId !== installationId", $script);
