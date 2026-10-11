@@ -804,6 +804,43 @@
             void createManualBackup(form, row);
         });
 
+        // The delete request uses a standard POST, but must still show immediate feedback.
+        root.addEventListener('submit', (event) => {
+            const form = event.target;
+            if (!form?.matches?.('.dm-backup-delete-form')) {
+                return;
+            }
+
+            if (backupRunning || bulkRunning) {
+                event.preventDefault();
+                return;
+            }
+
+            backupRunning = true;
+            const button = form.querySelector('button[type="submit"]');
+            const panel = form.closest('[data-dm-update-backups]');
+            const progress = panel?.querySelector('[data-dm-backup-progress]');
+
+            if (button) {
+                button.disabled = true;
+                button.textContent = 'Sicherung wird gelöscht …';
+            }
+
+            if (panel) {
+                panel.open = true;
+                panel.setAttribute('aria-busy', 'true');
+            }
+
+            if (progress) {
+                progress.hidden = false;
+                progress.classList.remove('is-error');
+                progress.classList.add('is-running');
+                progress.textContent = 'Sicherung wird auf der Zielinstallation gelöscht. Bitte warten …';
+            }
+
+            setBulkUiLocked(true);
+        });
+
         root.addEventListener('submit', (event) => {
             const form = event.target.closest?.('.dm-updates-action-form');
             if (!form) {
