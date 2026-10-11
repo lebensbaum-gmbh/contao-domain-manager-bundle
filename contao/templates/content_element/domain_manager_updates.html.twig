@@ -9,7 +9,7 @@
 {% endadd %}
 
 {% add "domain_manager_updates_css" to stylesheets %}
-    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-updates.css') ~ '?v=maintend-2'} %}
+    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-updates.css') ~ '?v=maintend-3'} %}
         {{ block('stylesheet_component') }}
     {% endwith %}
 {% endadd %}
@@ -25,7 +25,7 @@
 {% endadd %}
 
 {% add "domain_manager_updates_js" to body %}
-    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-updates.js') ~ '?v=1.5.6' }}" defer></script>
+    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-updates.js') ~ '?v=1.5.7' }}" defer></script>
 {% endadd %}
 
 {% macro action(action, request_token) %}
@@ -214,6 +214,74 @@
                         <button class="dm-updates-action is-locked" type="button" disabled title="Nur in der Pro-Version verfügbar">Installieren <span>Pro</span></button>
                     {% endif %}
                 </div>
+
+                {% set detail = installation.update_details %}
+                {% if detail and (detail.error_heading or detail.operations|length > 0) %}
+                    <div class="dm-update-extra" data-dm-update-extra>
+                        {% if detail.error_heading %}
+                            <div class="dm-update-error-inline" role="status">
+                                <strong>{{ detail.error_heading }}</strong>
+                                <span>{{ detail.error_text|slice(0, 220) }}{% if detail.error_text|length > 220 %}…{% endif %}</span>
+                                {% if detail.has_backup %}
+                                    <small>Ein vor dem Update erstelltes Sicherheitsbackup ist vorhanden.</small>
+                                {% endif %}
+                                {% if detail.error_text|length > 220 %}
+                                    <details class="dm-update-error-full">
+                                        <summary>Vollständige Fehlermeldung</summary>
+                                        <p>{{ detail.error_text }}</p>
+                                    </details>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                        {% if detail.operations|length > 0 %}
+                            <details class="dm-update-plan" data-dm-update-plan>
+                                <summary>
+                                    <span>
+                                        {{ detail.completed ? 'Letzter Paketplan (installiert)' : (detail.relevant ? 'Paketplan' : 'Vorheriger Paketplan') }}
+                                        <strong>{{ detail.operations|length }} Paketänderungen</strong>
+                                    </span>
+                                    <span class="dm-update-plan-expand">Details anzeigen</span>
+                                </summary>
+                                <p class="dm-update-plan-caption">
+                                    {{ detail.completed ? 'Plan der letzten abgeschlossenen Installation.' : (detail.relevant ? 'In der letzten Composer-Prüfung ermittelte Änderungen. Vor dem Installieren wird der Plan erneut überprüft.' : 'Historischer Paketplan. Für den aktuellen Stand bitte erneut prüfen.') }}
+                                </p>
+                                <div class="dm-update-plan-scroll">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Paket</th>
+                                                <th scope="col">Bisher</th>
+                                                <th scope="col">Geplant</th>
+                                                <th scope="col">Aktion</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for change in detail.operations %}
+                                            <tr>
+                                                <td><code>{{ change.package }}</code></td>
+                                                <td>{{ change.from ?: '—' }}</td>
+                                                <td>{{ change.to ?: '—' }}</td>
+                                                <td>
+                                                    {% if change.direction == 'downgrade' %}
+                                                        <span class="dm-update-change is-downgrade">Downgrade</span>
+                                                    {% elseif change.type == 'install' %}
+                                                        <span class="dm-update-change">Neu</span>
+                                                    {% elseif change.type == 'remove' %}
+                                                        <span class="dm-update-change is-removal">Entfernung</span>
+                                                    {% else %}
+                                                        <span class="dm-update-change">Update</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </details>
+                        {% endif %}
+                    </div>
+                {% endif %}
             </article>
         {% else %}
             <p class="dm-updates-empty">Es sind noch keine Installationen hinterlegt.</p>
