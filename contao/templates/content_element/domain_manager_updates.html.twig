@@ -9,7 +9,7 @@
 {% endadd %}
 
 {% add "domain_manager_updates_css" to stylesheets %}
-    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-updates.css') ~ '?v=maintend-5'} %}
+    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-updates.css') ~ '?v=maintend-6'} %}
         {{ block('stylesheet_component') }}
     {% endwith %}
 {% endadd %}
@@ -25,7 +25,7 @@
 {% endadd %}
 
 {% add "domain_manager_updates_js" to body %}
-    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-updates.js') ~ '?v=1.5.9' }}" defer></script>
+    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-updates.js') ~ '?v=1.5.10' }}" defer></script>
 {% endadd %}
 
 {% macro action(action, request_token) %}
@@ -297,7 +297,7 @@
                         {% if backup_workspace %}
                             <details class="dm-update-backups" data-dm-update-backups{% if installation.id == backup_result_installation_id %} open{% endif %}>
                                 <summary>
-                                    <span><strong>Sicherungen</strong> <span class="dm-update-backups-count">{{ backup_workspace.backups|length }} erfasst</span></span>
+                                    <span><strong>Sicherungen</strong> <span class="dm-update-backups-count">{{ backup_workspace.backups|length }} {{ backup_workspace.backups|length == 1 ? 'Sicherung' : 'Sicherungen' }}</span></span>
                                     <span class="dm-update-backups-expand">Anzeigen</span>
                                 </summary>
                                 <div class="dm-update-backups-body">
@@ -309,6 +309,14 @@
                                             <button type="submit" class="dm-backup-button is-create">Jetzt sichern</button>
                                         </form>
                                     </div>
+                                    <div class="dm-backup-progress" data-dm-backup-progress role="status" aria-live="polite" aria-atomic="true" hidden>
+                                        Sicherung wird erstellt … Datenbank und Projektdateien werden gesichert. Bitte warten.
+                                    </div>
+                                    {% if backup_result_message and installation.id == backup_result_installation_id %}
+                                        <div class="dm-backup-result{{ backup_result_error ? ' is-error' : ' is-success' }}" role="status" data-dm-backup-result>
+                                            {{ backup_result_message }}
+                                        </div>
+                                    {% endif %}
                                     {% if not backup_workspace.history_available %}
                                         <p class="dm-update-backup-empty">Die Sicherungshistorie konnte nicht geladen werden.</p>
                                     {% elseif backup_workspace.backups is empty %}
