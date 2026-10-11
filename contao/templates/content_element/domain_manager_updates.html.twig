@@ -297,12 +297,13 @@
                         {% if backup_workspace %}
                             <details class="dm-update-backups" data-dm-update-backups{% if installation.id == backup_result_installation_id %} open{% endif %}>
                                 <summary>
-                                    <span><strong>Sicherungen</strong> <span class="dm-update-backups-count">{{ backup_workspace.backups|length }} {{ backup_workspace.backups|length == 1 ? 'Sicherung' : 'Sicherungen' }}</span></span>
+                                    <span><strong>Sicherungen</strong> <span class="dm-update-backups-count">{{ backup_workspace.backup_count }} {{ backup_workspace.backup_count == 1 ? 'Sicherung' : 'Sicherungen' }}</span></span>
+                                    <span class="dm-update-backups-archive-size">{% if backup_workspace.total_size >= 1073741824 %}{{ (backup_workspace.total_size / 1073741824)|number_format(2, ',', '.') }} GB{% else %}{{ (backup_workspace.total_size / 1048576)|number_format(1, ',', '.') }} MB{% endif %} Archive</span>
                                     <span class="dm-update-backups-expand">Anzeigen</span>
                                 </summary>
                                 <div class="dm-update-backups-body">
                                     <div class="dm-update-backups-intro">
-                                        <p>Die Liste enthält die letzten in maintend erfassten Sicherungen. Ob alle Dateien noch auf dem Zielserver liegen, wird erst beim Wiederherstellen geprüft.</p>
+                                        <p>Die Liste zeigt die letzten zehn in maintend erfassten Sicherungen. Die Archivgröße umfasst die beim Erstellen gemessenen Datenbank- und Projektarchive; ob alle Dateien noch auf dem Zielserver liegen, wird erst beim Wiederherstellen geprüft. Automatische Sicherungen: maximal fünf; manuelle bleiben bis zur Löschung erhalten.</p>
                                         <form action="{{ backup_workspace.create_url }}" method="post" class="dm-backup-create-form">
                                             <input type="hidden" name="REQUEST_TOKEN" value="{{ contao.request_token }}">
                                             <input type="hidden" name="maintend_csrf" value="{{ backup_workspace.csrf_create }}">
@@ -359,6 +360,23 @@
                                                                         <span>Ich verstehe, dass Daten und Dateien auf den Sicherungsstand zurückgesetzt werden.</span>
                                                                     </label>
                                                                     <button type="submit" class="dm-backup-button is-destructive">Diese Sicherung wiederherstellen</button>
+                                                                </form>
+                                                            </div>
+                                                        </details>
+                                                    {% endif %}
+                                                    {% if backup.delete_url %}
+                                                        <details class="dm-update-backup-delete">
+                                                            <summary>Sicherung löschen</summary>
+                                                            <div class="dm-update-backup-warning">
+                                                                <p>Diese Sicherung wird auf der Zielinstallation unwiderruflich gelöscht und aus maintend entfernt. Eine Wiederherstellung ist anschließend nicht mehr möglich.</p>
+                                                                <form action="{{ backup.delete_url }}" method="post" class="dm-backup-delete-form">
+                                                                    <input type="hidden" name="REQUEST_TOKEN" value="{{ contao.request_token }}">
+                                                                    <input type="hidden" name="maintend_csrf" value="{{ backup_workspace.csrf_delete }}">
+                                                                    <label class="dm-backup-acknowledge">
+                                                                        <input type="checkbox" name="confirm_delete" value="1" required>
+                                                                        <span>Ich möchte diese Sicherung einschließlich der Dateien endgültig löschen.</span>
+                                                                    </label>
+                                                                    <button type="submit" class="dm-backup-button is-destructive">Endgültig löschen</button>
                                                                 </form>
                                                             </div>
                                                         </details>
