@@ -127,6 +127,15 @@
     color: var(--dm-u-accent);
 }
 
+.dm-updates-summary-item.has-warning {
+    border-color: color-mix(in srgb, var(--dm-u-warning) 24%, var(--dm-u-border));
+    background: var(--dm-u-warning-soft);
+}
+
+.dm-updates-summary-item.has-warning strong {
+    color: var(--dm-u-warning);
+}
+
 .dm-updates-summary-item.has-error {
     border-color: color-mix(in srgb, var(--dm-u-error) 24%, var(--dm-u-border));
     background: var(--dm-u-error-soft);
@@ -547,6 +556,12 @@
     color: var(--dm-u-success);
 }
 
+.dm-update-state.is-check-failed {
+    border-color: color-mix(in srgb, var(--dm-u-warning) 26%, var(--dm-u-border));
+    background: var(--dm-u-warning-soft);
+    color: var(--dm-u-warning);
+}
+
 .dm-update-state.is-error {
     border-color: color-mix(in srgb, var(--dm-u-error) 22%, var(--dm-u-border));
     background: var(--dm-u-error-soft);
@@ -768,38 +783,104 @@
 }
 
 .dm-update-error-inline {
-    display: grid;
-    gap: 4px;
-    padding: 10px 12px;
-    border: 1px solid color-mix(in srgb, var(--dm-u-error) 22%, var(--dm-u-border));
+    display: block;
+    min-width: 0;
+    border: 1px solid color-mix(in srgb, var(--dm-u-warning) 24%, var(--dm-u-border));
     border-radius: 8px;
+    background: var(--dm-u-warning-soft);
+    color: var(--dm-u-text);
+    font-size: .8rem;
+}
+
+.dm-update-error-inline.is-installation-error {
+    border-color: color-mix(in srgb, var(--dm-u-error) 26%, var(--dm-u-border));
     background: var(--dm-u-error-soft);
-    color: var(--dm-u-error);
-    font-size: .82rem;
-    line-height: 1.4;
-    overflow-wrap: anywhere;
 }
 
-.dm-update-error-inline strong {
-    font-size: .86rem;
-}
-
-.dm-update-error-inline small {
-    font-size: .75rem;
-}
-
-.dm-update-error-full summary {
-    width: fit-content;
+.dm-update-error-inline > summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 12px;
+    min-width: 0;
+    list-style: none;
     cursor: pointer;
+}
+
+.dm-update-error-inline > summary::-webkit-details-marker {
+    display: none;
+}
+
+.dm-update-error-inline > summary:focus-visible {
+    outline: 2px solid var(--dm-u-primary);
+    outline-offset: -2px;
+}
+
+.dm-update-error-inline > summary strong {
+    flex-shrink: 0;
+    color: var(--dm-u-warning);
+    font-size: .8rem;
     font-weight: 700;
 }
 
-.dm-update-error-full p {
-    margin: 8px 0 0;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
+.dm-update-error-inline.is-installation-error > summary strong {
+    color: var(--dm-u-error);
+}
+
+.dm-update-error-preview {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--dm-u-muted);
+}
+
+.dm-update-error-expand {
+    flex-shrink: 0;
+    margin-left: auto;
+    color: var(--dm-u-primary);
+    font-size: .78rem;
+    font-weight: 700;
+}
+
+.dm-update-error-inline[open] .dm-update-error-expand {
+    font-size: 0;
+}
+
+.dm-update-error-inline[open] .dm-update-error-expand::after {
+    content: 'Schließen';
     font-size: .78rem;
 }
+
+.dm-update-error-body {
+    padding: 0 12px 11px;
+    border-top: 1px solid color-mix(in srgb, var(--dm-u-warning) 16%, var(--dm-u-border));
+}
+
+.dm-update-error-body p {
+    margin: 9px 0 0;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    line-height: 1.4;
+}
+
+.dm-update-backup-note {
+    font-size: .76rem;
+    font-weight: 600;
+}
+
+@media (max-width: 720px) {
+    .dm-update-error-inline > summary {
+        flex-wrap: wrap;
+        gap: 5px 12px;
+    }
+    .dm-update-error-preview {
+        flex-basis: 100%;
+        order: 3;
+    }
+}
+
 
 .dm-update-plan {
     min-width: 0;
