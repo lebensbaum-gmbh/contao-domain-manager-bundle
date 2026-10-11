@@ -9,7 +9,7 @@
 {% endadd %}
 
 {% add "domain_manager_updates_css" to stylesheets %}
-    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-updates.css') ~ '?v=maintend-2'} %}
+    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-updates.css') ~ '?v=maintend-4'} %}
         {{ block('stylesheet_component') }}
     {% endwith %}
 {% endadd %}
@@ -25,7 +25,7 @@
 {% endadd %}
 
 {% add "domain_manager_updates_js" to body %}
-    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-updates.js') ~ '?v=1.5.6' }}" defer></script>
+    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-updates.js') ~ '?v=1.5.8' }}" defer></script>
 {% endadd %}
 
 {% macro action(action, request_token) %}
@@ -69,9 +69,13 @@
                     <strong data-dm-available-count>{{ available_count }}</strong>
                     <span>{{ available_count == 1 ? 'Update verfügbar' : 'Updates verfügbar' }}</span>
                 </div>
-                <div class="dm-updates-summary-item{% if error_count > 0 %} has-error{% endif %}">
-                    <strong>{{ error_count }}</strong>
-                    <span>{{ error_count == 1 ? 'Fehler' : 'Fehler' }}</span>
+                <div class="dm-updates-summary-item{% if check_failure_count > 0 %} has-warning{% endif %}">
+                    <strong data-dm-check-failure-count>{{ check_failure_count }}</strong>
+                    <span>{{ check_failure_count == 1 ? 'Prüfung fehlgeschlagen' : 'Prüfungen fehlgeschlagen' }}</span>
+                </div>
+                <div class="dm-updates-summary-item has-error" data-dm-install-failure-summary{% if error_count == 0 %} hidden{% endif %}>
+                    <strong data-dm-install-failure-count>{{ error_count }}</strong>
+                    <span>{{ error_count == 1 ? 'Update fehlgeschlagen' : 'Updates fehlgeschlagen' }}</span>
                 </div>
             </div>
         {% else %}
@@ -104,7 +108,7 @@
             <button type="button" data-dm-update-filter="available" {% if not pro_enabled %}disabled title="Nur in der Pro-Version verfügbar"{% endif %}>
                 Updates verfügbar{% if not pro_enabled %} <span class="dm-pro-inline">Pro</span>{% endif %}
             </button>
-            <button type="button" data-dm-update-filter="error">Fehler</button>
+            <button type="button" data-dm-update-filter="error">Prüfprobleme / Fehler</button>
         </div>
         <label class="dm-updates-search">
             <span>Installationen filtern</span>
@@ -214,6 +218,77 @@
                         <button class="dm-updates-action is-locked" type="button" disabled title="Nur in der Pro-Version verfügbar">Installieren <span>Pro</span></button>
                     {% endif %}
                 </div>
+
+                {% set detail = installation.update_details %}
+                {% if detail and (detail.error_heading or detail.operations|length > 0) %}
+                    <div class="dm-update-extra" data-dm-update-extra>
+                        {% if detail.error_heading %}
+                            <details class="dm-update-error-inline{% if installation.update_state == 'error' %} is-installation-error{% endif %}">
+                                <summary>
+                                    <strong>{{ installation.update_state == 'error' ? 'Update fehlgeschlagen' : 'Letzte Update-Prüfung fehlgeschlagen' }}</strong>
+                                    <span class="dm-update-error-preview">{{ detail.error_text|slice(0, 95) }}{% if detail.error_text|length > 95 %}…{% endif %}</span>
+                                    <span class="dm-update-error-expand">Details anzeigen</span>
+                                </summary>
+                                <div class="dm-update-error-body">
+                                    <p>{{ detail.error_text }}</p>
+                                    {% if installation.update_state == 'check_failed' %}
+                                        <p class="dm-update-error-context">Diese Meldung dokumentiert die letzte Composer-Prüfung. Sie bedeutet nicht, dass die Website ausgefallen ist.</p>
+                                    {% endif %}
+                                    {% if detail.has_backup %}
+                                        <p class="dm-update-backup-note">Ein vor dem Update erstelltes Sicherheitsbackup ist vorhanden.</p>
+                                    {% endif %}
+                                </div>
+                            </details>
+                        {% endif %}
+
+                        {% if detail.operations|length > 0 %}
+                            <details class="dm-update-plan" data-dm-update-plan>
+                                <summary>
+                                    <span>
+                                        {{ detail.completed ? 'Letzter Paketplan (installiert)' : (detail.relevant ? 'Paketplan' : 'Vorheriger Paketplan') }}
+                                        <strong>{{ detail.operations|length }} Paketänderungen</strong>
+                                    </span>
+                                    <span class="dm-update-plan-expand">Details anzeigen</span>
+                                </summary>
+                                <p class="dm-update-plan-caption">
+                                    {{ detail.completed ? 'Plan der letzten abgeschlossenen Installation.' : (detail.relevant ? 'In der letzten Composer-Prüfung ermittelte Änderungen. Vor dem Installieren wird der Plan erneut überprüft.' : 'Historischer Paketplan. Für den aktuellen Stand bitte erneut prüfen.') }}
+                                </p>
+                                <div class="dm-update-plan-scroll">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Paket</th>
+                                                <th scope="col">Bisher</th>
+                                                <th scope="col">Geplant</th>
+                                                <th scope="col">Aktion</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for change in detail.operations %}
+                                            <tr>
+                                                <td><code>{{ change.package }}</code></td>
+                                                <td>{{ change.from ?: '—' }}</td>
+                                                <td>{{ change.to ?: '—' }}</td>
+                                                <td>
+                                                    {% if change.direction == 'downgrade' %}
+                                                        <span class="dm-update-change is-downgrade">Downgrade</span>
+                                                    {% elseif change.type == 'install' %}
+                                                        <span class="dm-update-change">Neu</span>
+                                                    {% elseif change.type == 'remove' %}
+                                                        <span class="dm-update-change is-removal">Entfernung</span>
+                                                    {% else %}
+                                                        <span class="dm-update-change">Update</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </details>
+                        {% endif %}
+                    </div>
+                {% endif %}
             </article>
         {% else %}
             <p class="dm-updates-empty">Es sind noch keine Installationen hinterlegt.</p>

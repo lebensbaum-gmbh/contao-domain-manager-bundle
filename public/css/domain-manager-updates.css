@@ -127,6 +127,19 @@
     color: var(--dm-u-accent);
 }
 
+.dm-updates-summary-item[hidden] {
+    display: none !important;
+}
+
+.dm-updates-summary-item.has-warning {
+    border-color: color-mix(in srgb, var(--dm-u-warning) 24%, var(--dm-u-border));
+    background: var(--dm-u-warning-soft);
+}
+
+.dm-updates-summary-item.has-warning strong {
+    color: var(--dm-u-warning);
+}
+
 .dm-updates-summary-item.has-error {
     border-color: color-mix(in srgb, var(--dm-u-error) 24%, var(--dm-u-border));
     background: var(--dm-u-error-soft);
@@ -547,6 +560,12 @@
     color: var(--dm-u-success);
 }
 
+.dm-update-state.is-check-failed {
+    border-color: color-mix(in srgb, var(--dm-u-warning) 26%, var(--dm-u-border));
+    background: var(--dm-u-warning-soft);
+    color: var(--dm-u-warning);
+}
+
 .dm-update-state.is-error {
     border-color: color-mix(in srgb, var(--dm-u-error) 22%, var(--dm-u-border));
     background: var(--dm-u-error-soft);
@@ -754,4 +773,237 @@
         justify-content: center;
         text-align: center;
     }
+}
+
+
+/* Contextual package plans and errors are deliberately collapsed by default. */
+.dm-update-extra {
+    grid-column: 1 / -1;
+    min-width: 0;
+    display: grid;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--dm-u-border-light);
+}
+
+.dm-update-error-inline {
+    display: block;
+    min-width: 0;
+    border: 1px solid color-mix(in srgb, var(--dm-u-warning) 24%, var(--dm-u-border));
+    border-radius: 8px;
+    background: var(--dm-u-warning-soft);
+    color: var(--dm-u-text);
+    font-size: .8rem;
+}
+
+.dm-update-error-inline.is-installation-error {
+    border-color: color-mix(in srgb, var(--dm-u-error) 26%, var(--dm-u-border));
+    background: var(--dm-u-error-soft);
+}
+
+.dm-update-error-inline > summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 12px;
+    min-width: 0;
+    list-style: none;
+    cursor: pointer;
+}
+
+.dm-update-error-inline > summary::-webkit-details-marker {
+    display: none;
+}
+
+.dm-update-error-inline > summary:focus-visible {
+    outline: 2px solid var(--dm-u-primary);
+    outline-offset: -2px;
+}
+
+.dm-update-error-inline > summary strong {
+    flex-shrink: 0;
+    color: var(--dm-u-warning);
+    font-size: .8rem;
+    font-weight: 700;
+}
+
+.dm-update-error-inline.is-installation-error > summary strong {
+    color: var(--dm-u-error);
+}
+
+.dm-update-error-preview {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--dm-u-muted);
+}
+
+.dm-update-error-expand {
+    flex-shrink: 0;
+    margin-left: auto;
+    color: var(--dm-u-primary);
+    font-size: .78rem;
+    font-weight: 700;
+}
+
+.dm-update-error-inline[open] .dm-update-error-expand {
+    font-size: 0;
+}
+
+.dm-update-error-inline[open] .dm-update-error-expand::after {
+    content: 'Schließen';
+    font-size: .78rem;
+}
+
+.dm-update-error-body {
+    padding: 0 12px 11px;
+    border-top: 1px solid color-mix(in srgb, var(--dm-u-warning) 16%, var(--dm-u-border));
+}
+
+.dm-update-error-body p {
+    margin: 9px 0 0;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    line-height: 1.4;
+}
+
+.dm-update-backup-note {
+    font-size: .76rem;
+    font-weight: 600;
+}
+
+@media (max-width: 720px) {
+    .dm-update-error-inline > summary {
+        flex-wrap: wrap;
+        gap: 5px 12px;
+    }
+    .dm-update-error-preview {
+        flex-basis: 100%;
+        order: 3;
+    }
+}
+
+
+.dm-update-plan {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--dm-u-border-light);
+    border-radius: 8px;
+    background: var(--dm-u-surface-soft);
+}
+
+.dm-update-plan > summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 9px 12px;
+    color: var(--dm-u-text);
+    cursor: pointer;
+    font-size: .82rem;
+}
+
+.dm-update-plan > summary::marker {
+    color: var(--dm-u-primary);
+}
+
+.dm-update-plan > summary strong {
+    margin-left: 8px;
+    color: var(--dm-u-primary);
+    font-weight: 700;
+}
+
+.dm-update-plan > summary:focus-visible,
+.dm-update-error-full summary:focus-visible {
+    outline: 2px solid var(--dm-u-primary);
+    outline-offset: -2px;
+}
+
+.dm-update-plan-expand {
+    color: var(--dm-u-primary);
+    font-weight: 650;
+}
+
+.dm-update-plan[open] .dm-update-plan-expand {
+    font-size: 0;
+}
+
+.dm-update-plan[open] .dm-update-plan-expand::after {
+    content: 'Schließen';
+    font-size: .82rem;
+}
+
+.dm-update-plan-caption {
+    margin: 0;
+    padding: 2px 12px 10px;
+    color: var(--dm-u-muted);
+    font-size: .78rem;
+}
+
+.dm-update-plan-scroll {
+    max-height: min(360px, 60vh);
+    overflow: auto;
+    border-top: 1px solid var(--dm-u-border-light);
+}
+
+.dm-update-plan table {
+    width: 100%;
+    min-width: 560px;
+    border-collapse: collapse;
+    font-size: .8rem;
+}
+
+.dm-update-plan th,
+.dm-update-plan td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--dm-u-border-light);
+    text-align: left;
+    vertical-align: middle;
+}
+
+.dm-update-plan th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--dm-u-surface);
+    color: var(--dm-u-muted);
+    font-weight: 700;
+}
+
+.dm-update-plan tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.dm-update-plan td code {
+    color: var(--dm-u-text);
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: .76rem;
+    overflow-wrap: anywhere;
+}
+
+.dm-update-change {
+    display: inline-block;
+    border-radius: 5px;
+    padding: 3px 6px;
+    background: var(--dm-u-primary-soft);
+    color: var(--dm-u-primary);
+    font-size: .72rem;
+    font-weight: 650;
+}
+
+.dm-update-change.is-downgrade {
+    background: var(--dm-u-warning-soft);
+    color: var(--dm-u-warning);
+}
+
+.dm-update-change.is-removal {
+    background: var(--dm-u-error-soft);
+    color: var(--dm-u-error);
+}
+
+.dm-updates.is-running .dm-update-extra {
+    display: none;
 }

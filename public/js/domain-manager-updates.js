@@ -25,6 +25,9 @@
         const progressCurrent = root.querySelector('[data-dm-progress-current]');
         const progressSummary = root.querySelector('[data-dm-progress-summary]');
         const availableCount = root.querySelector('[data-dm-available-count]');
+        const checkFailureCount = root.querySelector('[data-dm-check-failure-count]');
+        const installFailureCount = root.querySelector('[data-dm-install-failure-count]');
+        const installFailureSummary = root.querySelector('[data-dm-install-failure-summary]');
         const previousResult = root.querySelector('.dm-updates-result');
         let filter = 'all';
         let bulkRunning = false;
@@ -61,6 +64,8 @@
                 case 'current':
                     return 'Aktuell';
                 case 'error':
+                    return 'Update fehlgeschlagen';
+                case 'check_failed':
                     return 'Prüfung fehlgeschlagen';
                 case 'warning':
                     return 'Installiert · Synchronisation prüfen';
@@ -84,16 +89,45 @@
         };
 
         const updateAvailableCount = () => {
-            if (!availableCount) {
-                return;
+            const counts = {
+                available: 0,
+                check_failed: 0,
+                error: 0,
+            };
+
+            rows.forEach((row) => {
+                if (Object.prototype.hasOwnProperty.call(counts, row.dataset.updateState)) {
+                    counts[row.dataset.updateState] += 1;
+                }
+            });
+
+            if (availableCount) {
+                availableCount.textContent = String(counts.available);
+
+                const label = availableCount.nextElementSibling;
+                if (label) {
+                    label.textContent = counts.available === 1 ? 'bekanntes Update' : 'bekannte Updates';
+                }
             }
 
-            const count = rows.filter((row) => row.dataset.updateState === 'available').length;
-            availableCount.textContent = String(count);
+            if (checkFailureCount) {
+                checkFailureCount.textContent = String(counts.check_failed);
+                const label = checkFailureCount.nextElementSibling;
+                if (label) {
+                    label.textContent = counts.check_failed === 1 ? 'Prüfung fehlgeschlagen' : 'Prüfungen fehlgeschlagen';
+                }
+            }
 
-            const label = availableCount.nextElementSibling;
-            if (label) {
-                label.textContent = count === 1 ? 'bekanntes Update' : 'bekannte Updates';
+            if (installFailureCount) {
+                installFailureCount.textContent = String(counts.error);
+                const label = installFailureCount.nextElementSibling;
+                if (label) {
+                    label.textContent = counts.error === 1 ? 'Update fehlgeschlagen' : 'Updates fehlgeschlagen';
+                }
+            }
+
+            if (installFailureSummary) {
+                installFailureSummary.hidden = counts.error === 0;
             }
         };
 
@@ -166,7 +200,9 @@
             let visible = 0;
 
             rows.forEach((row) => {
-                const stateMatches = 'all' === filter || row.dataset.updateState === filter;
+                const stateMatches = 'all' === filter
+                    || row.dataset.updateState === filter
+                    || ('error' === filter && row.dataset.updateState === 'check_failed');
                 const searchMatches = '' === term || String(row.dataset.search || '').includes(term);
                 const show = stateMatches && searchMatches;
                 row.hidden = !show;
@@ -232,13 +268,13 @@
                     return 'current';
                 }
                 if (status === 'blocked' || status === 'error') {
-                    return 'error';
+                    return 'check_failed';
                 }
             } catch (error) {
-                return 'error';
+                return action === 'install' ? 'error' : 'check_failed';
             }
 
-            return 'error';
+            return action === 'install' ? 'error' : 'check_failed';
         };
 
         const refreshRowFromResponse = (row, html, responseUrl, action = 'check') => {
@@ -265,6 +301,19 @@
 
                     if (currentVersion && resultVersion) {
                         currentVersion.innerHTML = resultVersion.innerHTML;
+                    }
+
+                    // Bulk checks use AJAX. Update the saved plan and inline error
+                    // along with the state so the operator never sees stale details.
+                    const currentExtra = row.querySelector('[data-dm-update-extra]');
+                    const resultExtra = resultRow.querySelector('[data-dm-update-extra]');
+
+                    if (resultExtra && currentExtra) {
+                        currentExtra.replaceWith(resultExtra.cloneNode(true));
+                    } else if (resultExtra) {
+                        row.appendChild(resultExtra.cloneNode(true));
+                    } else if (currentExtra) {
+                        currentExtra.remove();
                     }
 
                     refreshed = true;
@@ -378,11 +427,11 @@
                     const html = await response.text();
                     refreshRowFromResponse(row, html, response.url, 'check');
 
-                    if (row.dataset.updateState === 'error') {
+                    if (row.dataset.updateState === 'error' || row.dataset.updateState === 'check_failed') {
                         errors += 1;
                     }
                 } catch (error) {
-                    setRowState(row, 'error');
+                    setRowState(row, 'check_failed');
                     errors += 1;
                 }
 
