@@ -31,6 +31,7 @@
         const previousResult = root.querySelector('.dm-updates-result');
         let filter = 'all';
         let bulkRunning = false;
+        let backupRunning = false;
 
         const clearTransientResultParams = () => {
             try {
@@ -682,9 +683,135 @@
             finishBulkRun();
         };
 
+
+        const createManualBackup = async (form, row) => {
+            const panel = form.closest('[data-dm-update-backups]');
+            const progressElement = panel?.querySelector('[data-dm-backup-progress]');
+            const button = form.querySelector('button[type="submit"]');
+            const originalLabel = button?.textContent || 'Jetzt sichern';
+            const installationId = String(row.dataset.installationId || '');
+
+            if (!panel || !progressElement || !button || !/^\d+$/.test(installationId)) {
+                // The normal POST form remains a fallback if the UI is incomplete.
+                form.submit();
+                return;
+            }
+
+            backupRunning = true;
+            panel.open = true;
+            panel.setAttribute('aria-busy', 'true');
+            button.disabled = true;
+            button.textContent = 'Sicherung läuft …';
+            progressElement.hidden = false;
+            progressElement.classList.add('is-running');
+            progressElement.classList.remove('is-error');
+            progressElement.textContent = 'Sicherung wird erstellt … Datenbank und Projektdateien werden gesichert. Bitte warten und die Seite nicht schließen.';
+            setBulkUiLocked(true);
+
+            // No remote percentage endpoint exists for backups. Indicate
+            // elapsed time instead of suggesting an invented percentage.
+            const start = Date.now();
+            const timer = window.setInterval(() => {
+                if (panel.isConnected) {
+                    const seconds = Math.floor((Date.now() - start) / 1000);
+                    progressElement.textContent = 'Sicherung läuft seit ' + seconds + ' Sekunden. Bitte warten und die Seite nicht schließen.';
+                }
+            }, 5000);
+
+            let confirmedResult = false;
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    credentials: 'same-origin',
+                    redirect: 'follow',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status);
+                }
+
+                const responseUrl = new URL(response.url, window.location.href);
+                const status = responseUrl.searchParams.get('dm_backup_create');
+                const resultId = responseUrl.searchParams.get('dm_backup_installation');
+
+                if (responseUrl.origin !== window.location.origin
+                    || !['success', 'error'].includes(status)
+                    || resultId !== installationId) {
+                    throw new Error('Das Sicherungsergebnis konnte nicht eindeutig bestätigt werden.');
+                }
+
+                confirmedResult = true;
+                const html = await response.text();
+                const parsed = new DOMParser().parseFromString(html, 'text/html');
+                const updatedPanel = parsed.querySelector(
+                    '[data-dm-update-row][data-installation-id="' + installationId + '"] [data-dm-update-backups]'
+                );
+
+                if (updatedPanel) {
+                    const replacement = updatedPanel.cloneNode(true);
+                    replacement.open = true;
+                    panel.replaceWith(replacement);
+                } else {
+                    // Result confirmed but refreshed markup not available.
+                    window.location.assign(response.url);
+                }
+            } catch (error) {
+                progressElement.hidden = false;
+                progressElement.classList.remove('is-running');
+                progressElement.classList.add('is-error');
+                progressElement.textContent = confirmedResult
+                    ? 'Die Sicherungsantwort liegt vor, aber die Anzeige konnte nicht aktualisiert werden. Bitte die Seite neu laden und die Sicherungshistorie prüfen.'
+                    : 'Der Sicherungsstatus ist unklar. Bitte die Seite neu laden und die Sicherungshistorie prüfen, bevor du eine weitere Sicherung startest.';
+                // If the outcome is unknown, do not permit a duplicate submission.
+                button.disabled = true;
+                button.textContent = 'Status prüfen';
+            } finally {
+                window.clearInterval(timer);
+                backupRunning = false;
+                panel.removeAttribute('aria-busy');
+                if (panel.isConnected && !progressElement.classList.contains('is-error')) {
+                    button.disabled = false;
+                    button.textContent = originalLabel;
+                }
+                setBulkUiLocked(false);
+                updateSelection();
+            }
+        };
+
+        root.addEventListener('submit', (event) => {
+            const form = event.target;
+            if (!form?.matches?.('.dm-backup-create-form')) {
+                if (backupRunning) {
+                    event.preventDefault();
+                }
+                return;
+            }
+
+            if (backupRunning || bulkRunning) {
+                event.preventDefault();
+                return;
+            }
+
+            const row = form.closest('[data-dm-update-row]');
+            if (!row) {
+                return; // Normal POST fallback.
+            }
+
+            event.preventDefault();
+            void createManualBackup(form, row);
+        });
+
         root.addEventListener('submit', (event) => {
             const form = event.target.closest?.('.dm-updates-action-form');
-            if (!form || bulkRunning) {
+            if (!form) {
+                return;
+            }
+
+            if (bulkRunning || backupRunning) {
+                event.preventDefault();
                 return;
             }
 
