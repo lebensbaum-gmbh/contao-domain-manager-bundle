@@ -127,6 +127,10 @@
     color: var(--dm-u-accent);
 }
 
+.dm-updates-summary-item[hidden] {
+    display: none !important;
+}
+
 .dm-updates-summary-item.has-warning {
     border-color: color-mix(in srgb, var(--dm-u-warning) 24%, var(--dm-u-border));
     background: var(--dm-u-warning-soft);
