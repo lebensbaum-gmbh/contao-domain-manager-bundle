@@ -73,12 +73,10 @@
                     <strong data-dm-check-failure-count>{{ check_failure_count }}</strong>
                     <span>{{ check_failure_count == 1 ? 'Prüfung fehlgeschlagen' : 'Prüfungen fehlgeschlagen' }}</span>
                 </div>
-                {% if error_count > 0 %}
-                    <div class="dm-updates-summary-item has-error">
-                        <strong data-dm-install-failure-count>{{ error_count }}</strong>
-                        <span>{{ error_count == 1 ? 'Update fehlgeschlagen' : 'Updates fehlgeschlagen' }}</span>
-                    </div>
-                {% endif %}
+                <div class="dm-updates-summary-item has-error" data-dm-install-failure-summary{% if error_count == 0 %} hidden{% endif %}>
+                    <strong data-dm-install-failure-count>{{ error_count }}</strong>
+                    <span>{{ error_count == 1 ? 'Update fehlgeschlagen' : 'Updates fehlgeschlagen' }}</span>
+                </div>
             </div>
         {% else %}
             <span class="dm-pro-badge">Pro</span>
