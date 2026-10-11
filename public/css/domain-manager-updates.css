@@ -1044,3 +1044,66 @@
 .dm-backup-acknowledge input {flex:0 0 auto;margin-top:2px;accent-color:var(--dm-u-error)}
 .dm-updates.is-running .dm-update-backups {display:none}
 @media(max-width:620px) {.dm-update-backup-item-main {display:grid;gap:4px}.dm-update-backup-status {margin-left:0}}
+
+
+/* The remote backup can take minutes. Show indeterminate progress, never a fake %. */
+.dm-backup-progress,
+.dm-backup-result {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 7px;
+    font-size: .82rem;
+    line-height: 1.45;
+}
+
+.dm-backup-progress[hidden],
+.dm-backup-result[hidden] {
+    display: none !important;
+}
+
+.dm-backup-progress.is-running {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--dm-u-border-light);
+    background: var(--dm-u-primary-soft);
+    color: var(--dm-u-text);
+}
+
+.dm-backup-progress.is-running::before {
+    content: '';
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    border: 2px solid color-mix(in srgb, var(--dm-u-primary) 22%, transparent);
+    border-top-color: var(--dm-u-primary);
+    border-radius: 50%;
+    animation: dm-backup-spin .9s linear infinite;
+}
+
+.dm-backup-progress.is-error,
+.dm-backup-result.is-error {
+    border: 1px solid color-mix(in srgb, var(--dm-u-error) 25%, var(--dm-u-border));
+    background: var(--dm-u-error-soft);
+    color: var(--dm-u-error);
+}
+
+.dm-backup-result.is-success {
+    border: 1px solid color-mix(in srgb, var(--dm-u-success) 25%, var(--dm-u-border));
+    background: var(--dm-u-success-soft);
+    color: var(--dm-u-success);
+}
+
+.dm-backup-button.is-create:disabled,
+.dm-update-backups[aria-busy="true"] .dm-backup-button {
+    cursor: wait;
+    opacity: .65;
+}
+
+@keyframes dm-backup-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dm-backup-progress.is-running::before { animation: none; }
+}
