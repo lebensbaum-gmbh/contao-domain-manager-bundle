@@ -9,7 +9,7 @@
 {% endadd %}
 
 {% add "domain_manager_updates_css" to stylesheets %}
-    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-updates.css') ~ '?v=maintend-3'} %}
+    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-updates.css') ~ '?v=maintend-4'} %}
         {{ block('stylesheet_component') }}
     {% endwith %}
 {% endadd %}
@@ -25,7 +25,7 @@
 {% endadd %}
 
 {% add "domain_manager_updates_js" to body %}
-    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-updates.js') ~ '?v=1.5.7' }}" defer></script>
+    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-updates.js') ~ '?v=1.5.8' }}" defer></script>
 {% endadd %}
 
 {% macro action(action, request_token) %}
@@ -69,10 +69,16 @@
                     <strong data-dm-available-count>{{ available_count }}</strong>
                     <span>{{ available_count == 1 ? 'Update verfügbar' : 'Updates verfügbar' }}</span>
                 </div>
-                <div class="dm-updates-summary-item{% if error_count > 0 %} has-error{% endif %}">
-                    <strong>{{ error_count }}</strong>
-                    <span>{{ error_count == 1 ? 'Fehler' : 'Fehler' }}</span>
+                <div class="dm-updates-summary-item{% if check_failure_count > 0 %} has-warning{% endif %}">
+                    <strong data-dm-check-failure-count>{{ check_failure_count }}</strong>
+                    <span>{{ check_failure_count == 1 ? 'Prüfung fehlgeschlagen' : 'Prüfungen fehlgeschlagen' }}</span>
                 </div>
+                {% if error_count > 0 %}
+                    <div class="dm-updates-summary-item has-error">
+                        <strong data-dm-install-failure-count>{{ error_count }}</strong>
+                        <span>{{ error_count == 1 ? 'Update fehlgeschlagen' : 'Updates fehlgeschlagen' }}</span>
+                    </div>
+                {% endif %}
             </div>
         {% else %}
             <span class="dm-pro-badge">Pro</span>
@@ -104,7 +110,7 @@
             <button type="button" data-dm-update-filter="available" {% if not pro_enabled %}disabled title="Nur in der Pro-Version verfügbar"{% endif %}>
                 Updates verfügbar{% if not pro_enabled %} <span class="dm-pro-inline">Pro</span>{% endif %}
             </button>
-            <button type="button" data-dm-update-filter="error">Fehler</button>
+            <button type="button" data-dm-update-filter="error">Prüfprobleme / Fehler</button>
         </div>
         <label class="dm-updates-search">
             <span>Installationen filtern</span>
@@ -219,19 +225,19 @@
                 {% if detail and (detail.error_heading or detail.operations|length > 0) %}
                     <div class="dm-update-extra" data-dm-update-extra>
                         {% if detail.error_heading %}
-                            <div class="dm-update-error-inline" role="status">
-                                <strong>{{ detail.error_heading }}</strong>
-                                <span>{{ detail.error_text|slice(0, 220) }}{% if detail.error_text|length > 220 %}…{% endif %}</span>
-                                {% if detail.has_backup %}
-                                    <small>Ein vor dem Update erstelltes Sicherheitsbackup ist vorhanden.</small>
-                                {% endif %}
-                                {% if detail.error_text|length > 220 %}
-                                    <details class="dm-update-error-full">
-                                        <summary>Vollständige Fehlermeldung</summary>
-                                        <p>{{ detail.error_text }}</p>
-                                    </details>
-                                {% endif %}
-                            </div>
+                            <details class="dm-update-error-inline{% if installation.update_state == 'error' %} is-installation-error{% endif %}">
+                                <summary>
+                                    <strong>{{ installation.update_state == 'error' ? 'Update fehlgeschlagen' : 'Letzte Update-Prüfung fehlgeschlagen' }}</strong>
+                                    <span class="dm-update-error-preview">{{ detail.error_text|slice(0, 95) }}{% if detail.error_text|length > 95 %}…{% endif %}</span>
+                                    <span class="dm-update-error-expand">Details anzeigen</span>
+                                </summary>
+                                <div class="dm-update-error-body">
+                                    <p>{{ detail.error_text }}</p>
+                                    {% if detail.has_backup %}
+                                        <p class="dm-update-backup-note">Ein vor dem Update erstelltes Sicherheitsbackup ist vorhanden.</p>
+                                    {% endif %}
+                                </div>
+                            </details>
                         {% endif %}
 
                         {% if detail.operations|length > 0 %}
