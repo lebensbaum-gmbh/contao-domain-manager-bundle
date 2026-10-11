@@ -1028,6 +1028,12 @@
 .dm-backup-button:hover {filter:brightness(.97)}
 .dm-update-backup-empty {margin:12px 0 0;color:var(--dm-u-muted);font-size:.82rem}
 .dm-update-backup-list {display:grid;gap:8px;margin-top:12px}
+.dm-backup-pages {display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;font-size:.78rem;color:var(--dm-u-muted)}
+.dm-backup-pages-controls {display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dm-backup-pages a {color:var(--dm-u-primary);font-weight:650;text-decoration:none}
+.dm-backup-pages a:hover {text-decoration:underline}
+.dm-backup-pages a:focus-visible {outline:2px solid var(--dm-u-primary);outline-offset:3px;border-radius:2px}
+
 .dm-update-backup-item {border:1px solid var(--dm-u-border-light);border-radius:8px;background:var(--dm-u-surface-soft);overflow:hidden}
 .dm-update-backup-item-main {display:flex;flex-wrap:wrap;align-items:center;gap:5px 14px;padding:10px 12px;font-size:.78rem}
 .dm-update-backup-item-main>strong {min-width:10rem;font-size:.83rem}
