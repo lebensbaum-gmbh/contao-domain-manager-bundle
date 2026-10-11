@@ -16,6 +16,9 @@ final class DomainManagerBackupWorkspaceTest extends TestCase
         self::assertStringContainsString('data-dm-update-backups', $template);
         self::assertStringContainsString('backup_workspace.create_url', $template);
         self::assertStringContainsString('backup.restore_url', $template);
+        self::assertStringContainsString('backup.delete_url', $template);
+        self::assertStringContainsString('backup_workspace.total_size', $template);
+        self::assertStringContainsString('name="confirm_delete" value="1" required', $template);
         self::assertStringContainsString('name="confirm_domain" required', $template);
         self::assertStringContainsString('name="acknowledge_restore" value="1" required', $template);
         self::assertStringContainsString('name="maintend_csrf"', $template);
@@ -34,8 +37,9 @@ final class DomainManagerBackupWorkspaceTest extends TestCase
         self::assertIsString($styles);
         self::assertStringContainsString('data-dm-backup-progress', $template);
         self::assertStringContainsString('data-dm-backup-result', $template);
-        self::assertStringContainsString("backup_workspace.backups|length == 1 ? 'Sicherung' : 'Sicherungen'", $template);
+        self::assertStringContainsString("backup_workspace.backup_count == 1 ? 'Sicherung' : 'Sicherungen'", $template);
         self::assertStringContainsString("button.textContent = 'Sicherung läuft …';", $script);
+        self::assertStringContainsString("button.textContent = 'Sicherung wird gelöscht …';", $script);
         self::assertStringContainsString("backupRunning = true;", $script);
         self::assertStringContainsString("button.disabled = true;", $script);
         self::assertStringContainsString("window.clearInterval(timer);", $script);
@@ -56,8 +60,10 @@ final class DomainManagerBackupWorkspaceTest extends TestCase
         $controller = $class->newInstanceWithoutConstructor();
         $method = new \ReflectionMethod($controller, 'backupResultMessage');
 
-        self::assertStringContainsString('nicht gestartet', $method->invoke($controller, '', 'confirmation_invalid'));
-        self::assertStringContainsString('möglicherweise unvollständig', $method->invoke($controller, '', 'error'));
-        self::assertStringContainsString('Sicherung erstellt', $method->invoke($controller, 'success', ''));
+        self::assertStringContainsString('nicht gestartet', $method->invoke($controller, '', 'confirmation_invalid', ''));
+        self::assertStringContainsString('Zielinstallation gelöscht', $method->invoke($controller, '', '', 'success'));
+        self::assertStringContainsString('nicht gelöscht', $method->invoke($controller, '', '', 'confirmation_invalid'));
+        self::assertStringContainsString('möglicherweise unvollständig', $method->invoke($controller, '', 'error', ''));
+        self::assertStringContainsString('Sicherung erstellt', $method->invoke($controller, 'success', '', ''));
     }
 }
