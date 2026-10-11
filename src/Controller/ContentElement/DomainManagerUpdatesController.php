@@ -78,6 +78,8 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
             $this->eventDispatcher->dispatch($frontendEvent);
             $actions = $frontendEvent->getActions();
             $frontendMetadata = $frontendEvent->getMetadata();
+            $updateDetails = $frontendMetadata['update_details'] ?? null;
+            $updateDetails = is_array($updateDetails) ? $updateDetails : null;
             $targetContaoVersion = trim((string) ($frontendMetadata['update_target_version'] ?? ''));
 
             if (1 !== preg_match('/\Av?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?\z/', $targetContaoVersion)) {
@@ -89,6 +91,15 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
             $proEnabled = $proEnabled || $hasCheckAction;
 
             $updateState = $hasInstallAction ? 'available' : ($hasCheckAction ? 'unknown' : 'locked');
+
+            // Persistent errors remain visible after navigating away or reloading.
+            // A historical check from a different Contao version must not cause a false alert.
+            if ($hasCheckAction && null !== $updateDetails
+                && true === ($updateDetails['relevant'] ?? false)
+                && '' !== (string) ($updateDetails['error_heading'] ?? '')
+            ) {
+                $updateState = 'error';
+            }
 
             if ($installation['id'] === $resultInstallationId && '' !== $checkStatus) {
                 if ('ready' === $checkStatus) {
@@ -120,6 +131,7 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
 
             $installation['frontend_actions'] = $actions;
             $installation['frontend_metadata'] = $frontendMetadata;
+            $installation['update_details'] = $updateDetails;
             $installation['target_contao_version'] = $targetContaoVersion;
             $installation['update_state'] = $updateState;
             $installation['update_state_label'] = $this->updateStateLabel($updateState);
@@ -188,7 +200,7 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
         return match ($state) {
             'available' => 'Update verfügbar',
             'current' => 'Aktuell',
-            'error' => 'Prüfung fehlgeschlagen',
+            'error' => 'Aktion fehlgeschlagen',
             'warning' => 'Installiert · Synchronisation prüfen',
             'locked' => 'Pro-Funktion',
             default => 'Noch nicht geprüft',
