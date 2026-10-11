@@ -18,6 +18,11 @@ final class DomainManagerBackupWorkspaceTest extends TestCase
         self::assertStringContainsString('backup.restore_url', $template);
         self::assertStringContainsString('backup.delete_url', $template);
         self::assertStringContainsString('backup_workspace.total_size', $template);
+        self::assertStringContainsString('backup_workspace.previous_url', $template);
+        self::assertStringContainsString('backup_workspace.next_url', $template);
+        self::assertStringContainsString('backup_workspace.page_first', $template);
+        self::assertStringContainsString('backup_workspace.page_last', $template);
+        self::assertStringContainsString('backup_workspace.is_selected', $template);
         self::assertStringContainsString('name="confirm_delete" value="1" required', $template);
         self::assertStringContainsString('name="confirm_domain" required', $template);
         self::assertStringContainsString('name="acknowledge_restore" value="1" required', $template);
