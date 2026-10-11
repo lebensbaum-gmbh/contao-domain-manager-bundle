@@ -267,6 +267,19 @@
                         currentVersion.innerHTML = resultVersion.innerHTML;
                     }
 
+                    // Bulk checks use AJAX. Update the saved plan and inline error
+                    // along with the state so the operator never sees stale details.
+                    const currentExtra = row.querySelector('[data-dm-update-extra]');
+                    const resultExtra = resultRow.querySelector('[data-dm-update-extra]');
+
+                    if (resultExtra && currentExtra) {
+                        currentExtra.replaceWith(resultExtra.cloneNode(true));
+                    } else if (resultExtra) {
+                        row.appendChild(resultExtra.cloneNode(true));
+                    } else if (currentExtra) {
+                        currentExtra.remove();
+                    }
+
                     refreshed = true;
                 }
             }
