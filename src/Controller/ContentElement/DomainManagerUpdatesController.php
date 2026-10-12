@@ -154,6 +154,14 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
         $template->set('check_status', $checkStatus);
         $template->set('install_status', $installStatus);
         $template->set('result_message', $this->resultMessage($checkStatus, $installStatus));
+        $backupCreateStatus = trim((string) $request->query->get('dm_backup_create', ''));
+        $backupRestoreStatus = trim((string) $request->query->get('dm_backup_restore', ''));
+        $backupDeleteStatus = trim((string) $request->query->get('dm_backup_delete', ''));
+        $template->set('backup_result_message', $this->backupResultMessage($backupCreateStatus, $backupRestoreStatus, $backupDeleteStatus));
+        $template->set('backup_result_error', in_array($backupCreateStatus, ['error'], true)
+            || in_array($backupRestoreStatus, ['error', 'confirmation_invalid'], true)
+            || in_array($backupDeleteStatus, ['error', 'confirmation_invalid'], true));
+        $template->set('backup_result_installation_id', $request->query->getInt('dm_backup_installation'));
         $page = $request->attributes->get('pageModel');
         $pageId = $page instanceof PageModel ? (int) $page->id : (is_numeric($page) ? (int) $page : 0);
         $template->set('workspace_navigation', $this->workspaceNavigation->build($pageId));
@@ -227,6 +235,34 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
         } catch (\Throwable) {
             return '';
         }
+    }
+
+    private function backupResultMessage(string $create, string $restore, string $delete): string
+    {
+        if ('' !== $delete) {
+            return match ($delete) {
+                'success' => 'Sicherung auf der Zielinstallation gelöscht und aus der Historie entfernt.',
+                'confirmation_invalid' => 'Sicherung nicht gelöscht: Die Löschbestätigung fehlt.',
+                'error' => 'Sicherung konnte nicht gelöscht werden. Die Dateien oder der Historieneintrag sind möglicherweise noch vorhanden.',
+                default => '',
+            };
+        }
+
+        if ('' !== $restore) {
+            return match ($restore) {
+                'success' => 'Wiederherstellung abgeschlossen. Die Installation wurde erneut synchronisiert.',
+                'success_sync_warning' => 'Wiederherstellung abgeschlossen. Die anschließende Synchronisation muss noch geprüft werden.',
+                'confirmation_invalid' => 'Wiederherstellung nicht gestartet: Domain-Bestätigung oder Sicherheitsbestätigung fehlt.',
+                'error' => 'Wiederherstellung nicht erfolgreich bestätigt. Der Zielzustand ist möglicherweise unvollständig. Bitte keine weitere Aktion starten und die Protokolle sowie den manuellen Notfallweg prüfen.',
+                default => '',
+            };
+        }
+
+        return match ($create) {
+            'success' => 'Sicherung erstellt und von der Zielinstallation bestätigt.',
+            'error' => 'Sicherung konnte nicht erfolgreich bestätigt werden. Bitte den Backup-Status der Installation prüfen.',
+            default => '',
+        };
     }
 
     private function resultMessage(string $checkStatus, string $installStatus): string

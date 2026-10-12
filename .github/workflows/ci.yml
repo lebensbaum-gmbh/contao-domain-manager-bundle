@@ -47,6 +47,9 @@ jobs:
       - name: Install dependencies
         run: composer update --prefer-dist --no-interaction --no-progress
 
+      - name: Validate JavaScript syntax
+        run: node --check public/js/domain-manager-updates.js
+
       - name: Lint PHP files
         run: find src contao tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
 

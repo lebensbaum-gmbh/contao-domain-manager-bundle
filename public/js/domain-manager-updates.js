@@ -31,6 +31,19 @@
         const previousResult = root.querySelector('.dm-updates-result');
         let filter = 'all';
         let bulkRunning = false;
+        let backupRunning = false;
+        let restoreRunning = false;
+
+        // Warn before a user closes the page while the remote restore is still active.
+        const warnDuringRestore = (event) => {
+            if (!restoreRunning) {
+                return;
+            }
+
+            event.preventDefault();
+            event.returnValue = '';
+        };
+        window.addEventListener('beforeunload', warnDuringRestore);
 
         const clearTransientResultParams = () => {
             try {
@@ -682,9 +695,344 @@
             finishBulkRun();
         };
 
+
+        const restoreBackup = async (form, row) => {
+            const panel = form.closest('[data-dm-update-backups]');
+            const progressElement = panel?.querySelector('[data-dm-backup-progress]');
+            const button = form.querySelector('button[type="submit"]');
+            const installationId = String(row.dataset.installationId || '');
+
+            if (!panel || !progressElement || !button || !/^\d+$/.test(installationId)) {
+                // If progressive enhancement is unavailable, preserve the native POST.
+                form.submit();
+                return;
+            }
+
+            // Capture the operator-confirmed domain and acknowledgement before
+            // disabling inputs. Browser constraint validation ran at submit time.
+            const payload = new FormData(form);
+            const originalLabel = button.textContent || 'Diese Sicherung wiederherstellen';
+            const domainInput = form.querySelector('input[name="confirm_domain"]');
+            const acknowledgeInput = form.querySelector('input[name="acknowledge_restore"]');
+            const start = Date.now();
+            const remoteStatusUrl = panel.dataset.dmRestoreProgressUrl || '';
+            let currentPhase = '';
+            let statusPolling = false;
+            let statusUnknown = false;
+
+            const pollRestore = async () => {
+                if (!restoreRunning || !remoteStatusUrl || statusPolling) {
+                    return;
+                }
+
+                statusPolling = true;
+                try {
+                    const response = await fetch(remoteStatusUrl, {
+                        credentials: 'same-origin',
+                        cache: 'no-store',
+                        headers: { 'Accept': 'application/json' },
+                    });
+                    if (!response.ok) {
+                        return; // Temporary unavailability during cache rebuild.
+                    }
+                    const progress = await response.json();
+                    if (['pending', 'running', 'success', 'error'].includes(progress.status)
+                        && typeof progress.message === 'string'
+                        && progress.message.trim() !== '') {
+                        currentPhase = progress.message.slice(0, 300);
+                        updateRestoreTime();
+                    }
+                } catch (error) {
+                    // Restore may rebuild the remote kernel; polling errors
+                    // are not proof of failure. Only the POST result is final.
+                } finally {
+                    statusPolling = false;
+                }
+            };
+
+            restoreRunning = true;
+            backupRunning = true;
+            panel.open = true;
+            panel.setAttribute('aria-busy', 'true');
+            button.disabled = true;
+            button.textContent = 'Wiederherstellung läuft …';
+            if (domainInput) {
+                domainInput.disabled = true;
+            }
+            if (acknowledgeInput) {
+                acknowledgeInput.disabled = true;
+            }
+
+            progressElement.hidden = false;
+            progressElement.classList.add('is-running', 'is-restore');
+            progressElement.classList.remove('is-error');
+            const updateRestoreTime = () => {
+                const seconds = Math.floor((Date.now() - start) / 1000);
+                const phase = currentPhase ? currentPhase + ' ' : '';
+                progressElement.textContent = phase
+                    + 'Wiederherstellung läuft seit ' + seconds + ' Sekunden. '
+                    + 'Keine Updates, Sicherungen oder andere Aktionen starten. Bitte die Seite geöffnet lassen.';
+            };
+            updateRestoreTime();
+            setBulkUiLocked(true);
+
+            // The affected backup can be far down the history. Make the warning visible.
+            progressElement.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            const timer = window.setInterval(updateRestoreTime, 5000);
+            const statusTimer = window.setInterval(() => { void pollRestore(); }, 3000);
+
+            let confirmedResult = false;
+            let navigating = false;
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: payload,
+                    credentials: 'same-origin',
+                    redirect: 'follow',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status);
+                }
+
+                const resultUrl = new URL(response.url, window.location.href);
+                const status = resultUrl.searchParams.get('dm_backup_restore');
+                const resultId = resultUrl.searchParams.get('dm_backup_installation');
+
+                if (resultUrl.origin !== window.location.origin
+                    || !['success', 'success_sync_warning', 'error', 'confirmation_invalid'].includes(status)
+                    || resultId !== installationId) {
+                    throw new Error('Das Wiederherstellungsergebnis konnte nicht eindeutig zugeordnet werden.');
+                }
+
+                // These are *server* statuses. Never claim restore success based
+                // on the fetch status or an elapsed-time estimate alone.
+                confirmedResult = true;
+                progressElement.textContent = 'Die Zielinstallation hat geantwortet. Ergebnis wird angezeigt …';
+
+                // A restore can change installed versions and row metadata.
+                // Navigate to the server-rendered result rather than keeping stale UI.
+                restoreRunning = false;
+                navigating = true;
+                window.location.assign(resultUrl.href);
+            } catch (error) {
+                progressElement.hidden = false;
+                progressElement.classList.remove('is-running');
+                progressElement.classList.add('is-error');
+                progressElement.textContent = confirmedResult
+                    ? 'Die Wiederherstellung wurde vom Server beantwortet, aber die Ergebnisansicht konnte nicht geöffnet werden. Bitte den Zustand der Installation prüfen.'
+                    : 'Der Wiederherstellungsstatus ist unklar. Die Zielinstallation könnte teilweise verändert sein. Bitte keine weitere Sicherung, Wiederherstellung oder Aktualisierung starten, bevor Website, Sicherungsverlauf und Serverprotokolle geprüft wurden.';
+                statusUnknown = true;
+                // Never let a lost response trigger an accidental second restore.
+                button.disabled = true;
+                button.textContent = 'Status prüfen';
+            } finally {
+                window.clearInterval(timer);
+                window.clearInterval(statusTimer);
+                restoreRunning = statusUnknown;
+                backupRunning = statusUnknown;
+                if (!statusUnknown) {
+                    panel.removeAttribute('aria-busy');
+                }
+
+                if (!navigating && !statusUnknown) {
+                    if (!progressElement.classList.contains('is-error')) {
+                        button.disabled = false;
+                        button.textContent = originalLabel;
+                    }
+                    setBulkUiLocked(false);
+                    updateSelection();
+                }
+            }
+        };
+
+        const createManualBackup = async (form, row) => {
+            const panel = form.closest('[data-dm-update-backups]');
+            const progressElement = panel?.querySelector('[data-dm-backup-progress]');
+            const button = form.querySelector('button[type="submit"]');
+            const originalLabel = button?.textContent || 'Jetzt sichern';
+            const installationId = String(row.dataset.installationId || '');
+
+            if (!panel || !progressElement || !button || !/^\d+$/.test(installationId)) {
+                // The normal POST form remains a fallback if the UI is incomplete.
+                form.submit();
+                return;
+            }
+
+            backupRunning = true;
+            panel.open = true;
+            panel.setAttribute('aria-busy', 'true');
+            button.disabled = true;
+            button.textContent = 'Sicherung läuft …';
+            progressElement.hidden = false;
+            progressElement.classList.add('is-running');
+            progressElement.classList.remove('is-error');
+            progressElement.textContent = 'Sicherung wird erstellt … Datenbank und Projektdateien werden gesichert. Bitte warten und die Seite nicht schließen.';
+            setBulkUiLocked(true);
+
+            // No remote percentage endpoint exists for backups. Indicate
+            // elapsed time instead of suggesting an invented percentage.
+            const start = Date.now();
+            const timer = window.setInterval(() => {
+                if (panel.isConnected) {
+                    const seconds = Math.floor((Date.now() - start) / 1000);
+                    progressElement.textContent = 'Sicherung läuft seit ' + seconds + ' Sekunden. Bitte warten und die Seite nicht schließen.';
+                }
+            }, 5000);
+
+            let confirmedResult = false;
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    credentials: 'same-origin',
+                    redirect: 'follow',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status);
+                }
+
+                const responseUrl = new URL(response.url, window.location.href);
+                const status = responseUrl.searchParams.get('dm_backup_create');
+                const resultId = responseUrl.searchParams.get('dm_backup_installation');
+
+                if (responseUrl.origin !== window.location.origin
+                    || !['success', 'error'].includes(status)
+                    || resultId !== installationId) {
+                    throw new Error('Das Sicherungsergebnis konnte nicht eindeutig bestätigt werden.');
+                }
+
+                confirmedResult = true;
+                const html = await response.text();
+                const parsed = new DOMParser().parseFromString(html, 'text/html');
+                const updatedPanel = parsed.querySelector(
+                    '[data-dm-update-row][data-installation-id="' + installationId + '"] [data-dm-update-backups]'
+                );
+
+                if (updatedPanel) {
+                    const replacement = updatedPanel.cloneNode(true);
+                    replacement.open = true;
+                    panel.replaceWith(replacement);
+                } else {
+                    // Result confirmed but refreshed markup not available.
+                    window.location.assign(response.url);
+                }
+            } catch (error) {
+                progressElement.hidden = false;
+                progressElement.classList.remove('is-running');
+                progressElement.classList.add('is-error');
+                progressElement.textContent = confirmedResult
+                    ? 'Die Sicherungsantwort liegt vor, aber die Anzeige konnte nicht aktualisiert werden. Bitte die Seite neu laden und die Sicherungshistorie prüfen.'
+                    : 'Der Sicherungsstatus ist unklar. Bitte die Seite neu laden und die Sicherungshistorie prüfen, bevor du eine weitere Sicherung startest.';
+                // If the outcome is unknown, do not permit a duplicate submission.
+                button.disabled = true;
+                button.textContent = 'Status prüfen';
+            } finally {
+                window.clearInterval(timer);
+                backupRunning = false;
+                panel.removeAttribute('aria-busy');
+                if (panel.isConnected && !progressElement.classList.contains('is-error')) {
+                    button.disabled = false;
+                    button.textContent = originalLabel;
+                }
+                setBulkUiLocked(false);
+                updateSelection();
+            }
+        };
+
+        root.addEventListener('submit', (event) => {
+            const form = event.target;
+            if (!form?.matches?.('.dm-backup-create-form')) {
+                if (backupRunning) {
+                    event.preventDefault();
+                }
+                return;
+            }
+
+            if (backupRunning || bulkRunning) {
+                event.preventDefault();
+                return;
+            }
+
+            const row = form.closest('[data-dm-update-row]');
+            if (!row) {
+                return; // Normal POST fallback.
+            }
+
+            event.preventDefault();
+            void createManualBackup(form, row);
+        });
+
+        root.addEventListener('submit', (event) => {
+            const form = event.target;
+            if (!form?.matches?.('.dm-backup-restore-form')) {
+                return;
+            }
+
+            if (backupRunning || bulkRunning) {
+                event.preventDefault();
+                return;
+            }
+
+            const row = form.closest('[data-dm-update-row]');
+            if (!row) {
+                return; // Native POST fallback.
+            }
+
+            event.preventDefault();
+            void restoreBackup(form, row);
+        });
+
+        // The delete request uses a standard POST, but must still show immediate feedback.
+        root.addEventListener('submit', (event) => {
+            const form = event.target;
+            if (!form?.matches?.('.dm-backup-delete-form')) {
+                return;
+            }
+
+            if (backupRunning || bulkRunning) {
+                event.preventDefault();
+                return;
+            }
+
+            backupRunning = true;
+            const button = form.querySelector('button[type="submit"]');
+            const panel = form.closest('[data-dm-update-backups]');
+            const progress = panel?.querySelector('[data-dm-backup-progress]');
+
+            if (button) {
+                button.disabled = true;
+                button.textContent = 'Sicherung wird gelöscht …';
+            }
+
+            if (panel) {
+                panel.open = true;
+                panel.setAttribute('aria-busy', 'true');
+            }
+
+            if (progress) {
+                progress.hidden = false;
+                progress.classList.remove('is-error');
+                progress.classList.add('is-running');
+                progress.textContent = 'Sicherung wird auf der Zielinstallation gelöscht. Bitte warten …';
+            }
+
+            setBulkUiLocked(true);
+        });
+
         root.addEventListener('submit', (event) => {
             const form = event.target.closest?.('.dm-updates-action-form');
-            if (!form || bulkRunning) {
+            if (!form) {
+                return;
+            }
+
+            if (bulkRunning || backupRunning) {
+                event.preventDefault();
                 return;
             }
 
