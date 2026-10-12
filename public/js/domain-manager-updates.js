@@ -32,6 +32,18 @@
         let filter = 'all';
         let bulkRunning = false;
         let backupRunning = false;
+        let restoreRunning = false;
+
+        // Warn before a user closes the page while the remote restore is still active.
+        const warnDuringRestore = (event) => {
+            if (!restoreRunning) {
+                return;
+            }
+
+            event.preventDefault();
+            event.returnValue = '';
+        };
+        window.addEventListener('beforeunload', warnDuringRestore);
 
         const clearTransientResultParams = () => {
             try {
@@ -684,6 +696,118 @@
         };
 
 
+        const restoreBackup = async (form, row) => {
+            const panel = form.closest('[data-dm-update-backups]');
+            const progressElement = panel?.querySelector('[data-dm-backup-progress]');
+            const button = form.querySelector('button[type="submit"]');
+            const installationId = String(row.dataset.installationId || '');
+
+            if (!panel || !progressElement || !button || !/^\d+$/.test(installationId)) {
+                // If progressive enhancement is unavailable, preserve the native POST.
+                form.submit();
+                return;
+            }
+
+            // Capture the operator-confirmed domain and acknowledgement before
+            // disabling inputs. Browser constraint validation ran at submit time.
+            const payload = new FormData(form);
+            const originalLabel = button.textContent || 'Diese Sicherung wiederherstellen';
+            const domainInput = form.querySelector('input[name="confirm_domain"]');
+            const acknowledgeInput = form.querySelector('input[name="acknowledge_restore"]');
+            const start = Date.now();
+
+            restoreRunning = true;
+            backupRunning = true;
+            panel.open = true;
+            panel.setAttribute('aria-busy', 'true');
+            button.disabled = true;
+            button.textContent = 'Wiederherstellung läuft …';
+            if (domainInput) {
+                domainInput.disabled = true;
+            }
+            if (acknowledgeInput) {
+                acknowledgeInput.disabled = true;
+            }
+
+            progressElement.hidden = false;
+            progressElement.classList.add('is-running', 'is-restore');
+            progressElement.classList.remove('is-error');
+            const updateRestoreTime = () => {
+                const seconds = Math.floor((Date.now() - start) / 1000);
+                progressElement.textContent = seconds < 5
+                    ? 'Wiederherstellung wurde gestartet. Datenbank, Projektdateien und Composer-Pakete werden verarbeitet. Keine weiteren Aktionen ausführen und die Seite nicht schließen.'
+                    : 'Wiederherstellung läuft seit ' + seconds + ' Sekunden. Keine Updates, Sicherungen oder andere Aktionen starten. Bitte die Seite geöffnet lassen.';
+            };
+            updateRestoreTime();
+            setBulkUiLocked(true);
+
+            // The affected backup can be far down the history. Make the warning visible.
+            progressElement.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            const timer = window.setInterval(updateRestoreTime, 5000);
+
+            let confirmedResult = false;
+            let navigating = false;
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: payload,
+                    credentials: 'same-origin',
+                    redirect: 'follow',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status);
+                }
+
+                const resultUrl = new URL(response.url, window.location.href);
+                const status = resultUrl.searchParams.get('dm_backup_restore');
+                const resultId = resultUrl.searchParams.get('dm_backup_installation');
+
+                if (resultUrl.origin !== window.location.origin
+                    || !['success', 'success_sync_warning', 'error', 'confirmation_invalid'].includes(status)
+                    || resultId !== installationId) {
+                    throw new Error('Das Wiederherstellungsergebnis konnte nicht eindeutig zugeordnet werden.');
+                }
+
+                // These are *server* statuses. Never claim restore success based
+                // on the fetch status or an elapsed-time estimate alone.
+                confirmedResult = true;
+                progressElement.textContent = 'Die Zielinstallation hat geantwortet. Ergebnis wird angezeigt …';
+
+                // A restore can change installed versions and row metadata.
+                // Navigate to the server-rendered result rather than keeping stale UI.
+                restoreRunning = false;
+                navigating = true;
+                window.location.assign(resultUrl.href);
+            } catch (error) {
+                progressElement.hidden = false;
+                progressElement.classList.remove('is-running');
+                progressElement.classList.add('is-error');
+                progressElement.textContent = confirmedResult
+                    ? 'Die Wiederherstellung wurde vom Server beantwortet, aber die Ergebnisansicht konnte nicht geöffnet werden. Bitte den Zustand der Installation prüfen.'
+                    : 'Der Wiederherstellungsstatus ist unklar. Die Zielinstallation könnte teilweise verändert sein. Bitte keine weitere Sicherung, Wiederherstellung oder Aktualisierung starten, bevor Website, Sicherungsverlauf und Serverprotokolle geprüft wurden.';
+                // Never let a lost response trigger an accidental second restore.
+                button.disabled = true;
+                button.textContent = 'Status prüfen';
+            } finally {
+                window.clearInterval(timer);
+                restoreRunning = false;
+                backupRunning = false;
+                panel.removeAttribute('aria-busy');
+
+                if (!navigating) {
+                    if (!progressElement.classList.contains('is-error')) {
+                        button.disabled = false;
+                        button.textContent = originalLabel;
+                    }
+                    setBulkUiLocked(false);
+                    updateSelection();
+                }
+            }
+        };
+
         const createManualBackup = async (form, row) => {
             const panel = form.closest('[data-dm-update-backups]');
             const progressElement = panel?.querySelector('[data-dm-backup-progress]');
@@ -802,6 +926,26 @@
 
             event.preventDefault();
             void createManualBackup(form, row);
+        });
+
+        root.addEventListener('submit', (event) => {
+            const form = event.target;
+            if (!form?.matches?.('.dm-backup-restore-form')) {
+                return;
+            }
+
+            if (backupRunning || bulkRunning) {
+                event.preventDefault();
+                return;
+            }
+
+            const row = form.closest('[data-dm-update-row]');
+            if (!row) {
+                return; // Native POST fallback.
+            }
+
+            event.preventDefault();
+            void restoreBackup(form, row);
         });
 
         // The delete request uses a standard POST, but must still show immediate feedback.

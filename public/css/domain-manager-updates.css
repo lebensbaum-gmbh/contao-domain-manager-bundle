@@ -1082,6 +1082,21 @@
     color: var(--dm-u-text);
 }
 
+.dm-backup-progress.is-running.is-restore {
+    padding: 14px 16px;
+    border: 1px solid color-mix(in srgb, var(--dm-u-warning) 50%, var(--dm-u-border));
+    background: var(--dm-u-warning-soft);
+    color: var(--dm-u-text);
+    font-size: .88rem;
+    font-weight: 650;
+}
+
+.dm-backup-progress.is-running.is-restore::before {
+    width: 19px;
+    height: 19px;
+    border-top-color: var(--dm-u-warning);
+}
+
 .dm-backup-progress.is-running::before {
     content: '';
     flex: 0 0 auto;
