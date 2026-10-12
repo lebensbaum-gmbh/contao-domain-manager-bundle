@@ -9,7 +9,7 @@
 {% endadd %}
 
 {% add "domain_manager_updates_css" to stylesheets %}
-    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-updates.css') ~ '?v=maintend-7'} %}
+    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-updates.css') ~ '?v=maintend-8'} %}
         {{ block('stylesheet_component') }}
     {% endwith %}
 {% endadd %}
@@ -25,7 +25,7 @@
 {% endadd %}
 
 {% add "domain_manager_updates_js" to body %}
-    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-updates.js') ~ '?v=1.5.11' }}" defer></script>
+    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-updates.js') ~ '?v=1.5.12' }}" defer></script>
 {% endadd %}
 
 {% macro action(action, request_token) %}
@@ -295,7 +295,7 @@
                         {% endif %}
 
                         {% if backup_workspace %}
-                            <details id="dm-backups-{{ installation.id }}" class="dm-update-backups" data-dm-update-backups{% if installation.id == backup_result_installation_id or backup_workspace.is_selected %} open{% endif %}>
+                            <details id="dm-backups-{{ installation.id }}" class="dm-update-backups" data-dm-update-backups data-dm-restore-progress-url="{{ backup_workspace.restore_progress_url|default('')|e('html_attr') }}"{% if installation.id == backup_result_installation_id or backup_workspace.is_selected %} open{% endif %}>
                                 <summary>
                                     <span><strong>Sicherungen</strong> <span class="dm-update-backups-count">{{ backup_workspace.backup_count }} {{ backup_workspace.backup_count == 1 ? 'Sicherung' : 'Sicherungen' }}</span></span>
                                     <span class="dm-update-backups-archive-size">{% if backup_workspace.total_size >= 1073741824 %}{{ (backup_workspace.total_size / 1073741824)|number_format(2, ',', '.') }} GB{% else %}{{ (backup_workspace.total_size / 1048576)|number_format(1, ',', '.') }} MB{% endif %} Archive</span>
