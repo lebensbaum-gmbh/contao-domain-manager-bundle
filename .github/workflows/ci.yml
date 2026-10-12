@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - feature/restore-progress-feedback
   pull_request:
     branches:
       - main
