@@ -42,6 +42,16 @@ final class DomainManagerBackupWorkspaceTest extends TestCase
         self::assertIsString($styles);
         self::assertStringContainsString('data-dm-backup-progress', $template);
         self::assertStringContainsString('data-dm-backup-result', $template);
+        self::assertStringContainsString('dm-backup-restore-form', $template);
+        self::assertStringContainsString('void restoreBackup(form, row)', $script);
+        self::assertStringContainsString("responseUrl.searchParams.get('dm_backup_create')", $script);
+        self::assertStringContainsString("resultUrl.searchParams.get('dm_backup_restore')", $script);
+        self::assertStringContainsString("['success', 'success_sync_warning', 'error', 'confirmation_invalid']", $script);
+        self::assertStringContainsString("event.returnValue = '';", $script);
+        self::assertStringContainsString('Der Wiederherstellungsstatus ist unklar.', $script);
+        self::assertStringContainsString('Keine Updates, Sicherungen oder andere Aktionen starten', $script);
+        self::assertStringContainsString('window.location.assign(resultUrl.href)', $script);
+        self::assertStringContainsString('.dm-backup-progress.is-running.is-restore', $styles);
         self::assertStringContainsString("backup_workspace.backup_count == 1 ? 'Sicherung' : 'Sicherungen'", $template);
         self::assertStringContainsString("button.textContent = 'Sicherung läuft …';", $script);
         self::assertStringContainsString("button.textContent = 'Sicherung wird gelöscht …';", $script);
