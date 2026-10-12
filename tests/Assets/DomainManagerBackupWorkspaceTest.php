@@ -44,6 +44,10 @@ final class DomainManagerBackupWorkspaceTest extends TestCase
         self::assertStringContainsString('data-dm-backup-result', $template);
         self::assertStringContainsString('dm-backup-restore-form', $template);
         self::assertStringContainsString('void restoreBackup(form, row)', $script);
+        self::assertStringContainsString('data-dm-restore-progress-url', $template);
+        self::assertStringContainsString('remoteStatusUrl', $script);
+        self::assertStringContainsString('pollRestore()', $script);
+        self::assertStringContainsString('restoreRunning = statusUnknown', $script);
         self::assertStringContainsString("responseUrl.searchParams.get('dm_backup_create')", $script);
         self::assertStringContainsString("resultUrl.searchParams.get('dm_backup_restore')", $script);
         self::assertStringContainsString("['success', 'success_sync_warning', 'error', 'confirmation_invalid']", $script);
