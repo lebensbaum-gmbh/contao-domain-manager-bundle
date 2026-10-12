@@ -715,6 +715,40 @@
             const domainInput = form.querySelector('input[name="confirm_domain"]');
             const acknowledgeInput = form.querySelector('input[name="acknowledge_restore"]');
             const start = Date.now();
+            const remoteStatusUrl = panel.dataset.dmRestoreProgressUrl || '';
+            let currentPhase = '';
+            let statusPolling = false;
+            let statusUnknown = false;
+
+            const pollRestore = async () => {
+                if (!restoreRunning || !remoteStatusUrl || statusPolling) {
+                    return;
+                }
+
+                statusPolling = true;
+                try {
+                    const response = await fetch(remoteStatusUrl, {
+                        credentials: 'same-origin',
+                        cache: 'no-store',
+                        headers: { 'Accept': 'application/json' },
+                    });
+                    if (!response.ok) {
+                        return; // Temporary unavailability during cache rebuild.
+                    }
+                    const progress = await response.json();
+                    if (['pending', 'running', 'success', 'error'].includes(progress.status)
+                        && typeof progress.message === 'string'
+                        && progress.message.trim() !== '') {
+                        currentPhase = progress.message.slice(0, 300);
+                        updateRestoreTime();
+                    }
+                } catch (error) {
+                    // Restore may rebuild the remote kernel; polling errors
+                    // are not proof of failure. Only the POST result is final.
+                } finally {
+                    statusPolling = false;
+                }
+            };
 
             restoreRunning = true;
             backupRunning = true;
@@ -734,9 +768,10 @@
             progressElement.classList.remove('is-error');
             const updateRestoreTime = () => {
                 const seconds = Math.floor((Date.now() - start) / 1000);
-                progressElement.textContent = seconds < 5
-                    ? 'Wiederherstellung wurde gestartet. Datenbank, Projektdateien und Composer-Pakete werden verarbeitet. Keine weiteren Aktionen ausführen und die Seite nicht schließen.'
-                    : 'Wiederherstellung läuft seit ' + seconds + ' Sekunden. Keine Updates, Sicherungen oder andere Aktionen starten. Bitte die Seite geöffnet lassen.';
+                const phase = currentPhase ? currentPhase + ' ' : '';
+                progressElement.textContent = phase
+                    + 'Wiederherstellung läuft seit ' + seconds + ' Sekunden. '
+                    + 'Keine Updates, Sicherungen oder andere Aktionen starten. Bitte die Seite geöffnet lassen.';
             };
             updateRestoreTime();
             setBulkUiLocked(true);
@@ -744,6 +779,7 @@
             // The affected backup can be far down the history. Make the warning visible.
             progressElement.scrollIntoView({ block: 'center', behavior: 'smooth' });
             const timer = window.setInterval(updateRestoreTime, 5000);
+            const statusTimer = window.setInterval(() => { void pollRestore(); }, 3000);
 
             let confirmedResult = false;
             let navigating = false;
@@ -788,16 +824,20 @@
                 progressElement.textContent = confirmedResult
                     ? 'Die Wiederherstellung wurde vom Server beantwortet, aber die Ergebnisansicht konnte nicht geöffnet werden. Bitte den Zustand der Installation prüfen.'
                     : 'Der Wiederherstellungsstatus ist unklar. Die Zielinstallation könnte teilweise verändert sein. Bitte keine weitere Sicherung, Wiederherstellung oder Aktualisierung starten, bevor Website, Sicherungsverlauf und Serverprotokolle geprüft wurden.';
+                statusUnknown = true;
                 // Never let a lost response trigger an accidental second restore.
                 button.disabled = true;
                 button.textContent = 'Status prüfen';
             } finally {
                 window.clearInterval(timer);
-                restoreRunning = false;
-                backupRunning = false;
-                panel.removeAttribute('aria-busy');
+                window.clearInterval(statusTimer);
+                restoreRunning = statusUnknown;
+                backupRunning = statusUnknown;
+                if (!statusUnknown) {
+                    panel.removeAttribute('aria-busy');
+                }
 
-                if (!navigating) {
+                if (!navigating && !statusUnknown) {
                     if (!progressElement.classList.contains('is-error')) {
                         button.disabled = false;
                         button.textContent = originalLabel;
