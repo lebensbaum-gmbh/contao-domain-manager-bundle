@@ -29,3 +29,5 @@ Der UI-Umbau ergänzt keine neue Erkennung von Sicherheitslücken; die vorhanden
 ## Abnahme
 
 Die Browser-Abnahme verwendet die tatsächlichen Vorlagen für Domainübersicht, Filter und Updates mit 80 Beispielinstallationen in Free und Pro. Geprüft werden initial geschlossene Gruppen, Thumbnails, Suche über den gesamten Bestand, Auswahl über Ansichtswechsel hinweg, klickbare Free-Hinweise ohne Pro-Aktionsformulare sowie die Darstellung bei 1280, 736 und 375 Pixeln. Ein zusätzlicher Fall prüft den per Tastatur erreichbaren Berechtigungshinweis bei installiertem Pro ohne Bedienrechte. PHP-Tests prüfen die Free-/Pro-Metadaten, sichere Abo-URLs, Zähler bei überlappenden Zuständen und die Grenze von vier zu fünf tatsächlich veröffentlichten Releases.
+
+Der Browser-Test führt außerdem den bestehenden Sammelprüfungsablauf nach dem Gruppieren aus. Simulierte Antworten prüfen, dass alle ausgewählten Installationen genau einmal verarbeitet werden, die Bedienung während des Laufs gesperrt ist und die Auswahl danach erhalten bleibt. Dieser Test startet keine Aktionen auf verwalteten Installationen.

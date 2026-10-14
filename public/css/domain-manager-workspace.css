@@ -87,7 +87,8 @@
  .dm-workspace-metrics { gap:7px; }
  .dm-workspace-metrics button { flex-direction:column; align-items:flex-start; padding:10px; gap:4px; }
  .dm-workspace-metrics strong { font-size:24px; }
- .dm-workspace-metrics span { font-size:12px; }
+ .dm-workspace-metrics span { font-size:11px; }
+ .dm-workspace-metrics small { font-size:10px; }
  .dm-workspace[data-dm-workspace-view="tiles"] .domain-manager-list,.dm-workspace[data-dm-workspace-view="tiles"] .dm-updates-list { grid-template-columns:1fr; }
  .dm-workspace-group>summary { display:flex; flex-wrap:wrap; gap:10px; }
  .dm-workspace-group-name { flex:1 1 150px; }
