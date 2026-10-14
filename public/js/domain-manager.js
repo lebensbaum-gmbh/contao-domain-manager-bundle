@@ -300,7 +300,7 @@
                 overview.appendChild(empty);
             }
             empty.hidden = visibleDomains > 0;
-            overview.dispatchEvent(new CustomEvent('dm:workspace-filtered'));
+            overview.dispatchEvent(new CustomEvent('dm:workspace-filtered', { detail: { searchActive: Boolean(term) } }));
         };
 
         filter.addEventListener('input', apply);

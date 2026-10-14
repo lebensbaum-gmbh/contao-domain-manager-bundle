@@ -160,7 +160,12 @@
         previous.addEventListener('click', () => { if (page > 0 && root.dataset.dmWorkspaceBusy !== '1') { page--; apply(); } });
         next.addEventListener('click', () => { if (root.dataset.dmWorkspaceBusy !== '1') { page++; apply(); } });
         size.addEventListener('change', () => { if (root.dataset.dmWorkspaceBusy !== '1') { pageSize = Number(size.value); page = 0; apply(); } });
-        root.addEventListener('dm:workspace-filtered', () => { page = 0; apply(); });
+        root.addEventListener('dm:workspace-filtered', event => {
+            if (!updates && event.detail?.searchActive) {
+                scope = 'all'; root.dataset.dmWorkspaceScope = 'all';
+            }
+            page = 0; apply();
+        });
         root.addEventListener('click', event => {
             const target = event.target instanceof Element ? event.target.closest('[data-dm-pro-hint]') : null;
             if (!target) return;

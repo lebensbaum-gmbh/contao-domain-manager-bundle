@@ -19,6 +19,8 @@ $clean = static function (string $source): string {
 };
 $loader = new ArrayLoader([
     'updates.html.twig' => $clean(file_get_contents($root.'/contao/templates/content_element/domain_manager_updates.html.twig')),
+    'overview.html.twig' => $clean(file_get_contents($root.'/contao/templates/content_element/domain_manager_overview.html.twig')),
+    'filter.html.twig' => $clean(file_get_contents($root.'/contao/templates/content_element/domain_manager_filter.html.twig')),
     '@Contao/components/domain_manager_workspace_controls.html.twig' => $clean(file_get_contents($root.'/contao/templates/components/domain_manager_workspace_controls.html.twig')),
     '@Contao/components/domain_manager_workspace_navigation.html.twig' => '',
 ]);
@@ -32,7 +34,7 @@ $scripts = '';
 foreach (['domain-manager-updates.js', 'domain-manager-workspace.js'] as $file) {
     $scripts .= '<script>'.file_get_contents($root.'/public/js/'.$file).'</script>';
 }
-foreach ([false, true] as $pro) {
+foreach (['free' => [false, false], 'pro' => [true, true], 'pro-readonly' => [true, false]] as $variant => [$proAvailable, $pro]) {
     $rows = [];
     for ($id = 1; $id <= 80; ++$id) {
         $pid = ($id - 1) % 60 + 1;
@@ -55,13 +57,58 @@ foreach ([false, true] as $pro) {
         ];
     }
     $presentation = new WorkspacePresentation();
+    $workspace = $presentation->features(['pro_available' => $proAvailable, 'pro_authorized' => $pro]);
     $html = $twig->render('updates.html.twig', [
-        'installations' => $rows, 'pro_enabled' => $pro, 'workspace' => $presentation->features(['pro_available' => $pro, 'pro_authorized' => $pro]),
+        'installations' => $rows, 'pro_enabled' => $pro, 'workspace' => $workspace,
         'workspace_counts' => $presentation->summarize($rows), 'workspace_groups' => 60,
         'check_failure_count' => $pro ? 1 : 0, 'error_count' => $pro ? 1 : 0,
         'result_installation_id' => 0, 'result_message' => '', 'backup_result_message' => '',
         'backup_result_installation_id' => 0, 'backup_result_error' => false, 'install_status' => '', 'check_status' => '',
         'contao' => ['request_token' => 'fixture'],
     ]);
-    file_put_contents($output.'/'.($pro ? 'pro' : 'free').'.html', '<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;padding:20px;font-family:Arial,sans-serif;background:#f4f7f8}*{box-sizing:border-box}'.$styles.'</style></head><body>'.$html.$scripts.'</body></html>');
+    file_put_contents($output.'/'.$variant.'.html', '<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;padding:20px;font-family:Arial,sans-serif;background:#f4f7f8}*{box-sizing:border-box}'.$styles.'</style></head><body>'.$html.$scripts.'</body></html>');
+
+    $domains = [];
+    $overviewRows = [];
+    foreach ($rows as $installation) {
+        $problem = in_array($installation['update_state'], ['error', 'check_failed'], true);
+        $status = $problem || $installation['update_release_gap'] >= 5 ? 'error' : ($installation['update_state'] === 'available' ? 'warning' : 'ok');
+        $installation += [
+            'php_version' => '8.5', 'frontend_url' => 'https://'.$installation['domain'],
+            'external_service_ids' => [], 'frontend_bulk_capabilities' => [], 'frontend_sections' => [],
+            'health' => ['status' => $status, 'label' => $status === 'ok' ? 'OK' : ($status === 'error' ? 'Fehler' : 'Hinweis'), 'issue_count' => $status === 'ok' ? 0 : 1, 'messages' => []],
+        ];
+        $overviewRows[] = $installation;
+        $pid = $installation['pid'];
+        if (!isset($domains[$pid])) {
+            $domains[$pid] = [
+                'id' => $pid, 'domain' => $installation['parent_domain'], 'thumbnail_path' => $thumbnail,
+                'target' => $installation, 'others' => [], 'installations' => [], 'sync_result' => null,
+                'health' => $installation['health'], 'search' => $installation['domain'],
+            ];
+        } else {
+            $domains[$pid]['others'][] = $installation;
+            $domains[$pid]['search'] .= ' '.$installation['domain'];
+        }
+        $domains[$pid]['installations'][] = $installation;
+    }
+    foreach ($domains as &$domain) {
+        $domain['workspace_counts'] = $presentation->summarize($domain['installations']);
+    }
+    unset($domain);
+    $overview = $twig->render('filter.html.twig', ['external_services' => [], 'contao_versions' => ['5.7.15'], 'php_versions' => ['8.5'], 'environments' => ['live' => 'Live', 'mirror' => 'Mirror']]);
+    $overview .= $twig->render('overview.html.twig', [
+        'domains' => array_values($domains), 'workspace' => $workspace,
+        'workspace_counts' => $presentation->summarize($overviewRows), 'workspace_groups' => 60,
+        'frontend_bulk_actions' => [], 'can_sync' => false, 'contao' => ['request_token' => 'fixture'],
+    ]);
+    $overviewStyles = '';
+    foreach (['domain-manager.css', 'domain-manager-health.css', 'domain-manager-workspace.css'] as $file) {
+        $overviewStyles .= file_get_contents($root.'/public/css/'.$file);
+    }
+    $overviewScripts = '';
+    foreach (['domain-manager.js', 'domain-manager-workspace.js'] as $file) {
+        $overviewScripts .= '<script>'.file_get_contents($root.'/public/js/'.$file).'</script>';
+    }
+    file_put_contents($output.'/overview-'.$variant.'.html', '<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;padding:20px;font-family:Arial,sans-serif;background:#f4f7f8}.domain-manager-filter{margin-bottom:16px}'.$overviewStyles.'</style></head><body>'.$overview.$overviewScripts.'</body></html>');
 }
