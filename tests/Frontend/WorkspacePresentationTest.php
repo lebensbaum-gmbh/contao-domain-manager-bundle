@@ -54,5 +54,6 @@ final class WorkspacePresentationTest extends TestCase
         ]);
         self::assertSame(1, $counts['attention']);
         self::assertSame(0, $counts['updates']);
+        self::assertSame(1, $counts['problems']);
     }
 }

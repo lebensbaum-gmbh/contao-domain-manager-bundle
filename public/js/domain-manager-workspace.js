@@ -95,7 +95,7 @@
                 const title = jobBox.querySelector('strong');
                 if (title) title.textContent = running + (running === 1 ? ' Installation in Bearbeitung' : ' Installationen in Bearbeitung');
             }
-            const values = { available: rows.filter(row => row.dataset.updateState === 'available').length, error: rows.filter(row => ['error', 'check_failed', 'warning'].includes(row.dataset.updateState)).length };
+            const values = { available: rows.filter(row => row.dataset.updateState === 'available').length, error: rows.filter(row => Number(row.dataset.releaseGap) >= 5 || ['error', 'check_failed', 'warning'].includes(row.dataset.updateState)).length };
             Object.entries(values).forEach(([name, value]) => {
                 const target = root.querySelector('.dm-workspace-metrics [data-dm-workspace-scope="' + name + '"] strong');
                 if (target) target.textContent = String(value);

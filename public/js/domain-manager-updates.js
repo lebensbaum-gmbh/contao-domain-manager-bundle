@@ -223,7 +223,7 @@
             rows.forEach((row) => {
                 const stateMatches = 'all' === filter
                     || row.dataset.updateState === filter
-                    || ('error' === filter && ['check_failed', 'warning'].includes(row.dataset.updateState))
+                    || ('error' === filter && (Number(row.dataset.releaseGap) >= 5 || ['check_failed', 'warning'].includes(row.dataset.updateState)))
                     || ('attention' === filter && (Number(row.dataset.releaseGap) >= 5 || ['available', 'unknown', 'error', 'check_failed', 'warning', 'running'].includes(row.dataset.updateState)));
                 const searchMatches = '' === term || String(row.dataset.search || '').includes(term);
                 const show = stateMatches && searchMatches;

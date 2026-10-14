@@ -47,7 +47,10 @@ foreach (['free' => [false, false], 'pro' => [true, true], 'pro-readonly' => [tr
             'environment' => $id > 60 ? 'mirror' : 'live', 'environment_label' => $id > 60 ? 'Mirror' : 'Live',
             'thumbnail_path' => $thumbnail, 'contao_version' => $gap > 0 ? '5.7.10' : '5.7.15',
             'target_contao_version' => $state === 'available' ? '5.7.15' : '',
-            'update_state' => $state, 'update_state_label' => $gap >= 5 ? 'Wartungsrückstand · 5 Versionen' : $state,
+            'update_state' => $state, 'update_state_label' => $gap >= 5 ? 'Wartungsrückstand · 5 Versionen' : match ($state) {
+                'locked' => 'Pro-Funktion', 'available' => 'Update verfügbar', 'error' => 'Update fehlgeschlagen',
+                'check_failed' => 'Prüfung fehlgeschlagen', default => 'Aktuell',
+            },
             'update_release_gap' => $gap, 'frontend_metadata' => [], 'update_details' => null,
             'frontend_actions' => !$pro ? [] : array_merge([
                 ['name' => 'update-check', 'label' => 'Update prüfen', 'url' => '/pro/check/'.$id, 'method' => 'post', 'variant' => 'primary', 'confirm' => ''],

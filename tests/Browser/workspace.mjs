@@ -32,6 +32,10 @@ try {
 
     await page.goto(pathToFileURL(resolve('build/browser/pro.html')).href);
     assert.equal(await page.locator('[data-dm-update-row]:visible').count(), 10);
+    const olderCheck = page.locator('[data-dm-update-row][data-installation-id="55"]');
+    assert.equal(await olderCheck.isVisible(), true);
+    assert.match(await olderCheck.locator('.dm-update-state').innerText(), /Wartungsrückstand/);
+    assert.equal(await olderCheck.locator('[data-dm-action="update-install"]').count(), 0);
     assert.equal(await page.locator('[data-dm-check-failure-count]').innerText(), '1');
     assert.equal(await page.locator('[data-dm-install-failure-count]').innerText(), '1');
     await page.locator('[data-dm-select-visible]').check();
