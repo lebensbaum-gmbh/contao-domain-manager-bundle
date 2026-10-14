@@ -66,6 +66,40 @@ try {
         assert.equal(overflow, false, 'horizontal overflow at ' + width);
     }
 
+    // Exercise the real bulk engine after grouping; no backend request leaves this fixture.
+    await page.setViewportSize({ width: 1280, height: 1000 });
+    await page.evaluate(() => {
+        window.__dmBrowserRequests = [];
+        let first = true;
+        window.fetch = async url => {
+            const id = new URL(url).pathname.split('/').pop();
+            window.__dmBrowserRequests.push(id);
+            if (first) {
+                first = false;
+                await new Promise(resolve => { window.__dmBrowserRelease = resolve; });
+            }
+            const row = document.querySelector('[data-dm-update-row][data-installation-id="' + id + '"]').cloneNode(true);
+            row.dataset.updateState = 'current'; row.dataset.releaseGap = '0';
+            row.querySelector('.dm-update-state').textContent = 'Aktuell';
+            row.querySelector('[data-dm-action="update-install"]')?.remove();
+            return { ok: true, status: 200, url: window.location.href + '?dm_update=up_to_date', text: async () => row.outerHTML };
+        };
+    });
+    await page.locator('[data-dm-check-selected]').click();
+    await page.waitForFunction(() => document.querySelector('[data-dm-updates]').dataset.dmWorkspaceBusy === '1');
+    assert.equal(await page.locator('button[data-dm-workspace-view="list"]').isDisabled(), true);
+    assert.equal(await page.locator('[data-dm-update-progress]').isVisible(), true);
+    assert.equal(await page.locator('[data-dm-update-row]:visible').count(), 10);
+    await page.evaluate(() => window.__dmBrowserRelease());
+    await page.waitForFunction(() => document.querySelector('[data-dm-updates]').dataset.dmWorkspaceBusy === '0');
+    const requests = await page.evaluate(() => window.__dmBrowserRequests);
+    assert.equal(requests.length, 10);
+    assert.equal(new Set(requests).size, 10);
+    assert.equal(await page.locator('.dm-workspace-group:visible').count(), 10);
+    assert.equal(await page.locator('[data-dm-selected-count]').innerText(), selected);
+    assert.equal(await page.locator('button[data-dm-workspace-view="list"]').isDisabled(), false);
+    assert.equal(await page.locator('[data-dm-progress-title]').innerText(), 'Update-Prüfung abgeschlossen');
+
     await page.setViewportSize({ width: 1280, height: 1000 });
     for (const variant of ['free', 'pro']) {
         await page.goto(pathToFileURL(resolve('build/browser/overview-' + variant + '.html')).href);
