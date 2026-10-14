@@ -29,7 +29,7 @@
         const installFailureCount = root.querySelector('[data-dm-install-failure-count]');
         const installFailureSummary = root.querySelector('[data-dm-install-failure-summary]');
         const previousResult = root.querySelector('.dm-updates-result');
-        let filter = 'all';
+        let filter = rows.some(row => row.classList.contains('is-result') || row.querySelector('[data-dm-update-backups][open]')) ? 'all' : (root.dataset.dmWorkspaceDefault || 'all');
         let bulkRunning = false;
         let backupRunning = false;
         let restoreRunning = false;
@@ -93,11 +93,12 @@
 
         const setRowState = (row, state, label = stateLabel(state)) => {
             row.dataset.updateState = state;
+            window.MaintendWorkspace?.apply(root);
             const element = row.querySelector('.dm-update-state');
 
             if (element) {
-                element.className = `dm-update-state is-${state}`;
-                element.textContent = label;
+                element.className = `dm-update-state is-${state}` + (state === 'available' && Number(row.dataset.releaseGap) >= 5 ? ' has-backlog' : '');
+                element.textContent = state === 'available' && Number(row.dataset.releaseGap) >= 5 ? `Wartungsrückstand · ${row.dataset.releaseGap} Versionen` : label;
             }
         };
 
@@ -147,7 +148,8 @@
         const selectedRows = () => rowCheckboxes
             .filter((checkbox) => checkbox.checked && !checkbox.disabled)
             .map((checkbox) => checkbox.closest('[data-dm-update-row]'))
-            .filter(Boolean);
+            .filter(Boolean)
+            .sort((a, b) => (window.MaintendWorkspace?.priority(a) || 0) - (window.MaintendWorkspace?.priority(b) || 0));
 
         const installableSelectedRows = () => selectedRows()
             .filter((row) => Boolean(findActionForm(row, 'update-install')));
@@ -215,9 +217,11 @@
             rows.forEach((row) => {
                 const stateMatches = 'all' === filter
                     || row.dataset.updateState === filter
-                    || ('error' === filter && row.dataset.updateState === 'check_failed');
+                    || ('error' === filter && ['check_failed', 'warning'].includes(row.dataset.updateState))
+                    || ('attention' === filter && ['available', 'unknown', 'error', 'check_failed', 'warning', 'running'].includes(row.dataset.updateState));
                 const searchMatches = '' === term || String(row.dataset.search || '').includes(term);
                 const show = stateMatches && searchMatches;
+                row.dataset.dmExternalMatch = show ? '1' : '0';
                 row.hidden = !show;
 
                 if (show) {
@@ -229,6 +233,8 @@
                 empty.hidden = visible > 0;
             }
 
+            root.dataset.dmWorkspaceScope = filter;
+            window.MaintendWorkspace?.apply(root);
             updateSelection();
         };
 
@@ -299,6 +305,7 @@
                 const resultRow = documentFromResponse.querySelector(`[data-dm-update-row][data-installation-id="${installationId}"]`);
 
                 if (resultRow) {
+                    row.dataset.releaseGap = resultRow.dataset.releaseGap || '';
                     const resultState = resultRow.dataset.updateState || stateFromResponseUrl(responseUrl, action);
                     const resultStateElement = resultRow.querySelector('.dm-update-state');
                     const currentActions = row.querySelector('.dm-update-actions');
@@ -340,6 +347,12 @@
         };
 
         const setBulkUiLocked = (locked) => {
+            root.dataset.dmWorkspaceBusy = locked ? '1' : '0';
+            root.querySelectorAll('[data-dm-workspace-scope], [data-dm-workspace-view], .dm-workspace-pages button, .dm-workspace-pages select').forEach(control => { control.disabled = locked; });
+            rows.forEach(row => {
+                row.dataset.dmMaintenanceRunning = row.querySelector('[data-dm-update-backups][aria-busy="true"]') ? '1' : '0';
+            });
+            window.MaintendWorkspace?.apply(root);
             filterButtons.forEach((button) => { button.disabled = locked; });
             if (search) {
                 search.disabled = locked;
@@ -362,6 +375,7 @@
         };
 
         const startBulkRun = (selected, title, startText) => {
+            window.MaintendWorkspace?.begin(root);
             bulkRunning = true;
             root.classList.add('is-running');
             progress?.removeAttribute('hidden');
@@ -578,12 +592,16 @@
                 }
 
                 filter = button.dataset.dmUpdateFilter || 'all';
+                root.dataset.dmWorkspaceScope = filter;
+                root.dispatchEvent(new CustomEvent('dm:workspace-filtered'));
                 filterButtons.forEach((candidate) => candidate.classList.toggle('is-active', candidate === button));
                 apply();
             });
         });
 
-        search?.addEventListener('input', apply);
+        search?.addEventListener('input', () => { if (search.value.trim()) filter = 'all'; apply(); });
+        root.addEventListener('dm:workspace-visible', updateSelection);
+        root.addEventListener('dm:workspace-scope', event => { filter = event.detail; apply(); });
 
         rowCheckboxes.forEach((checkbox) => {
             checkbox.addEventListener('change', updateSelection);

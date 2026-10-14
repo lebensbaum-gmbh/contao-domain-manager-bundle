@@ -9,6 +9,20 @@ final class OverviewFrontendExtensionEvent
     /** @var list<array{name:string,label:string,url:string,capability:string,variant:string,confirm:string}> */
     private array $bulkActions = [];
 
+    /** @var array<string, mixed> */
+    private array $metadata = [];
+
+    public function setMetadata(string $name, mixed $value): void
+    {
+        $this->metadata[$name] = $value;
+    }
+
+    /** @return array<string, mixed> */
+    public function getMetadata(): array
+    {
+        return $this->metadata;
+    }
+
     /** @param list<array<string, mixed>> $domains */
     public function __construct(public readonly array $domains)
     {

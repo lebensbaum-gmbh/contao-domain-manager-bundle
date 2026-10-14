@@ -25,7 +25,7 @@
 {% endadd %}
 
 {% add "domain_manager_updates_js" to body %}
-    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-updates.js') ~ '?v=1.5.12' }}" defer></script>
+    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-updates.js') ~ '?v=agency-1' }}" defer></script>
 {% endadd %}
 
 {% macro action(action, request_token) %}
@@ -53,35 +53,15 @@
 
 {% block content %}
 {% include "@Contao/components/domain_manager_workspace_navigation.html.twig" %}
-<div class="dm-updates{% if pro_enabled %} has-selection{% endif %}" data-dm-updates>
+<div class="dm-updates dm-workspace{% if pro_enabled %} has-selection{% endif %}" data-dm-updates data-dm-workspace="updates" data-dm-workspace-default="{{ pro_enabled ? 'attention' : 'all' }}">
     <header class="dm-updates-head">
         <div>
             <h2>Updates</h2>
             <p>Contao-Installationen zentral prüfen, vorbereiten und sicher aktualisieren.</p>
         </div>
-        {% if pro_enabled %}
-            <div class="dm-updates-summary" aria-label="Update-Übersicht">
-                <div class="dm-updates-summary-item">
-                    <strong>{{ total_count }}</strong>
-                    <span>{{ total_count == 1 ? 'Installation' : 'Installationen' }}</span>
-                </div>
-                <div class="dm-updates-summary-item is-accent">
-                    <strong data-dm-available-count>{{ available_count }}</strong>
-                    <span>{{ available_count == 1 ? 'Update verfügbar' : 'Updates verfügbar' }}</span>
-                </div>
-                <div class="dm-updates-summary-item{% if check_failure_count > 0 %} has-warning{% endif %}">
-                    <strong data-dm-check-failure-count>{{ check_failure_count }}</strong>
-                    <span>{{ check_failure_count == 1 ? 'Prüfung fehlgeschlagen' : 'Prüfungen fehlgeschlagen' }}</span>
-                </div>
-                <div class="dm-updates-summary-item has-error" data-dm-install-failure-summary{% if error_count == 0 %} hidden{% endif %}>
-                    <strong data-dm-install-failure-count>{{ error_count }}</strong>
-                    <span>{{ error_count == 1 ? 'Update fehlgeschlagen' : 'Updates fehlgeschlagen' }}</span>
-                </div>
-            </div>
-        {% else %}
-            <span class="dm-pro-badge">Pro</span>
-        {% endif %}
     </header>
+
+    {% include "@Contao/components/domain_manager_workspace_controls.html.twig" with {workspace_mode: "updates"} %}
 
     {% if not pro_enabled %}
         <div class="dm-updates-pro-teaser">
@@ -90,8 +70,8 @@
                 <p>Updates prüfen, verfügbare Updates filtern, Sicherheitsbackups erstellen und Updates direkt installieren.</p>
             </div>
             <div class="dm-updates-pro-actions" aria-label="Pro-Funktionen">
-                <button type="button" disabled>Updates prüfen <span>Pro</span></button>
-                <button type="button" disabled>Updates installieren <span>Pro</span></button>
+                <button type="button" class="is-pro-locked" aria-disabled="true" data-dm-pro-hint>Updates prüfen <span>Pro</span></button>
+                <button type="button" class="is-pro-locked" aria-disabled="true" data-dm-pro-hint>Updates installieren <span>Pro</span></button>
             </div>
         </div>
     {% endif %}
@@ -107,34 +87,7 @@
         </div>
     {% endif %}
 
-    <div class="dm-updates-toolbar">
-        <div class="dm-updates-tabs" role="group" aria-label="Update-Filter">
-            <button type="button" class="is-active" data-dm-update-filter="all">Alle Installationen</button>
-            <button type="button" data-dm-update-filter="available" {% if not pro_enabled %}disabled title="Nur in der Pro-Version verfügbar"{% endif %}>
-                Updates verfügbar{% if not pro_enabled %} <span class="dm-pro-inline">Pro</span>{% endif %}
-            </button>
-            <button type="button" data-dm-update-filter="error">Prüfprobleme / Fehler</button>
-        </div>
-        <label class="dm-updates-search">
-            <span>Installationen filtern</span>
-            <input type="search" placeholder="Domain suchen …" data-dm-update-search>
-        </label>
-    </div>
-
     {% if pro_enabled and installations %}
-        <div class="dm-updates-selection" data-dm-update-selection>
-            <label class="dm-updates-select-visible">
-                <input type="checkbox" data-dm-select-visible>
-                <span>Sichtbare auswählen</span>
-            </label>
-            <div class="dm-updates-selection-status" aria-live="polite">
-                <span><strong data-dm-selected-count>0</strong> ausgewählt</span>
-                <button type="button" data-dm-clear-selection disabled>Auswahl aufheben</button>
-                <button type="button" class="is-primary" data-dm-check-selected disabled>Ausgewählte prüfen</button>
-                <button type="button" class="is-warning" data-dm-install-selected disabled>Ausgewählte installieren</button>
-            </div>
-        </div>
-
         <section class="dm-updates-progress" data-dm-update-progress hidden aria-live="polite">
             <div class="dm-updates-progress-head">
                 <strong data-dm-progress-title>Update-Prüfung</strong>
@@ -158,6 +111,38 @@
         </section>
     {% endif %}
 
+    <div class="dm-updates-toolbar">
+        <div class="dm-updates-tabs" role="group" aria-label="Update-Filter">
+            <button type="button" class="is-active" data-dm-update-filter="attention">Handlungsbedarf</button>
+            <button type="button" data-dm-update-filter="all">Alle Installationen</button>
+            <button type="button" data-dm-update-filter="available" {% if not pro_enabled %}class="is-pro-locked" aria-disabled="true" data-dm-pro-hint{% endif %}>
+                Updates verfügbar{% if not pro_enabled %} <span class="dm-pro-inline">Pro</span>{% endif %}
+            </button>
+            <button type="button" data-dm-update-filter="error">Prüfprobleme / Fehler</button>
+        </div>
+        <label class="dm-updates-search">
+            <span>Installationen filtern</span>
+            <input type="search" placeholder="Domain suchen …" data-dm-update-search>
+        </label>
+    </div>
+
+    {% if pro_enabled and installations %}
+        <div class="dm-updates-selection" data-dm-update-selection>
+            <label class="dm-updates-select-visible">
+                <input type="checkbox" data-dm-select-visible>
+                <span>Seite auswählen</span>
+            </label>
+            <div class="dm-updates-selection-status" aria-live="polite">
+                <span><strong data-dm-selected-count>0</strong> ausgewählt</span>
+                <button type="button" data-dm-clear-selection disabled>Auswahl aufheben</button>
+                <button type="button" class="is-primary" data-dm-check-selected disabled>Ausgewählte prüfen</button>
+                <button type="button" class="is-warning" data-dm-install-selected disabled>Ausgewählte installieren</button>
+            </div>
+        </div>
+
+
+    {% endif %}
+
     <div class="dm-updates-list" data-dm-update-list>
         {% for installation in installations %}
             <article
@@ -165,6 +150,10 @@
                 data-dm-update-row
                 data-installation-id="{{ installation.id }}"
                 data-update-state="{{ installation.update_state }}"
+                data-parent-domain="{{ installation.parent_domain|e('html_attr') }}"
+                data-parent-id="{{ installation.pid }}"
+                data-environment="{{ installation.environment|e('html_attr') }}"
+                data-release-gap="{{ installation.update_release_gap ?? '' }}"
                 data-search="{{ (installation.domain ~ ' ' ~ installation.parent_domain ~ ' ' ~ installation.environment_label)|lower|e('html_attr') }}"
             >
                 {% if pro_enabled %}
@@ -207,20 +196,21 @@
                     </div>
                 </div>
 
-                <div class="dm-update-state is-{{ installation.update_state }}">
+                <div class="dm-update-state is-{{ installation.update_state }}{% if installation.update_release_gap >= 5 %} has-backlog{% endif %}">
                     {{ installation.update_state_label }}
                 </div>
 
                 <div class="dm-update-actions">
                     {% if installation.frontend_actions %}
                         {% for action in installation.frontend_actions %}
-                            {% if action.name in ['update-check', 'update-install'] %}
+                            {% if installation.update_state != 'running' and action.name in ['update-check', 'update-install'] %}
                                 {{ dm.action(action, contao.request_token) }}
                             {% endif %}
                         {% endfor %}
                     {% else %}
-                        <button class="dm-updates-action is-locked" type="button" disabled title="Nur in der Pro-Version verfügbar">Update prüfen <span>Pro</span></button>
-                        <button class="dm-updates-action is-locked" type="button" disabled title="Nur in der Pro-Version verfügbar">Installieren <span>Pro</span></button>
+                        <button class="dm-updates-action is-locked is-pro-locked" type="button" aria-disabled="true" data-dm-pro-hint>Update prüfen <span>Pro</span></button>
+                        <button class="dm-updates-action is-locked is-pro-locked" type="button" aria-disabled="true" data-dm-pro-hint>Installieren <span>Pro</span></button>
+                        <button class="dm-updates-action is-locked is-pro-locked" type="button" aria-disabled="true" data-dm-pro-hint>Sicherungen <span>Pro</span></button>
                     {% endif %}
                 </div>
 

@@ -233,6 +233,7 @@
                 const allInstallations = [target, ...others].filter(Boolean);
 
                 if (!filterIsActive) {
+                    domain.dataset.dmExternalMatch = '1';
                     domain.hidden = false;
                     if (rememberedOpenState.has(domain)) {
                         domain.open = rememberedOpenState.get(domain);
@@ -254,6 +255,7 @@
                 );
 
                 const visible = matchingCandidates.length > 0;
+                domain.dataset.dmExternalMatch = visible ? '1' : '0';
                 domain.hidden = !visible;
 
                 if (!visible) {
@@ -298,6 +300,7 @@
                 overview.appendChild(empty);
             }
             empty.hidden = visibleDomains > 0;
+            overview.dispatchEvent(new CustomEvent('dm:workspace-filtered'));
         };
 
         filter.addEventListener('input', apply);
