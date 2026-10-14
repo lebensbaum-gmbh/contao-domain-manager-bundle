@@ -44,7 +44,7 @@ try {
     await page.locator('[data-dm-update-filter="all"]').click();
     assert.equal(await page.locator('.dm-workspace-group:visible').count(), 10);
     assert.equal(await page.locator('[data-dm-selected-count]').innerText(), selected);
-    await page.locator('[data-dm-workspace-view="tiles"]').click();
+    await page.locator('button[data-dm-workspace-view="tiles"]').click();
     assert.equal(await page.locator('[data-dm-updates]').getAttribute('data-dm-workspace-view'), 'tiles');
     assert.equal(await page.locator('[data-dm-selected-count]').innerText(), selected);
     await page.locator('[data-dm-update-search]').fill('mirror.kunde-15');
@@ -85,7 +85,7 @@ try {
             await page.locator('[data-dm-pro-hint-close]').click();
         }
         await page.locator('[data-dm-filter-search]').fill('');
-        await page.locator('[data-dm-workspace-view="tiles"]').click();
+        await page.locator('button[data-dm-workspace-view="tiles"]').click();
         for (const width of [1280, 736, 375]) {
             await page.setViewportSize({ width, height: 1000 });
             await page.screenshot({ path: 'build/browser/overview-' + variant + '-' + width + '.png', fullPage: true });
@@ -93,8 +93,9 @@ try {
                 const rect = element.getBoundingClientRect();
                 return rect.width > 0 && rect.height > 0 && rect.right > window.innerWidth + 1;
             }).slice(-8).map(element => ({ tag: element.tagName, class: element.className, right: element.getBoundingClientRect().right })));
-            if (beyondViewport.length) console.log('Overflow candidates:', beyondViewport);
-            assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1), false, 'overview overflow at ' + width);
+            const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
+            if (overflow) console.log('Overflow candidates:', beyondViewport);
+            assert.equal(overflow, false, 'overview overflow at ' + width);
         }
         await page.setViewportSize({ width: 1280, height: 1000 });
     }
