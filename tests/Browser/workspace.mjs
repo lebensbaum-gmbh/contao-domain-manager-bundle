@@ -56,6 +56,13 @@ try {
         await page.setViewportSize({ width, height: 1000 });
         await page.screenshot({ path: 'build/browser/pro-' + width + '.png', fullPage: true });
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
+        if (overflow) console.log('Updates overflow:', await page.evaluate(() => ({
+            viewport: window.innerWidth, scrollWidth: document.documentElement.scrollWidth,
+            elements: Array.from(document.querySelectorAll('body *')).filter(element => {
+                const rect = element.getBoundingClientRect();
+                return rect.width > 0 && rect.height > 0 && rect.right > window.innerWidth + 1;
+            }).slice(-15).map(element => ({ tag: element.tagName, class: element.className, right: element.getBoundingClientRect().right, width: element.getBoundingClientRect().width })),
+        })));
         assert.equal(overflow, false, 'horizontal overflow at ' + width);
     }
 
