@@ -26,6 +26,7 @@
         const progressSummary = root.querySelector('[data-dm-progress-summary]');
         const availableCount = root.querySelector('[data-dm-available-count]');
         const checkFailureCount = root.querySelector('[data-dm-check-failure-count]');
+        const checkFailureSummary = root.querySelector('[data-dm-check-failure-summary]');
         const installFailureCount = root.querySelector('[data-dm-install-failure-count]');
         const installFailureSummary = root.querySelector('[data-dm-install-failure-summary]');
         const previousResult = root.querySelector('.dm-updates-result');
@@ -93,13 +94,13 @@
 
         const setRowState = (row, state, label = stateLabel(state)) => {
             row.dataset.updateState = state;
-            window.MaintendWorkspace?.apply(root);
             const element = row.querySelector('.dm-update-state');
 
             if (element) {
                 element.className = `dm-update-state is-${state}` + (state === 'available' && Number(row.dataset.releaseGap) >= 5 ? ' has-backlog' : '');
                 element.textContent = state === 'available' && Number(row.dataset.releaseGap) >= 5 ? `Wartungsrückstand · ${row.dataset.releaseGap} Versionen` : label;
             }
+            window.MaintendWorkspace?.apply(root);
         };
 
         const updateAvailableCount = () => {
@@ -138,6 +139,10 @@
                 if (label) {
                     label.textContent = counts.error === 1 ? 'Update fehlgeschlagen' : 'Updates fehlgeschlagen';
                 }
+            }
+
+            if (checkFailureSummary) {
+                checkFailureSummary.hidden = counts.check_failed === 0;
             }
 
             if (installFailureSummary) {

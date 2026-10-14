@@ -63,6 +63,19 @@
 
     {% include "@Contao/components/domain_manager_workspace_controls.html.twig" with {workspace_mode: "updates"} %}
 
+    {% if pro_enabled %}
+        <div class="dm-workspace-failures" aria-label="Fehlgeschlagene Wartungsaktionen" aria-live="polite">
+            <span data-dm-check-failure-summary{% if check_failure_count == 0 %} hidden{% endif %}>
+                <strong data-dm-check-failure-count>{{ check_failure_count }}</strong>
+                <span>{{ check_failure_count == 1 ? 'Prüfung fehlgeschlagen' : 'Prüfungen fehlgeschlagen' }}</span>
+            </span>
+            <span data-dm-install-failure-summary{% if error_count == 0 %} hidden{% endif %}>
+                <strong data-dm-install-failure-count>{{ error_count }}</strong>
+                <span>{{ error_count == 1 ? 'Update fehlgeschlagen' : 'Updates fehlgeschlagen' }}</span>
+            </span>
+        </div>
+    {% endif %}
+
     {% if not pro_enabled %}
         <div class="dm-updates-pro-teaser">
             <div>

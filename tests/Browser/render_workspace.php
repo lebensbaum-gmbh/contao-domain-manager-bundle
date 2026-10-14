@@ -43,7 +43,7 @@ foreach ([false, true] as $pro) {
         $rows[] = [
             'id' => $id, 'pid' => $pid, 'domain' => $domain, 'parent_domain' => $parent,
             'environment' => $id > 60 ? 'mirror' : 'live', 'environment_label' => $id > 60 ? 'Mirror' : 'Live',
-            'thumbnail_path' => $thumbnail, 'contao_version' => '5.7.15',
+            'thumbnail_path' => $thumbnail, 'contao_version' => $gap > 0 ? '5.7.10' : '5.7.15',
             'target_contao_version' => $state === 'available' ? '5.7.15' : '',
             'update_state' => $state, 'update_state_label' => $state,
             'update_release_gap' => $gap, 'frontend_metadata' => [], 'update_details' => null,
@@ -58,6 +58,7 @@ foreach ([false, true] as $pro) {
     $html = $twig->render('updates.html.twig', [
         'installations' => $rows, 'pro_enabled' => $pro, 'workspace' => $presentation->features(['pro_available' => $pro, 'pro_authorized' => $pro]),
         'workspace_counts' => $presentation->summarize($rows), 'workspace_groups' => 60,
+        'check_failure_count' => $pro ? 1 : 0, 'error_count' => $pro ? 1 : 0,
         'result_installation_id' => 0, 'result_message' => '', 'backup_result_message' => '',
         'backup_result_installation_id' => 0, 'backup_result_error' => false, 'install_status' => '', 'check_status' => '',
         'contao' => ['request_token' => 'fixture'],

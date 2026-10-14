@@ -39,7 +39,7 @@
     <div>
         <strong>{% if workspace.pro_available %}Für diesen Zugang nicht freigegeben{% else %}Nur in der Pro-Version möglich{% endif %}</strong>
         <p>{% if workspace.pro_available %}Für diese Pro-Funktion benötigt der angemeldete Benutzer die entsprechenden Bedienrechte.{% else %}Diese Funktion gehört zu maintend Pro.{% endif %}
-            <a href="{{ workspace.pro_url|e('html_attr') }}" target="_blank" rel="noopener noreferrer">Abo-Modelle ansehen</a>
+            {% if not workspace.pro_available %}<a href="{{ workspace.pro_url|e('html_attr') }}" target="_blank" rel="noopener noreferrer">Abo-Modelle ansehen</a>{% endif %}
         </p>
     </div>
     <button type="button" data-dm-pro-hint-close>Schließen</button>

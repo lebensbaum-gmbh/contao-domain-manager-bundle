@@ -14,6 +14,9 @@
 .dm-workspace-viewbar button,.dm-workspace-pages button,.dm-workspace-running button,.dm-pro-hint button { padding:7px 10px; border:1px solid var(--dm-workspace-line); border-radius:5px; background:#fff; color:var(--dm-workspace-navy); cursor:pointer; }
 .dm-workspace button[aria-pressed="true"] { border-color:#4ca6a8; background:#edf7f7; color:var(--dm-workspace-teal); }
 .dm-workspace-caption,.dm-workspace-pages { font-size:12px; color:var(--dm-workspace-muted); }
+.dm-workspace-failures { display:flex; flex-wrap:wrap; gap:8px; }
+.dm-workspace-failures>span { padding:8px 12px; margin-bottom:12px; border:1px solid #e5c58d; border-radius:5px; background:#fff6e5; color:#93600b; font-size:13px; }
+.dm-workspace-failures [data-dm-install-failure-summary] { border-color:#e4b0ac; background:#fff0ee; color:#a33735; }
 .dm-workspace-pages { margin:14px 0; }
 .dm-workspace-pages select { font:inherit; padding:5px 7px; border:1px solid var(--dm-workspace-line); border-radius:4px; background:#fff; }
 .dm-workspace-pages button:disabled { opacity:.45; cursor:default; }
