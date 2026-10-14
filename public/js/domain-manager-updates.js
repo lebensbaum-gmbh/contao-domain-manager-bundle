@@ -97,8 +97,9 @@
             const element = row.querySelector('.dm-update-state');
 
             if (element) {
-                element.className = `dm-update-state is-${state}` + (state === 'available' && Number(row.dataset.releaseGap) >= 5 ? ' has-backlog' : '');
-                element.textContent = state === 'available' && Number(row.dataset.releaseGap) >= 5 ? `Wartungsrückstand · ${row.dataset.releaseGap} Versionen` : label;
+                const backlog = Number(row.dataset.releaseGap) >= 5;
+                element.className = `dm-update-state is-${state}` + (backlog ? ' has-backlog' : '');
+                element.textContent = backlog && ['available', 'unknown', 'current'].includes(state) ? `Wartungsrückstand · ${row.dataset.releaseGap} Versionen` : label;
             }
             window.MaintendWorkspace?.apply(root);
         };
@@ -223,7 +224,7 @@
                 const stateMatches = 'all' === filter
                     || row.dataset.updateState === filter
                     || ('error' === filter && ['check_failed', 'warning'].includes(row.dataset.updateState))
-                    || ('attention' === filter && ['available', 'unknown', 'error', 'check_failed', 'warning', 'running'].includes(row.dataset.updateState));
+                    || ('attention' === filter && (Number(row.dataset.releaseGap) >= 5 || ['available', 'unknown', 'error', 'check_failed', 'warning', 'running'].includes(row.dataset.updateState)));
                 const searchMatches = '' === term || String(row.dataset.search || '').includes(term);
                 const show = stateMatches && searchMatches;
                 row.dataset.dmExternalMatch = show ? '1' : '0';

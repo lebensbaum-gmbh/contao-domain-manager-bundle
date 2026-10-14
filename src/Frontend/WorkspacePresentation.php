@@ -46,7 +46,8 @@ final class WorkspacePresentation
             $problem = 'error' === $health || in_array($state, ['error', 'check_failed', 'warning'], true);
             $running = 'running' === $state
                 || 'running' === ($installation['frontend_metadata']['update_details']['status'] ?? '');
-            $attention = $hasUpdate || $problem || $running || 'warning' === $health || 'unknown' === $state;
+            $backlog = (int) ($installation['update_release_gap'] ?? $installation['frontend_metadata']['update_release_gap'] ?? 0) >= 5;
+            $attention = $hasUpdate || $problem || $running || $backlog || 'warning' === $health || 'unknown' === $state;
             $counts['updates'] += (int) $hasUpdate;
             $counts['problems'] += (int) $problem;
             $counts['running'] += (int) $running;

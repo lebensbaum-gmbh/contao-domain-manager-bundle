@@ -157,7 +157,7 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
             $installation['update_state_label'] = $this->updateStateLabel($updateState);
             $gap = $frontendMetadata['update_release_gap'] ?? null;
             $installation['update_release_gap'] = is_int($gap) && $gap >= 0 ? $gap : null;
-            if ('available' === $updateState && null !== $installation['update_release_gap'] && $gap >= 5) {
+            if (in_array($updateState, ['available', 'unknown', 'current'], true) && null !== $installation['update_release_gap'] && $gap >= 5) {
                 $installation['update_state_label'] = sprintf('Wartungsrückstand · %d Versionen', $gap);
             }
             $installations[] = $installation;

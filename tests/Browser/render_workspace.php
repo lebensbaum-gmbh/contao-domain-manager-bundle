@@ -27,11 +27,11 @@ $loader = new ArrayLoader([
 $twig = new Environment($loader, ['autoescape' => 'html']);
 $thumbnail = 'data:image/svg+xml;base64,'.base64_encode(file_get_contents($root.'/public/branding/maintend-logo.svg'));
 $styles = '';
-foreach (['domain-manager-updates.css', 'domain-manager-workspace.css'] as $file) {
+foreach (['domain-manager-layout.css', 'domain-manager-updates.css', 'domain-manager-workspace.css'] as $file) {
     $styles .= file_get_contents($root.'/public/css/'.$file);
 }
 $scripts = '';
-foreach (['domain-manager-updates.js', 'domain-manager-workspace.js'] as $file) {
+foreach (['domain-manager-layout.js', 'domain-manager-updates.js', 'domain-manager-workspace.js'] as $file) {
     $scripts .= '<script>'.file_get_contents($root.'/public/js/'.$file).'</script>';
 }
 foreach (['free' => [false, false], 'pro' => [true, true], 'pro-readonly' => [true, false]] as $variant => [$proAvailable, $pro]) {
@@ -41,13 +41,13 @@ foreach (['free' => [false, false], 'pro' => [true, true], 'pro-readonly' => [tr
         $parent = sprintf('kunde-%02d.example', $pid);
         $domain = $id > 60 ? 'mirror.'.$parent : $parent;
         $state = !$pro ? 'locked' : ($id <= 12 ? 'available' : ($id === 13 ? 'error' : ($id === 14 ? 'check_failed' : 'current')));
-        $gap = $pro && $id === 1 ? 5 : 0;
+        $gap = $pro && in_array($id, [1, 55], true) ? 5 : 0;
         $rows[] = [
             'id' => $id, 'pid' => $pid, 'domain' => $domain, 'parent_domain' => $parent,
             'environment' => $id > 60 ? 'mirror' : 'live', 'environment_label' => $id > 60 ? 'Mirror' : 'Live',
             'thumbnail_path' => $thumbnail, 'contao_version' => $gap > 0 ? '5.7.10' : '5.7.15',
             'target_contao_version' => $state === 'available' ? '5.7.15' : '',
-            'update_state' => $state, 'update_state_label' => $state,
+            'update_state' => $state, 'update_state_label' => $gap >= 5 ? 'Wartungsrückstand · 5 Versionen' : $state,
             'update_release_gap' => $gap, 'frontend_metadata' => [], 'update_details' => null,
             'frontend_actions' => !$pro ? [] : array_merge([
                 ['name' => 'update-check', 'label' => 'Update prüfen', 'url' => '/pro/check/'.$id, 'method' => 'post', 'variant' => 'primary', 'confirm' => ''],
@@ -66,7 +66,7 @@ foreach (['free' => [false, false], 'pro' => [true, true], 'pro-readonly' => [tr
         'backup_result_installation_id' => 0, 'backup_result_error' => false, 'install_status' => '', 'check_status' => '',
         'contao' => ['request_token' => 'fixture'],
     ]);
-    file_put_contents($output.'/'.$variant.'.html', '<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;padding:20px;font-family:Arial,sans-serif;background:#f4f7f8}*{box-sizing:border-box}'.$styles.'</style></head><body>'.$html.$scripts.'</body></html>');
+    file_put_contents($output.'/'.$variant.'.html', '<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;padding:20px;font-family:Arial,sans-serif;background:#f4f7f8}*{box-sizing:border-box}'.$styles.'</style></head><body><div id="container"><main id="main"><div class="inside"><div class="mod_article">'.$html.'</div></div></main></div>'.$scripts.'</body></html>');
 
     $domains = [];
     $overviewRows = [];
@@ -96,19 +96,19 @@ foreach (['free' => [false, false], 'pro' => [true, true], 'pro-readonly' => [tr
         $domain['workspace_counts'] = $presentation->summarize($domain['installations']);
     }
     unset($domain);
-    $overview = $twig->render('filter.html.twig', ['external_services' => [], 'contao_versions' => ['5.7.15'], 'php_versions' => ['8.5'], 'environments' => ['live' => 'Live', 'mirror' => 'Mirror']]);
-    $overview .= $twig->render('overview.html.twig', [
+    $filterHtml = $twig->render('filter.html.twig', ['external_services' => [], 'contao_versions' => ['5.7.15'], 'php_versions' => ['8.5'], 'environments' => ['live' => 'Live', 'mirror' => 'Mirror']]);
+    $overview = $twig->render('overview.html.twig', [
         'domains' => array_values($domains), 'workspace' => $workspace,
         'workspace_counts' => $presentation->summarize($overviewRows), 'workspace_groups' => 60,
         'frontend_bulk_actions' => [], 'can_sync' => false, 'contao' => ['request_token' => 'fixture'],
     ]);
     $overviewStyles = '';
-    foreach (['domain-manager.css', 'domain-manager-health.css', 'domain-manager-workspace.css'] as $file) {
+    foreach (['domain-manager.css', 'domain-manager-health.css', 'domain-manager-layout.css', 'domain-manager-workspace.css'] as $file) {
         $overviewStyles .= file_get_contents($root.'/public/css/'.$file);
     }
     $overviewScripts = '';
-    foreach (['domain-manager.js', 'domain-manager-workspace.js'] as $file) {
+    foreach (['domain-manager-layout.js', 'domain-manager.js', 'domain-manager-workspace.js'] as $file) {
         $overviewScripts .= '<script>'.file_get_contents($root.'/public/js/'.$file).'</script>';
     }
-    file_put_contents($output.'/overview-'.$variant.'.html', '<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;padding:20px;font-family:Arial,sans-serif;background:#f4f7f8}.domain-manager-filter{margin-bottom:16px}'.$overviewStyles.'</style></head><body>'.$overview.$overviewScripts.'</body></html>');
+    file_put_contents($output.'/overview-'.$variant.'.html', '<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;padding:20px;font-family:Arial,sans-serif;background:#f4f7f8}'.$overviewStyles.'</style></head><body><div id="container"><main id="main"><div class="inside"><div class="mod_article"><div class="content-headline"><h2>Domainübersicht</h2></div><div class="content-domain-manager-filter">'.$filterHtml.'</div><div class="content-domain-manager-overview">'.$overview.'</div></div></div></main></div>'.$overviewScripts.'</body></html>');
 }

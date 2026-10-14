@@ -45,4 +45,14 @@ final class WorkspacePresentationTest extends TestCase
         self::assertSame(3, $counts['problems']);
         self::assertSame(14, $counts['attention']);
     }
+
+    public function testAnOlderSuccessfulCheckDoesNotHideNewReleaseBacklog(): void
+    {
+        $counts = (new WorkspacePresentation())->summarize([
+            ['update_state' => 'current', 'update_release_gap' => 5],
+            ['update_state' => 'current', 'update_release_gap' => 4],
+        ]);
+        self::assertSame(1, $counts['attention']);
+        self::assertSame(0, $counts['updates']);
+    }
 }

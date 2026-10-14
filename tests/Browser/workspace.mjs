@@ -50,9 +50,9 @@ try {
     await page.locator('[data-dm-update-search]').fill('');
     for (const width of [1280, 736, 375]) {
         await page.setViewportSize({ width, height: 1000 });
+        await page.screenshot({ path: 'build/browser/pro-' + width + '.png', fullPage: true });
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
         assert.equal(overflow, false, 'horizontal overflow at ' + width);
-        await page.screenshot({ path: 'build/browser/pro-' + width + '.png', fullPage: true });
     }
 
     await page.setViewportSize({ width: 1280, height: 1000 });
@@ -77,8 +77,13 @@ try {
         await page.locator('[data-dm-workspace-view="tiles"]').click();
         for (const width of [1280, 736, 375]) {
             await page.setViewportSize({ width, height: 1000 });
-            assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1), false, 'overview overflow at ' + width);
             await page.screenshot({ path: 'build/browser/overview-' + variant + '-' + width + '.png', fullPage: true });
+            const beyondViewport = await page.evaluate(() => Array.from(document.querySelectorAll('body *')).filter(element => {
+                const rect = element.getBoundingClientRect();
+                return rect.width > 0 && rect.height > 0 && rect.right > window.innerWidth + 1;
+            }).slice(-8).map(element => ({ tag: element.tagName, class: element.className, right: element.getBoundingClientRect().right })));
+            if (beyondViewport.length) console.log('Overflow candidates:', beyondViewport);
+            assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1), false, 'overview overflow at ' + width);
         }
         await page.setViewportSize({ width: 1280, height: 1000 });
     }
