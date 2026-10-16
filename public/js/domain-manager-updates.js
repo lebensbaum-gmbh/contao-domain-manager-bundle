@@ -94,6 +94,9 @@
 
         const setRowState = (row, state, label = stateLabel(state)) => {
             row.dataset.updateState = state;
+            if (state === 'check_failed') {
+                findActionForm(row, 'update-install')?.remove();
+            }
             const element = row.querySelector('.dm-update-state');
 
             if (element) {
@@ -673,7 +676,7 @@
                 const html = await response.text();
                 refreshRowFromResponse(row, html, response.url, isInstall ? 'install' : 'check');
 
-                if (row.dataset.updateState === 'error') {
+                if (['error', 'check_failed'].includes(row.dataset.updateState)) {
                     errors = 1;
                 } else if (row.dataset.updateState === 'warning') {
                     warnings = 1;
@@ -681,7 +684,7 @@
             } catch (error) {
                 setRowState(
                     row,
-                    'error',
+                    isInstall ? 'error' : 'check_failed',
                     isInstall ? 'Installation fehlgeschlagen' : 'Prüfung fehlgeschlagen'
                 );
                 errors = 1;

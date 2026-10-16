@@ -113,6 +113,64 @@ try {
     assert.equal(await page.locator('button[data-dm-workspace-view="list"]').isDisabled(), false);
     assert.equal(await page.locator('[data-dm-progress-title]').innerText(), 'Update-Prüfung abgeschlossen');
 
+    // A failed single check must never end with a success message or an installation error.
+    for (const outcome of ['check_failed', 'transport_error', 'http_error', 'blocked', 'current', 'available']) {
+        await page.goto(pathToFileURL(resolve('build/browser/pro.html')).href);
+        await page.evaluate(outcome => {
+            window.__dmSingleRequests = 0;
+            window.fetch = async url => {
+                window.__dmSingleRequests += 1;
+                if (outcome === 'transport_error') throw new TypeError('Failed to fetch');
+                if (outcome === 'http_error') return { ok: false, status: 503 };
+                if (outcome === 'blocked') {
+                    return { ok: true, status: 200, url: window.location.href + '?dm_update=blocked', text: async () => '' };
+                }
+
+                const id = new URL(url).pathname.split('/').pop();
+                const row = document.querySelector('[data-dm-update-row][data-installation-id="' + id + '"]').cloneNode(true);
+                row.dataset.updateState = outcome;
+                row.dataset.releaseGap = '0';
+                row.querySelector('.dm-update-state').textContent = outcome === 'check_failed'
+                    ? 'Prüfung fehlgeschlagen' : (outcome === 'current' ? 'Aktuell' : 'Update verfügbar');
+                if (outcome !== 'available') row.querySelector('[data-dm-action="update-install"]')?.remove();
+                const status = outcome === 'check_failed' ? 'error' : (outcome === 'current' ? 'up_to_date' : 'ready');
+                return { ok: true, status: 200, url: window.location.href + '?dm_update=' + status, text: async () => row.outerHTML };
+            };
+        }, outcome);
+        const singleRow = page.locator('[data-dm-update-row][data-installation-id="2"]');
+        await singleRow.locator('[data-dm-action="update-check"] button').click();
+        await page.waitForFunction(() => document.querySelector('[data-dm-updates]').dataset.dmWorkspaceBusy === '0');
+        const failed = !['current', 'available'].includes(outcome);
+        assert.equal(await page.evaluate(() => window.__dmSingleRequests), 1);
+        assert.equal(await singleRow.getAttribute('data-update-state'), failed ? 'check_failed' : outcome);
+        assert.equal(await page.locator('[data-dm-progress-summary]').innerText(), failed ? '1 Fehler' : 'Prüfung erfolgreich abgeschlossen');
+        assert.equal(await page.locator('[data-dm-update-progress]').evaluate(element => element.classList.contains('has-errors')), failed);
+        assert.equal(await page.locator('[data-dm-check-failure-count]').innerText(), failed ? '2' : '1');
+        assert.equal(await page.locator('[data-dm-install-failure-count]').innerText(), '1');
+        assert.equal(await singleRow.locator('[data-dm-action="update-check"] button').isDisabled(), false);
+        assert.equal(await page.locator('[data-dm-update-search]').isDisabled(), false);
+        assert.equal(await page.locator('button[data-dm-workspace-view="list"]').isDisabled(), false);
+        if (failed) {
+            assert.doesNotMatch(await page.locator('[data-dm-update-progress]').innerText(), /erfolgreich/);
+            assert.equal(await singleRow.locator('[data-dm-action="update-install"]').count(), 0);
+        }
+        if (outcome === 'check_failed') {
+            await page.screenshot({ path: 'build/browser/single-check-failed.png', fullPage: true });
+            // Retry after the target becomes reachable; stale failure styling must clear.
+            await page.evaluate(() => {
+                window.fetch = async () => ({
+                    ok: true, status: 200, url: window.location.href + '?dm_update=up_to_date', text: async () => '',
+                });
+            });
+            await singleRow.locator('[data-dm-action="update-check"] button').click();
+            await page.waitForFunction(() => document.querySelector('[data-dm-updates]').dataset.dmWorkspaceBusy === '0');
+            assert.equal(await singleRow.getAttribute('data-update-state'), 'current');
+            assert.equal(await page.locator('[data-dm-progress-summary]').innerText(), 'Prüfung erfolgreich abgeschlossen');
+            assert.equal(await page.locator('[data-dm-update-progress]').evaluate(element => element.classList.contains('has-errors')), false);
+            assert.equal(await page.locator('[data-dm-check-failure-count]').innerText(), '1');
+        }
+    }
+
     await page.setViewportSize({ width: 1280, height: 1000 });
     for (const variant of ['free', 'pro', 'pro-readonly']) {
         await page.goto(pathToFileURL(resolve('build/browser/overview-' + variant + '.html')).href);
