@@ -78,6 +78,8 @@ foreach (['free' => [false, false], 'pro' => [true, true], 'pro-readonly' => [tr
         $status = $problem || $installation['update_release_gap'] >= 5 ? 'error' : ($installation['update_state'] === 'available' ? 'warning' : 'ok');
         $installation += [
             'php_version' => '8.5', 'frontend_url' => 'https://'.$installation['domain'],
+            'backend_url' => 'https://'.$installation['domain'].'/contao',
+            'manager_url' => 'https://'.$installation['domain'].'/contao-manager.phar.php',
             'external_service_ids' => [], 'frontend_bulk_capabilities' => [], 'frontend_sections' => [],
             'health' => ['status' => $status, 'label' => $status === 'ok' ? 'OK' : ($status === 'error' ? 'Fehler' : 'Hinweis'), 'issue_count' => $status === 'ok' ? 0 : 1, 'messages' => []],
         ];

@@ -101,13 +101,41 @@ try {
     assert.equal(await page.locator('[data-dm-progress-title]').innerText(), 'Update-Prüfung abgeschlossen');
 
     await page.setViewportSize({ width: 1280, height: 1000 });
-    for (const variant of ['free', 'pro']) {
+    for (const variant of ['free', 'pro', 'pro-readonly']) {
         await page.goto(pathToFileURL(resolve('build/browser/overview-' + variant + '.html')).href);
         assert.equal(await page.locator('[data-dm-domain]').count(), 60);
         assert.equal(await page.locator('[data-dm-installation]').count(), 80);
         assert.equal(await page.locator('[data-dm-domain]:visible').count(), 10);
         assert.equal(await page.locator('[data-dm-domain][open]').count(), 0);
         assert.equal(await page.locator('.domain-thumbnail img').count(), 60);
+        const allScope = page.locator('.dm-workspace-scopes [data-dm-workspace-scope="all"]');
+        const attentionScope = page.locator('.dm-workspace-scopes [data-dm-workspace-scope="attention"]');
+        assert.equal(await allScope.getAttribute('aria-pressed'), 'true');
+        assert.equal(await attentionScope.getAttribute('aria-pressed'), 'false');
+        assert.match(await page.locator('.dm-workspace-pages').innerText(), /1–10 von 60 Hauptdomains/);
+        assert.equal(await page.locator('form[action^="/pro/"]').count(), 0, 'maintenance actions belong on the Updates page');
+        assert.equal(await page.getByRole('button', { name: /^Update prüfen|^Aktualisieren|^Sicherungen/, includeHidden: true }).count(), 0);
+        assert.equal(await page.locator('a[href$="/contao"]').count(), 80);
+        assert.equal(await page.locator('a[href$="/contao-manager.phar.php"]').count(), 80);
+        if (variant === 'pro') {
+            assert.equal(await page.locator('.dm-workspace-metrics [data-dm-workspace-scope="available"] strong').innerText(), '12');
+            await attentionScope.click();
+            assert.equal(await allScope.getAttribute('aria-pressed'), 'false');
+            assert.equal(await attentionScope.getAttribute('aria-pressed'), 'true');
+            assert.equal(await page.locator('[data-dm-domain]:visible').count(), 10);
+            assert.match(await page.locator('.dm-workspace-pages').innerText(), /1–10 von 15 Hauptdomains/);
+            assert.equal(await page.locator('[data-dm-domain]:visible').evaluateAll(domains => domains.every(domain => Number(domain.dataset.dmAttention) > 0)), true);
+            await page.getByRole('button', { name: 'Weiter', exact: true }).click();
+            assert.equal(await page.locator('[data-dm-domain]:visible').count(), 5);
+            assert.match(await page.locator('.dm-workspace-pages').innerText(), /11–15 von 15 Hauptdomains/);
+            await allScope.click();
+            assert.equal(await page.locator('[data-dm-domain]:visible').count(), 10);
+            assert.match(await page.locator('.dm-workspace-pages').innerText(), /1–10 von 60 Hauptdomains/);
+            await page.reload();
+            assert.equal(await allScope.getAttribute('aria-pressed'), 'true');
+            assert.equal(await attentionScope.getAttribute('aria-pressed'), 'false');
+            assert.match(await page.locator('.dm-workspace-pages').innerText(), /1–10 von 60 Hauptdomains/);
+        }
         await page.locator('[data-dm-filter-search]').fill('mirror.kunde-15');
         assert.equal(await page.locator('[data-dm-domain]:visible').count(), 1);
         assert.equal(await page.locator('[data-dm-domain]:visible').getAttribute('open'), '');

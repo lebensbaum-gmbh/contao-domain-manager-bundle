@@ -52,7 +52,7 @@
 
 {% block content %}
 {% include "@Contao/components/domain_manager_workspace_navigation.html.twig" %}
-<div class="domain-manager-overview dm-workspace" data-domain-manager-overview data-dm-workspace="overview" data-dm-workspace-default="{{ workspace_counts.attention > 0 ? 'attention' : 'all' }}">
+<div class="domain-manager-overview dm-workspace" data-domain-manager-overview data-dm-workspace="overview" data-dm-workspace-default="all">
     {% include "@Contao/components/domain_manager_workspace_controls.html.twig" with {workspace_mode: "overview"} %}
     {% if frontend_bulk_actions %}
         <form id="domain-manager-bulk-actions-form" class="domain-manager-bulk-form" method="post">
@@ -194,15 +194,12 @@
                                     <span class="status-badge is-current">Aktuelles Ziel</span>
                                 </div>
 
-                                {% if installation.backend_url or installation.manager_url or installation.frontend_actions or not workspace.pro_enabled %}
+                                {% set overview_actions = installation.frontend_actions|filter(action => action.name not in ['update-check', 'update-install']) %}
+                                {% if installation.backend_url or installation.manager_url or overview_actions %}
                                     <div class="detail-actions">
                                         {% if installation.backend_url %}<a class="detail-action" href="{{ installation.backend_url }}" target="_blank" rel="noopener noreferrer">Contao-Backend <span aria-hidden="true">↗</span></a>{% endif %}
                                         {% if installation.manager_url %}<a class="detail-action" href="{{ installation.manager_url }}" target="_blank" rel="noopener noreferrer">Contao-Manager <span aria-hidden="true">↗</span></a>{% endif %}
-                                        {{ dm.frontend_actions(installation.frontend_actions, contao.request_token) }}
-                                        {% if not workspace.pro_enabled %}
-                                            <button type="button" class="detail-action is-pro-locked" aria-disabled="true" data-dm-pro-hint>Update prüfen · Pro</button>
-                                            <button type="button" class="detail-action is-pro-locked" aria-disabled="true" data-dm-pro-hint>Sicherungen · Pro</button>
-                                        {% endif %}
+                                        {{ dm.frontend_actions(overview_actions, contao.request_token) }}
                                     </div>
                                 {% endif %}
                             </div>
@@ -323,15 +320,12 @@
                                         {% if installation.notes %}<p>{{ installation.notes|nl2br }}</p>{% else %}<p class="no-notes">Keine Bemerkungen hinterlegt.</p>{% endif %}
                                     </div>
 
-                                    {% if installation.backend_url or installation.manager_url or installation.frontend_actions or not workspace.pro_enabled %}
+                                    {% set overview_actions = installation.frontend_actions|filter(action => action.name not in ['update-check', 'update-install']) %}
+                                    {% if installation.backend_url or installation.manager_url or overview_actions %}
                                         <div class="installation-detail-actions">
                                             {% if installation.backend_url %}<a class="detail-action" href="{{ installation.backend_url }}" target="_blank" rel="noopener noreferrer">Contao-Backend <span aria-hidden="true">↗</span></a>{% endif %}
                                             {% if installation.manager_url %}<a class="detail-action" href="{{ installation.manager_url }}" target="_blank" rel="noopener noreferrer">Contao-Manager <span aria-hidden="true">↗</span></a>{% endif %}
-                                            {{ dm.frontend_actions(installation.frontend_actions, contao.request_token) }}
-                                        {% if not workspace.pro_enabled %}
-                                            <button type="button" class="detail-action is-pro-locked" aria-disabled="true" data-dm-pro-hint>Update prüfen · Pro</button>
-                                            <button type="button" class="detail-action is-pro-locked" aria-disabled="true" data-dm-pro-hint>Sicherungen · Pro</button>
-                                        {% endif %}
+                                            {{ dm.frontend_actions(overview_actions, contao.request_token) }}
                                         </div>
                                     {% endif %}
 
