@@ -141,6 +141,7 @@ try {
         await singleRow.locator('[data-dm-action="update-check"] button').click();
         await page.waitForFunction(() => document.querySelector('[data-dm-updates]').dataset.dmWorkspaceBusy === '0');
         const failed = !['current', 'available'].includes(outcome);
+        if (outcome === 'current') await page.locator('[data-dm-update-filter="all"]').click();
         assert.equal(await page.evaluate(() => window.__dmSingleRequests), 1);
         assert.equal(await singleRow.getAttribute('data-update-state'), failed ? 'check_failed' : outcome);
         assert.equal(await page.locator('[data-dm-progress-summary]').innerText(), failed ? '1 Fehler' : 'Prüfung erfolgreich abgeschlossen');
@@ -164,6 +165,8 @@ try {
             });
             await singleRow.locator('[data-dm-action="update-check"] button').click();
             await page.waitForFunction(() => document.querySelector('[data-dm-updates]').dataset.dmWorkspaceBusy === '0');
+            // Successful rows leave Handlungsbedarf, so inspect the result under Alle Installationen.
+            await page.locator('[data-dm-update-filter="all"]').click();
             assert.equal(await singleRow.getAttribute('data-update-state'), 'current');
             assert.equal(await page.locator('[data-dm-progress-summary]').innerText(), 'Prüfung erfolgreich abgeschlossen');
             assert.equal(await page.locator('[data-dm-update-progress]').evaluate(element => element.classList.contains('has-errors')), false);
