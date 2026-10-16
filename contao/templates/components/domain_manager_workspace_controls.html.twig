@@ -8,9 +8,10 @@
     <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-workspace.js') ~ '?v=agency-1' }}" defer></script>
 {% endadd %}
 
+{% set locked_label = workspace.pro_available ? 'Gesperrt' : 'Pro' %}
 <div class="dm-workspace-metrics" aria-label="Installationsübersicht">
     <button type="button" data-dm-workspace-scope="all"><strong>{{ workspace_counts.total }}</strong><span>Installationen<small>{{ workspace_groups }} Hauptdomains</small></span></button>
-    <button type="button" {% if workspace.pro_enabled %}data-dm-workspace-scope="available"{% else %}class="is-pro-locked" aria-disabled="true" data-dm-pro-hint{% endif %}><strong>{{ workspace.pro_enabled ? workspace_counts.updates : '—' }}</strong><span>Bekannte Updates{% if not workspace.pro_enabled %}<small>Pro</small>{% endif %}</span></button>
+    <button type="button" {% if workspace.pro_enabled %}data-dm-workspace-scope="available"{% else %}class="is-pro-locked" aria-disabled="true" data-dm-pro-hint{% endif %}><strong>{{ workspace.pro_enabled ? workspace_counts.updates : '—' }}</strong><span>Bekannte Updates{% if not workspace.pro_enabled %}<small>{{ workspace.pro_available ? 'Keine Bedienrechte' : 'Pro' }}</small>{% endif %}</span></button>
     <button type="button" data-dm-workspace-scope="error" class="has-errors"><strong>{{ workspace_counts.problems }}</strong><span>Probleme</span></button>
 </div>
 <div class="dm-workspace-running"{% if workspace.pro_enabled and workspace_counts.running == 0 %} hidden{% endif %}>
@@ -18,7 +19,7 @@
         <strong>{{ workspace_counts.running }} {{ workspace_counts.running == 1 ? 'Installation in Bearbeitung' : 'Installationen in Bearbeitung' }}</strong>
         <button type="button" data-dm-workspace-scope="running">Laufende Wartungsaufträge anzeigen</button>
     {% else %}
-        <button type="button" class="is-pro-locked" aria-disabled="true" data-dm-pro-hint>Wartungsaufträge verfolgen <span>Pro</span></button>
+        <button type="button" class="is-pro-locked" aria-disabled="true" data-dm-pro-hint>Wartungsaufträge verfolgen <span>{{ locked_label }}</span></button>
     {% endif %}
 </div>
 <div class="dm-workspace-viewbar">
@@ -28,7 +29,7 @@
             <button type="button" data-dm-workspace-scope="all">Alle Installationen</button>
         </div>
     {% else %}
-        <span class="dm-workspace-caption">Installationen nach Dringlichkeit bearbeiten</span>
+        <span class="dm-workspace-caption">{{ workspace.pro_enabled ? 'Installationen nach Dringlichkeit bearbeiten' : 'Installationen im Überblick' }}</span>
     {% endif %}
     <div class="dm-workspace-views" role="group" aria-label="Darstellung">
         <button type="button" data-dm-workspace-view="list" aria-pressed="true">Liste</button>

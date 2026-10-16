@@ -217,6 +217,12 @@
                 return;
             }
 
+            filterButtons.forEach((button) => {
+                const active = button.dataset.dmUpdateFilter === filter;
+                button.classList.toggle('is-active', active);
+                button.setAttribute('aria-pressed', String(active));
+            });
+
             const term = String(search?.value || '').toLocaleLowerCase('de-DE').trim();
             let visible = 0;
 
@@ -600,7 +606,6 @@
                 filter = button.dataset.dmUpdateFilter || 'all';
                 root.dataset.dmWorkspaceScope = filter;
                 root.dispatchEvent(new CustomEvent('dm:workspace-filtered'));
-                filterButtons.forEach((candidate) => candidate.classList.toggle('is-active', candidate === button));
                 apply();
             });
         });

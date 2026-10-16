@@ -13,6 +13,10 @@ try {
     assert.equal(await page.locator('.dm-workspace-group:visible').count(), 10);
     assert.equal(await page.locator('.dm-workspace-group[open]').count(), 0);
     assert.equal(await page.locator('form[action^="/pro/"]').count(), 0);
+    assert.equal(await page.locator('[data-dm-update-filter="all"]').getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.locator('[data-dm-update-filter="attention"]').getAttribute('aria-pressed'), 'false');
+    assert.match(await page.locator('.dm-updates-pro-teaser').innerText(), /Update-Management in der Pro-Version/);
+    assert.equal(await page.locator('.dm-update-state.is-locked').evaluateAll(states => states.every(state => state.textContent.trim() === 'Pro-Funktion')), true);
     // Pro actions are aria-disabled; their pointer interaction still opens help.
     await page.locator('[data-dm-pro-hint]').first().click({ force: true });
     assert.equal(await page.locator('[data-dm-pro-hint-panel]').isVisible(), true);
@@ -25,12 +29,19 @@ try {
 
     await page.goto(pathToFileURL(resolve('build/browser/pro-readonly.html')).href);
     assert.equal(await page.locator('form[action^="/pro/"]').count(), 0);
+    assert.equal(await page.locator('[data-dm-update-filter="all"]').getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.locator('[data-dm-update-filter="attention"]').getAttribute('aria-pressed'), 'false');
+    assert.match(await page.locator('.dm-updates-pro-teaser').innerText(), /Nur Lesezugriff/);
+    assert.doesNotMatch(await page.locator('.dm-updates-pro-teaser').innerText(), /Pro-Version/);
+    assert.equal(await page.locator('.dm-update-state.is-locked').evaluateAll(states => states.every(state => state.textContent.trim() === 'Keine Bedienrechte')), true);
+    assert.equal(await page.locator('.dm-update-actions .is-pro-locked span').evaluateAll(badges => badges.every(badge => badge.textContent === 'Gesperrt')), true);
     await page.locator('[data-dm-pro-hint]').first().focus();
     await page.keyboard.press('Enter');
     assert.match(await page.locator('[data-dm-pro-hint-panel]').innerText(), /Bedienrechte/);
     assert.equal(await page.locator('[data-dm-pro-hint-panel] a').count(), 0);
 
     await page.goto(pathToFileURL(resolve('build/browser/pro.html')).href);
+    assert.equal(await page.locator('[data-dm-update-filter="attention"]').getAttribute('aria-pressed'), 'true');
     assert.equal(await page.locator('[data-dm-update-row]:visible').count(), 10);
     const olderCheck = page.locator('[data-dm-update-row][data-installation-id="55"]');
     assert.equal(await olderCheck.isVisible(), true);
@@ -48,6 +59,8 @@ try {
     assert.equal(await page.locator('[data-dm-updates]').getAttribute('data-dm-workspace-view'), 'tiles');
     assert.equal(await page.locator('[data-dm-selected-count]').innerText(), selected);
     await page.locator('[data-dm-update-search]').fill('mirror.kunde-15');
+    assert.equal(await page.locator('[data-dm-update-filter="all"]').getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.locator('[data-dm-update-filter="attention"]').getAttribute('aria-pressed'), 'false');
     assert.equal(await page.locator('[data-dm-update-row]:visible').count(), 1);
     assert.match(await page.locator('[data-dm-update-row]:visible').innerText(), /mirror.kunde-15/);
     assert.equal(await page.locator('[data-dm-selected-count]').innerText(), selected);
