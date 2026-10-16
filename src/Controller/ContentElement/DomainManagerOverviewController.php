@@ -18,6 +18,7 @@ use Lebensbaum\ContaoDomainManagerBundle\Event\InstallationHealthEvaluationEvent
 use Lebensbaum\ContaoDomainManagerBundle\Event\OverviewFrontendExtensionEvent;
 use Lebensbaum\ContaoDomainManagerBundle\Health\InstallationHealthEvaluator;
 use Lebensbaum\ContaoDomainManagerBundle\Frontend\FrontendWorkspaceNavigation;
+use Lebensbaum\ContaoDomainManagerBundle\Frontend\WorkspacePresentation;
 use Lebensbaum\ContaoDomainManagerBundle\Settings\DomainManagerSettings;
 use Lebensbaum\ContaoDomainManagerBundle\Util\SystemValueNormalizer;
 use Symfony\Component\HttpFoundation\Request;
@@ -45,6 +46,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
         private readonly InstallationHealthEvaluator $healthEvaluator,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly FrontendWorkspaceNavigation $workspaceNavigation,
+        private readonly WorkspacePresentation $workspacePresentation,
     ) {
     }
 
@@ -54,6 +56,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
         Request $request,
     ): Response {
         $domains = [];
+        $workspaceInstallations = [];
         $allContaoVersions = [];
         $allPhpVersions = [];
         $allEnvironments = [];
@@ -70,6 +73,12 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
             'SELECT * FROM '.self::DOMAIN_TABLE.' ORDER BY domain, id'
         );
 
+        // Fetch the portfolio once, rather than one query per main domain.
+        $installationsByDomain = [];
+        foreach ($this->connection->fetchAllAssociative('SELECT * FROM '.self::INSTALLATION_TABLE.' ORDER BY pid, sorting, id') as $row) {
+            $installationsByDomain[(int) ($row['pid'] ?? 0)][] = $row;
+        }
+
         foreach ($domainRows as $domainRow) {
             $domainId = (int) ($domainRow['id'] ?? 0);
 
@@ -77,10 +86,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
                 continue;
             }
 
-            $installationRows = $this->connection->fetchAllAssociative(
-                'SELECT * FROM '.self::INSTALLATION_TABLE.' WHERE pid = ? ORDER BY sorting, id',
-                [$domainId]
-            );
+            $installationRows = $installationsByDomain[$domainId] ?? [];
 
             $installations = [];
             $targetInstallation = null;
@@ -88,6 +94,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
 
             foreach ($installationRows as $installationRow) {
                 $installation = $this->normalizeInstallation($installationRow, $externalServices);
+                $installation['frontend_workspace'] = 'overview';
                 $installation['health'] = $this->healthEvaluator->evaluate($installation, $staleSyncDays);
 
                 $healthEvent = new InstallationHealthEvaluationEvent($installation);
@@ -103,8 +110,10 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
                 $installation['frontend_actions'] = $frontendEvent->getActions();
                 $installation['frontend_bulk_capabilities'] = $frontendEvent->getBulkCapabilities();
                 $installation['frontend_sections'] = $frontendEvent->getSections();
+                $installation['frontend_metadata'] = $frontendEvent->getMetadata();
 
                 $installations[] = $installation;
+                $workspaceInstallations[] = $installation;
 
                 if ('' !== $installation['contao_version']) {
                     $allContaoVersions[$installation['contao_version']] = true;
@@ -178,6 +187,7 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
                 'target' => $targetInstallation,
                 'others' => $otherInstallations,
                 'installations' => $installations,
+                'workspace_counts' => $this->workspacePresentation->summarize($installations),
                 'health' => $domainHealth,
                 'search' => strtolower(implode(' ', array_filter($searchTerms))),
                 'sync_url' => $this->router->generate(
@@ -204,6 +214,9 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
         $template->set('can_sync', $canSync);
         $template->set('external_services', []);
         $template->set('frontend_bulk_actions', $overviewFrontendEvent->getBulkActions());
+        $template->set('workspace', $this->workspacePresentation->features($overviewFrontendEvent->getMetadata()));
+        $template->set('workspace_counts', $this->workspacePresentation->summarize($workspaceInstallations));
+        $template->set('workspace_groups', count($domains));
         $page = $request->attributes->get('pageModel');
         $pageId = $page instanceof PageModel ? (int) $page->id : (is_numeric($page) ? (int) $page : 0);
         $template->set('workspace_navigation', $this->workspaceNavigation->build($pageId));
