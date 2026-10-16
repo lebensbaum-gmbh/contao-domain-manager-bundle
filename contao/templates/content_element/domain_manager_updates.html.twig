@@ -312,7 +312,8 @@
                                 </summary>
                                 <div class="dm-update-backups-body">
                                     <div class="dm-update-backups-intro">
-                                        <p>Die Sicherungen sind nach Datum sortiert und auf mehrere Seiten verteilt. Die Archivgröße umfasst die beim Erstellen gemessenen Datenbank- und Projektarchive; ob die Dateien noch auf dem Zielserver liegen, wird beim Wiederherstellen geprüft. Automatisch bleiben maximal fünf Sicherungen erhalten; manuelle Sicherungen bis zur Löschung.</p>
+                                        <p>Die Sicherungen sind nach Datum sortiert und auf mehrere Seiten verteilt. Die Archivgröße umfasst die beim Erstellen gemessenen Datenbank- und Projektarchive; ob die Dateien noch auf dem Zielserver liegen, wird beim Wiederherstellen geprüft.</p>
+                                        <p>Pro Installation bleiben die zehn neuesten erfolgreichen Sicherungen erhalten – manuelle und automatische einschließlich der Kopien vor Wiederherstellungen. Nach einer erfolgreichen neuen Sicherung oder Wiederherstellung werden ältere Sicherungen automatisch gelöscht.</p>
                                         <form action="{{ backup_workspace.create_url }}" method="post" class="dm-backup-create-form">
                                             <input type="hidden" name="REQUEST_TOKEN" value="{{ contao.request_token }}">
                                             <input type="hidden" name="maintend_csrf" value="{{ backup_workspace.csrf_create }}">
