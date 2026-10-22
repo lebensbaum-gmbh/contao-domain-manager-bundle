@@ -2,6 +2,7 @@ import { chromium } from 'playwright';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 
 const browser = await chromium.launch({ headless: true });
 const failures = [];
@@ -172,6 +173,34 @@ try {
             assert.equal(await page.locator('[data-dm-update-progress]').evaluate(element => element.classList.contains('has-errors')), false);
             assert.equal(await page.locator('[data-dm-check-failure-count]').innerText(), '1');
         }
+    }
+
+    // A restore result must disappear when a subsequent check or install starts,
+    // including inline notices and notices inserted after page initialization.
+    const proHtml = await readFile(resolve('build/browser/pro.html'), 'utf8');
+    await page.route('https://maintend.example.test/**', route => route.fulfill({ contentType: 'text/html', body: proHtml }));
+    page.on('dialog', dialog => dialog.accept());
+    for (const action of ['update-check', 'update-install']) {
+        await page.goto('https://maintend.example.test/updates?filter=all&dm_backup_restore=success&dm_backup_installation=2&dm_update_install=success&dm_installation=2');
+        assert.equal(new URL(page.url()).search, '?filter=all');
+        await page.evaluate(() => {
+            const root = document.querySelector('[data-dm-updates]');
+            root.insertAdjacentHTML('afterbegin', '<div class="dm-updates-result">Old restore</div><div class="dm-updates-result">Old update</div><div data-dm-backup-result>Old inline restore</div>');
+            window.fetch = async url => {
+                await new Promise(resolve => { window.__dmResultRelease = resolve; });
+                const row = document.querySelector('[data-dm-update-row][data-installation-id="2"]').cloneNode(true);
+                row.dataset.updateState = 'current'; row.dataset.releaseGap = '0';
+                row.querySelector('[data-dm-action="update-install"]')?.remove();
+                const result = new URL(url).pathname.includes('/install/') ? 'dm_update_install=success' : 'dm_update=up_to_date';
+                return { ok: true, status: 200, url: window.location.origin + '/updates?' + result + '&dm_installation=2', text: async () => row.outerHTML };
+            };
+        });
+        await page.locator('[data-dm-update-row][data-installation-id="2"] [data-dm-action="' + action + '"] button').click();
+        await page.waitForFunction(() => typeof window.__dmResultRelease === 'function');
+        assert.equal(await page.locator('.dm-updates-result, [data-dm-backup-result]').evaluateAll(nodes => nodes.every(node => node.hidden)), true);
+        await page.evaluate(() => window.__dmResultRelease());
+        await page.waitForFunction(() => document.querySelector('[data-dm-updates]').dataset.dmWorkspaceBusy === '0');
+        assert.equal(await page.locator('.dm-updates-result:visible, [data-dm-backup-result]:visible').count(), 0);
     }
 
     await page.setViewportSize({ width: 1280, height: 1000 });
