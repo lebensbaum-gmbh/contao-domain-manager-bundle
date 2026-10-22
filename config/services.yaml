@@ -1,3 +1,6 @@
+parameters:
+    maintend.pro_subscription_url: 'https://maintend.de/'
+
 services:
     _defaults:
         autowire: true
@@ -12,6 +15,10 @@ services:
     Lebensbaum\ContaoDomainManagerBundle\Security\SecretCipher:
         arguments:
             $kernelSecret: '%kernel.secret%'
+
+    Lebensbaum\ContaoDomainManagerBundle\Frontend\WorkspacePresentation:
+        arguments:
+            $proSubscriptionUrl: '%maintend.pro_subscription_url%'
 
     Lebensbaum\ContaoDomainManagerBundle\Controller\SyncDomainController:
         public: true

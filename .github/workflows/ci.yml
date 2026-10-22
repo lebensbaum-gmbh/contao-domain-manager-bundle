@@ -7,6 +7,8 @@ on:
   pull_request:
     branches:
       - main
+      - feature/backup-restore-workspace
+      - feature/scalable-domain-workspace
 
 permissions:
   contents: read
@@ -48,10 +50,32 @@ jobs:
         run: composer update --prefer-dist --no-interaction --no-progress
 
       - name: Validate JavaScript syntax
-        run: node --check public/js/domain-manager-updates.js
+        run: |
+          node --check public/js/domain-manager-updates.js
+          node --check public/js/domain-manager-workspace.js
+          node --check public/js/domain-manager.js
 
       - name: Lint PHP files
         run: find src contao tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
 
       - name: Run unit tests
         run: composer test
+
+      - name: Render Free and Pro browser fixtures
+        if: matrix.php == '8.4'
+        run: php tests/Browser/render_workspace.php
+
+      - name: Check workspace with 80 installations
+        if: matrix.php == '8.4'
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+          node tests/Browser/workspace.mjs
+
+      - name: Keep browser screenshots for review
+        if: always() && matrix.php == '8.4'
+        uses: actions/upload-artifact@v4
+        with:
+          name: workspace-browser-review
+          path: build/browser/
+          retention-days: 7
