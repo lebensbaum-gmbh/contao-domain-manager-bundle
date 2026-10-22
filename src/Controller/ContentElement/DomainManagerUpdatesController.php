@@ -183,7 +183,7 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
         $template->set('backup_result_message', $proEnabled ? $this->backupResultMessage($backupCreateStatus, $backupRestoreStatus, $backupDeleteStatus) : '');
         $template->set('backup_result_error', in_array($backupCreateStatus, ['error'], true)
             || in_array($backupRestoreStatus, ['error', 'confirmation_invalid'], true)
-            || in_array($backupDeleteStatus, ['error', 'confirmation_invalid'], true));
+            || in_array($backupDeleteStatus, ['error', 'confirmation_invalid', 'backup_running', 'backup_in_use', 'maintenance_busy'], true));
         $template->set('backup_result_installation_id', $request->query->getInt('dm_backup_installation'));
         $page = $request->attributes->get('pageModel');
         $pageId = $page instanceof PageModel ? (int) $page->id : (is_numeric($page) ? (int) $page : 0);
@@ -267,6 +267,9 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
             return match ($delete) {
                 'success' => 'Sicherung auf der Zielinstallation gelöscht und aus der Historie entfernt.',
                 'confirmation_invalid' => 'Sicherung nicht gelöscht: Die Löschbestätigung fehlt.',
+                'backup_running' => 'Sicherung nicht gelöscht: Sie wird gerade erstellt. Bitte den Abschluss der Sicherung abwarten.',
+                'backup_in_use' => 'Sicherung nicht gelöscht: Sie wird gerade für eine Wiederherstellung verwendet. Bitte den Abschluss der Wiederherstellung abwarten.',
+                'maintenance_busy' => 'Sicherung nicht gelöscht: Auf der Zielinstallation läuft eine Wartungsaktion. Bitte deren Abschluss abwarten.',
                 'error' => 'Sicherung konnte nicht gelöscht werden. Die Dateien oder der Historieneintrag sind möglicherweise noch vorhanden.',
                 default => '',
             };

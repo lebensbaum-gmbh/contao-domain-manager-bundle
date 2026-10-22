@@ -29,7 +29,6 @@
         const checkFailureSummary = root.querySelector('[data-dm-check-failure-summary]');
         const installFailureCount = root.querySelector('[data-dm-install-failure-count]');
         const installFailureSummary = root.querySelector('[data-dm-install-failure-summary]');
-        const previousResult = root.querySelector('.dm-updates-result');
         let filter = rows.some(row => row.classList.contains('is-result') || row.querySelector('[data-dm-update-backups][open]')) ? 'all' : (root.dataset.dmWorkspaceDefault || 'all');
         let bulkRunning = false;
         let backupRunning = false;
@@ -49,7 +48,10 @@
         const clearTransientResultParams = () => {
             try {
                 const url = new URL(window.location.href);
-                const params = ['dm_update', 'dm_update_install', 'dm_installation'];
+                const params = [
+                    'dm_update', 'dm_update_install', 'dm_installation',
+                    'dm_backup_create', 'dm_backup_restore', 'dm_backup_delete', 'dm_backup_installation',
+                ];
                 let changed = false;
 
                 params.forEach((name) => {
@@ -68,6 +70,13 @@
         };
 
         clearTransientResultParams();
+
+        const clearPreviousResults = () => {
+            clearTransientResultParams();
+            root.querySelectorAll('.dm-updates-result, [data-dm-backup-result]').forEach((result) => {
+                result.hidden = true;
+            });
+        };
 
         const findActionForm = (row, name) => row?.querySelector(`.dm-updates-action-form[data-dm-action="${name}"]`) || null;
 
@@ -397,7 +406,7 @@
             progress?.classList.remove('is-complete', 'has-errors', 'has-warnings');
             progressTrack?.removeAttribute('data-dm-phase');
             progressBar?.removeAttribute('data-dm-phase');
-            previousResult?.setAttribute('hidden', 'hidden');
+            clearPreviousResults();
 
             if (progressTitle) {
                 progressTitle.textContent = title;
@@ -729,6 +738,7 @@
 
 
         const restoreBackup = async (form, row) => {
+            clearPreviousResults();
             const panel = form.closest('[data-dm-update-backups]');
             const progressElement = panel?.querySelector('[data-dm-backup-progress]');
             const button = form.querySelector('button[type="submit"]');
@@ -881,6 +891,7 @@
         };
 
         const createManualBackup = async (form, row) => {
+            clearPreviousResults();
             const panel = form.closest('[data-dm-update-backups]');
             const progressElement = panel?.querySelector('[data-dm-backup-progress]');
             const button = form.querySelector('button[type="submit"]');
@@ -1032,6 +1043,7 @@
                 return;
             }
 
+            clearPreviousResults();
             backupRunning = true;
             const button = form.querySelector('button[type="submit"]');
             const panel = form.closest('[data-dm-update-backups]');
