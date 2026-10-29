@@ -17,6 +17,25 @@ jobs:
   quality:
     name: PHP ${{ matrix.php }}
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: test
+          MYSQL_DATABASE: maintend_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -ptest"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      MAINTEND_TEST_MYSQL_HOST: 127.0.0.1
+      MAINTEND_TEST_MYSQL_PORT: 3306
+      MAINTEND_TEST_MYSQL_DATABASE: maintend_test
+      MAINTEND_TEST_MYSQL_USER: root
+      MAINTEND_TEST_MYSQL_PASSWORD: test
     strategy:
       fail-fast: false
       matrix:
@@ -33,7 +52,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: intl, mbstring, openssl
+          extensions: intl, mbstring, openssl, pdo_sqlite, pdo_mysql
           tools: composer:v2
           coverage: none
 
@@ -79,3 +98,4 @@ jobs:
           name: workspace-browser-review
           path: build/browser/
           retention-days: 7
+
