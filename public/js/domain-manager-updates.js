@@ -26,10 +26,10 @@
         const progressSummary = root.querySelector('[data-dm-progress-summary]');
         const availableCount = root.querySelector('[data-dm-available-count]');
         const checkFailureCount = root.querySelector('[data-dm-check-failure-count]');
+        const checkFailureSummary = root.querySelector('[data-dm-check-failure-summary]');
         const installFailureCount = root.querySelector('[data-dm-install-failure-count]');
         const installFailureSummary = root.querySelector('[data-dm-install-failure-summary]');
-        const previousResult = root.querySelector('.dm-updates-result');
-        let filter = 'all';
+        let filter = rows.some(row => row.classList.contains('is-result') || row.querySelector('[data-dm-update-backups][open]')) ? 'all' : (root.dataset.dmWorkspaceDefault || 'all');
         let bulkRunning = false;
         let backupRunning = false;
         let restoreRunning = false;
@@ -48,7 +48,10 @@
         const clearTransientResultParams = () => {
             try {
                 const url = new URL(window.location.href);
-                const params = ['dm_update', 'dm_update_install', 'dm_installation'];
+                const params = [
+                    'dm_update', 'dm_update_install', 'dm_installation',
+                    'dm_backup_create', 'dm_backup_restore', 'dm_backup_delete', 'dm_backup_installation',
+                ];
                 let changed = false;
 
                 params.forEach((name) => {
@@ -67,6 +70,13 @@
         };
 
         clearTransientResultParams();
+
+        const clearPreviousResults = () => {
+            clearTransientResultParams();
+            root.querySelectorAll('.dm-updates-result, [data-dm-backup-result]').forEach((result) => {
+                result.hidden = true;
+            });
+        };
 
         const findActionForm = (row, name) => row?.querySelector(`.dm-updates-action-form[data-dm-action="${name}"]`) || null;
 
@@ -93,12 +103,17 @@
 
         const setRowState = (row, state, label = stateLabel(state)) => {
             row.dataset.updateState = state;
+            if (state === 'check_failed') {
+                findActionForm(row, 'update-install')?.remove();
+            }
             const element = row.querySelector('.dm-update-state');
 
             if (element) {
-                element.className = `dm-update-state is-${state}`;
-                element.textContent = label;
+                const backlog = Number(row.dataset.releaseGap) >= 5;
+                element.className = `dm-update-state is-${state}` + (backlog ? ' has-backlog' : '');
+                element.textContent = backlog && ['available', 'unknown', 'current'].includes(state) ? `Wartungsrückstand · ${row.dataset.releaseGap} Versionen` : label;
             }
+            window.MaintendWorkspace?.apply(root);
         };
 
         const updateAvailableCount = () => {
@@ -139,6 +154,10 @@
                 }
             }
 
+            if (checkFailureSummary) {
+                checkFailureSummary.hidden = counts.check_failed === 0;
+            }
+
             if (installFailureSummary) {
                 installFailureSummary.hidden = counts.error === 0;
             }
@@ -147,7 +166,8 @@
         const selectedRows = () => rowCheckboxes
             .filter((checkbox) => checkbox.checked && !checkbox.disabled)
             .map((checkbox) => checkbox.closest('[data-dm-update-row]'))
-            .filter(Boolean);
+            .filter(Boolean)
+            .sort((a, b) => (window.MaintendWorkspace?.priority(a) || 0) - (window.MaintendWorkspace?.priority(b) || 0));
 
         const installableSelectedRows = () => selectedRows()
             .filter((row) => Boolean(findActionForm(row, 'update-install')));
@@ -209,15 +229,23 @@
                 return;
             }
 
+            filterButtons.forEach((button) => {
+                const active = button.dataset.dmUpdateFilter === filter;
+                button.classList.toggle('is-active', active);
+                button.setAttribute('aria-pressed', String(active));
+            });
+
             const term = String(search?.value || '').toLocaleLowerCase('de-DE').trim();
             let visible = 0;
 
             rows.forEach((row) => {
                 const stateMatches = 'all' === filter
                     || row.dataset.updateState === filter
-                    || ('error' === filter && row.dataset.updateState === 'check_failed');
+                    || ('error' === filter && (Number(row.dataset.releaseGap) >= 5 || ['check_failed', 'warning'].includes(row.dataset.updateState)))
+                    || ('attention' === filter && (Number(row.dataset.releaseGap) >= 5 || ['available', 'unknown', 'error', 'check_failed', 'warning', 'running'].includes(row.dataset.updateState)));
                 const searchMatches = '' === term || String(row.dataset.search || '').includes(term);
                 const show = stateMatches && searchMatches;
+                row.dataset.dmExternalMatch = show ? '1' : '0';
                 row.hidden = !show;
 
                 if (show) {
@@ -229,6 +257,8 @@
                 empty.hidden = visible > 0;
             }
 
+            root.dataset.dmWorkspaceScope = filter;
+            window.MaintendWorkspace?.apply(root);
             updateSelection();
         };
 
@@ -299,6 +329,7 @@
                 const resultRow = documentFromResponse.querySelector(`[data-dm-update-row][data-installation-id="${installationId}"]`);
 
                 if (resultRow) {
+                    row.dataset.releaseGap = resultRow.dataset.releaseGap || '';
                     const resultState = resultRow.dataset.updateState || stateFromResponseUrl(responseUrl, action);
                     const resultStateElement = resultRow.querySelector('.dm-update-state');
                     const currentActions = row.querySelector('.dm-update-actions');
@@ -340,6 +371,12 @@
         };
 
         const setBulkUiLocked = (locked) => {
+            root.dataset.dmWorkspaceBusy = locked ? '1' : '0';
+            root.querySelectorAll('[data-dm-workspace-scope], [data-dm-workspace-view], .dm-workspace-pages button, .dm-workspace-pages select').forEach(control => { control.disabled = locked; });
+            rows.forEach(row => {
+                row.dataset.dmMaintenanceRunning = row.querySelector('[data-dm-update-backups][aria-busy="true"]') ? '1' : '0';
+            });
+            window.MaintendWorkspace?.apply(root);
             filterButtons.forEach((button) => { button.disabled = locked; });
             if (search) {
                 search.disabled = locked;
@@ -362,13 +399,14 @@
         };
 
         const startBulkRun = (selected, title, startText) => {
+            window.MaintendWorkspace?.begin(root);
             bulkRunning = true;
             root.classList.add('is-running');
             progress?.removeAttribute('hidden');
             progress?.classList.remove('is-complete', 'has-errors', 'has-warnings');
             progressTrack?.removeAttribute('data-dm-phase');
             progressBar?.removeAttribute('data-dm-phase');
-            previousResult?.setAttribute('hidden', 'hidden');
+            clearPreviousResults();
 
             if (progressTitle) {
                 progressTitle.textContent = title;
@@ -578,12 +616,15 @@
                 }
 
                 filter = button.dataset.dmUpdateFilter || 'all';
-                filterButtons.forEach((candidate) => candidate.classList.toggle('is-active', candidate === button));
+                root.dataset.dmWorkspaceScope = filter;
+                root.dispatchEvent(new CustomEvent('dm:workspace-filtered'));
                 apply();
             });
         });
 
-        search?.addEventListener('input', apply);
+        search?.addEventListener('input', () => { if (search.value.trim()) filter = 'all'; apply(); });
+        root.addEventListener('dm:workspace-visible', updateSelection);
+        root.addEventListener('dm:workspace-scope', event => { filter = event.detail; apply(); });
 
         rowCheckboxes.forEach((checkbox) => {
             checkbox.addEventListener('change', updateSelection);
@@ -644,7 +685,7 @@
                 const html = await response.text();
                 refreshRowFromResponse(row, html, response.url, isInstall ? 'install' : 'check');
 
-                if (row.dataset.updateState === 'error') {
+                if (['error', 'check_failed'].includes(row.dataset.updateState)) {
                     errors = 1;
                 } else if (row.dataset.updateState === 'warning') {
                     warnings = 1;
@@ -652,7 +693,7 @@
             } catch (error) {
                 setRowState(
                     row,
-                    'error',
+                    isInstall ? 'error' : 'check_failed',
                     isInstall ? 'Installation fehlgeschlagen' : 'Prüfung fehlgeschlagen'
                 );
                 errors = 1;
@@ -697,6 +738,7 @@
 
 
         const restoreBackup = async (form, row) => {
+            clearPreviousResults();
             const panel = form.closest('[data-dm-update-backups]');
             const progressElement = panel?.querySelector('[data-dm-backup-progress]');
             const button = form.querySelector('button[type="submit"]');
@@ -849,6 +891,7 @@
         };
 
         const createManualBackup = async (form, row) => {
+            clearPreviousResults();
             const panel = form.closest('[data-dm-update-backups]');
             const progressElement = panel?.querySelector('[data-dm-backup-progress]');
             const button = form.querySelector('button[type="submit"]');
@@ -1000,6 +1043,7 @@
                 return;
             }
 
+            clearPreviousResults();
             backupRunning = true;
             const button = form.querySelector('button[type="submit"]');
             const panel = form.closest('[data-dm-update-backups]');
