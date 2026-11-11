@@ -51,6 +51,7 @@
                 const params = [
                     'dm_update', 'dm_update_install', 'dm_installation',
                     'dm_backup_create', 'dm_backup_restore', 'dm_backup_delete', 'dm_backup_installation',
+                    'dm_restore_request',
                 ];
                 let changed = false;
 
@@ -761,9 +762,10 @@
             let currentPhase = '';
             let statusPolling = false;
             let statusUnknown = false;
+            let followingRestore = false;
 
             const pollRestore = async () => {
-                if (!restoreRunning || !remoteStatusUrl || statusPolling) {
+                if (!restoreRunning || !remoteStatusUrl || statusPolling || followingRestore) {
                     return;
                 }
 
@@ -778,7 +780,7 @@
                         return; // Temporary unavailability during cache rebuild.
                     }
                     const progress = await response.json();
-                    if (['pending', 'running', 'success', 'error'].includes(progress.status)
+                    if (!followingRestore && ['pending', 'running', 'success', 'error'].includes(progress.status)
                         && typeof progress.message === 'string'
                         && progress.message.trim() !== '') {
                         currentPhase = progress.message.slice(0, 300);
@@ -809,6 +811,9 @@
             progressElement.classList.add('is-running', 'is-restore');
             progressElement.classList.remove('is-error');
             const updateRestoreTime = () => {
+                if (followingRestore) {
+                    return;
+                }
                 const seconds = Math.floor((Date.now() - start) / 1000);
                 const phase = currentPhase ? currentPhase + ' ' : '';
                 progressElement.textContent = phase
@@ -844,7 +849,7 @@
                 const resultId = resultUrl.searchParams.get('dm_backup_installation');
 
                 if (resultUrl.origin !== window.location.origin
-                    || !['success', 'success_sync_warning', 'error', 'confirmation_invalid'].includes(status)
+                    || !['success', 'success_sync_warning', 'error', 'confirmation_invalid', 'restore_running', 'maintenance_busy'].includes(status)
                     || resultId !== installationId) {
                     throw new Error('Das Wiederherstellungsergebnis konnte nicht eindeutig zugeordnet werden.');
                 }
@@ -852,6 +857,37 @@
                 // These are *server* statuses. Never claim restore success based
                 // on the fetch status or an elapsed-time estimate alone.
                 confirmedResult = true;
+                if (status === 'restore_running') {
+                    const requestId = resultUrl.searchParams.get('dm_restore_request') || '';
+                    const statusUrl = remoteStatusUrl ? new URL(remoteStatusUrl, window.location.href) : null;
+                    if (/^[a-f0-9]{32}$/.test(requestId) && statusUrl?.origin === window.location.origin) {
+                        followingRestore = true;
+                        progressElement.textContent = 'Keine zweite Wiederherstellung gestartet. Das Ergebnis der laufenden Wiederherstellung wird abgerufen …';
+                        statusUrl.searchParams.set('request_id', requestId);
+
+                        const deadline = Date.now() + 90000;
+                        do {
+                            try {
+                                const reply = await fetch(statusUrl.href, {
+                                    credentials: 'same-origin',
+                                    cache: 'no-store',
+                                    headers: { 'Accept': 'application/json' },
+                                    signal: AbortSignal.timeout(5000),
+                                });
+                                const result = reply.ok ? await reply.json() : null;
+                                if (result?.recorded === true && result.request_id === requestId
+                                    && ['success', 'error'].includes(result.status)) {
+                                    resultUrl.searchParams.set('dm_backup_restore', result.status === 'success' ? 'tracked_success' : 'error');
+                                    break;
+                                }
+                            } catch (error) {
+                                // A failed status read does not decide the restore outcome.
+                            }
+                            await new Promise((resolve) => window.setTimeout(resolve, 3000));
+                        } while (Date.now() < deadline);
+                        resultUrl.searchParams.delete('dm_restore_request');
+                    }
+                }
                 progressElement.textContent = 'Die Zielinstallation hat geantwortet. Ergebnis wird angezeigt …';
 
                 // A restore can change installed versions and row metadata.
