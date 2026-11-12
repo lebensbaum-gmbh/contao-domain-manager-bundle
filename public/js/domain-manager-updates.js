@@ -79,6 +79,28 @@
         };
 
         const findActionForm = (row, name) => row?.querySelector(`.dm-updates-action-form[data-dm-action="${name}"]`) || null;
+        const isSelfUpdate = (row) => row.querySelector('.dm-update-domain strong')?.textContent?.trim().toLowerCase()
+            === window.location.hostname.toLowerCase();
+        const selfUpdateNotice = '\n\nDie Domainübersicht selbst wird aktualisiert. Sie kann kurz nicht erreichbar sein. Danach musst du dich möglicherweise erneut anmelden.';
+        const installUnconfirmedLabel = 'Update-Ergebnis nicht bestätigt';
+        const recoveryHint = 'Seite neu laden und bei Bedarf erneut anmelden. Vor einem neuen Update zuerst den aktuellen Stand prüfen.';
+
+        const markInstallUnconfirmed = (row) => {
+            findActionForm(row, 'update-install')?.remove();
+            setRowState(row, 'warning', installUnconfirmedLabel);
+        };
+
+        const checkNeedsLogin = (response) => {
+            if ([401, 403].includes(response.status)) {
+                return true;
+            }
+            if (!response.redirected) {
+                return false;
+            }
+
+            const url = new URL(response.url, window.location.href);
+            return url.origin !== window.location.origin || !url.searchParams.has('dm_update');
+        };
 
         const stateLabel = (state) => {
             switch (state) {
@@ -320,7 +342,7 @@
             return action === 'install' ? 'error' : 'check_failed';
         };
 
-        const refreshRowFromResponse = (row, html, responseUrl, action = 'check') => {
+        const refreshRowFromResponse = (row, html, responseUrl, action = 'check', confirmedState = null) => {
             const installationId = String(row.dataset.installationId || '');
             let refreshed = false;
 
@@ -330,14 +352,16 @@
 
                 if (resultRow) {
                     row.dataset.releaseGap = resultRow.dataset.releaseGap || '';
-                    const resultState = resultRow.dataset.updateState || stateFromResponseUrl(responseUrl, action);
+                    const resultState = confirmedState || resultRow.dataset.updateState || stateFromResponseUrl(responseUrl, action);
                     const resultStateElement = resultRow.querySelector('.dm-update-state');
                     const currentActions = row.querySelector('.dm-update-actions');
                     const resultActions = resultRow.querySelector('.dm-update-actions');
                     const currentVersion = row.querySelector('.dm-update-version');
                     const resultVersion = resultRow.querySelector('.dm-update-version');
 
-                    setRowState(row, resultState, resultStateElement?.textContent?.trim() || stateLabel(resultState));
+                    setRowState(row, resultState, resultRow.dataset.updateState === resultState
+                        ? resultStateElement?.textContent?.trim() || stateLabel(resultState)
+                        : stateLabel(resultState));
 
                     if (currentActions && resultActions) {
                         currentActions.innerHTML = resultActions.innerHTML;
@@ -365,9 +389,27 @@
             }
 
             if (!refreshed) {
-                const state = stateFromResponseUrl(responseUrl, action);
+                const state = confirmedState || stateFromResponseUrl(responseUrl, action);
                 setRowState(row, state);
             }
+        };
+
+        const applyInstallResponse = async (row, response) => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            const url = new URL(response.url, window.location.href);
+            const status = url.searchParams.get('dm_update_install');
+            if (url.origin !== window.location.origin
+                || url.searchParams.get('dm_installation') !== String(row.dataset.installationId || '')
+                || !['success', 'success_sync_warning', 'error'].includes(status)) {
+                throw new Error('Die Update-Antwort enthält kein zugeordnetes Ergebnis.');
+            }
+
+            // A valid result redirect confirms the outcome even if its HTML is unavailable.
+            const html = await response.text().catch(() => '');
+            refreshRowFromResponse(row, html, url.href, 'install', stateFromResponseUrl(url.href, 'install'));
+            findActionForm(row, 'update-install')?.remove();
         };
 
         const setBulkUiLocked = (locked) => {
@@ -523,7 +565,8 @@
             }
 
             const noun = selected.length === 1 ? 'Update' : 'Updates';
-            const confirmation = `${selected.length} ${noun} jetzt nacheinander installieren?\n\nUnmittelbar vor jeder einzelnen Installation wird ein vollständiges Sicherheitsbackup erstellt. Jede Zielinstallation prüft den vorbereiteten Composer-Plan vor dem Start erneut.`;
+            const confirmation = `${selected.length} ${noun} jetzt nacheinander installieren?\n\nUnmittelbar vor jeder einzelnen Installation wird ein vollständiges Sicherheitsbackup erstellt. Jede Zielinstallation prüft den vorbereiteten Composer-Plan vor dem Start erneut.`
+                + (selected.some(isSelfUpdate) ? selfUpdateNotice : '');
 
             if (!window.confirm(confirmation)) {
                 return;
@@ -535,6 +578,7 @@
             let installed = 0;
             let warnings = 0;
             let errors = 0;
+            let unconfirmed = false;
 
             for (const row of selected) {
                 const domain = row.querySelector('.dm-update-domain strong')?.textContent?.trim() || 'Installation';
@@ -559,12 +603,7 @@
                         },
                     });
 
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
-
-                    const html = await response.text();
-                    refreshRowFromResponse(row, html, response.url, 'install');
+                    await applyInstallResponse(row, response);
 
                     if (row.dataset.updateState === 'current') {
                         installed += 1;
@@ -574,8 +613,8 @@
                         errors += 1;
                     }
                 } catch (error) {
-                    setRowState(row, 'error', 'Installation fehlgeschlagen');
-                    errors += 1;
+                    markInstallUnconfirmed(row);
+                    unconfirmed = true;
                 }
 
                 row.classList.remove('is-processing');
@@ -584,27 +623,31 @@
 
                 const resultText = row.dataset.updateState === 'current'
                     ? 'Update installiert'
-                    : stateLabel(row.dataset.updateState);
+                    : (unconfirmed ? installUnconfirmedLabel : stateLabel(row.dataset.updateState));
                 updateProgress(completed, selected.length, `${domain}: ${resultText}`);
+                if (unconfirmed) {
+                    break;
+                }
             }
 
             const summary = [
                 `${installed} installiert`,
                 `${warnings} ${warnings === 1 ? 'Warnung' : 'Warnungen'}`,
                 `${errors} Fehler`,
+                ...(unconfirmed ? ['1 Ergebnis unbestätigt', `${selected.length - completed} nicht gestartet`] : []),
             ].join(' · ');
 
             if (progressTitle) {
-                progressTitle.textContent = 'Update-Installation abgeschlossen';
+                progressTitle.textContent = unconfirmed ? 'Update-Serie angehalten' : 'Update-Installation abgeschlossen';
             }
             progress?.classList.add('is-complete');
-            if (warnings > 0) {
+            if (warnings > 0 || unconfirmed) {
                 progress?.classList.add('has-warnings');
             }
             if (errors > 0) {
                 progress?.classList.add('has-errors');
             }
-            updateProgress(selected.length, selected.length, 'Alle ausgewählten Updates wurden verarbeitet.', summary);
+            updateProgress(completed, selected.length, unconfirmed ? recoveryHint : 'Alle ausgewählten Updates wurden verarbeitet.', summary);
 
             finishBulkRun();
         };
@@ -666,6 +709,8 @@
 
             let errors = 0;
             let warnings = 0;
+            let unconfirmed = false;
+            let needsLogin = false;
 
             try {
                 const response = await fetch(form.action, {
@@ -678,12 +723,16 @@
                     },
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
+                if (isInstall) {
+                    await applyInstallResponse(row, response);
+                } else {
+                    needsLogin = checkNeedsLogin(response);
+                    if (needsLogin || !response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    const html = await response.text();
+                    refreshRowFromResponse(row, html, response.url, 'check');
                 }
-
-                const html = await response.text();
-                refreshRowFromResponse(row, html, response.url, isInstall ? 'install' : 'check');
 
                 if (['error', 'check_failed'].includes(row.dataset.updateState)) {
                     errors = 1;
@@ -691,35 +740,40 @@
                     warnings = 1;
                 }
             } catch (error) {
-                setRowState(
-                    row,
-                    isInstall ? 'error' : 'check_failed',
-                    isInstall ? 'Installation fehlgeschlagen' : 'Prüfung fehlgeschlagen'
-                );
-                errors = 1;
+                if (isInstall) {
+                    markInstallUnconfirmed(row);
+                    unconfirmed = true;
+                } else if (needsLogin) {
+                    findActionForm(row, 'update-install')?.remove();
+                    setRowState(row, 'warning', 'Anmeldung oder Zugriff prüfen');
+                    warnings = 1;
+                } else {
+                    setRowState(row, 'check_failed');
+                    errors = 1;
+                }
             }
 
             row.classList.remove('is-processing');
             updateAvailableCount();
 
             if (progressTitle) {
-                progressTitle.textContent = isInstall
+                progressTitle.textContent = unconfirmed ? installUnconfirmedLabel : isInstall
                     ? 'Update-Installation abgeschlossen'
                     : 'Update-Prüfung abgeschlossen';
             }
 
             progress?.classList.add('is-complete');
-            if (warnings > 0) {
+            if (warnings > 0 || unconfirmed) {
                 progress?.classList.add('has-warnings');
             }
             if (errors > 0) {
                 progress?.classList.add('has-errors');
             }
 
-            const resultText = isInstall
+            const resultText = unconfirmed ? installUnconfirmedLabel : needsLogin ? 'Anmeldung oder Zugriff prüfen' : isInstall
                 ? (row.dataset.updateState === 'current' ? 'Update installiert' : stateLabel(row.dataset.updateState))
                 : stateLabel(row.dataset.updateState);
-            const summary = errors > 0
+            const summary = unconfirmed || needsLogin ? recoveryHint : errors > 0
                 ? '1 Fehler'
                 : warnings > 0
                     ? '1 Warnung'
@@ -729,7 +783,7 @@
 
             updateProgress(1, 1, `${domain}: ${resultText}`, summary);
 
-            if (progressCounter && errors === 0) {
+            if (progressCounter && errors === 0 && !unconfirmed && !needsLogin) {
                 progressCounter.textContent = isInstall ? 'Schritt 6 / 6' : 'Abgeschlossen';
             }
 
@@ -1095,7 +1149,10 @@
 
             event.preventDefault();
 
-            const confirmText = button.dataset.dmConfirm || '';
+            const baseConfirmation = button.dataset.dmConfirm || '';
+            const confirmText = actionName === 'update-install' && isSelfUpdate(row)
+                ? (baseConfirmation || 'Update jetzt installieren?') + selfUpdateNotice
+                : baseConfirmation;
             if (confirmText && !window.confirm(confirmText)) {
                 return;
             }
