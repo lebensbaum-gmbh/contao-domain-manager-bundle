@@ -73,6 +73,8 @@ jobs:
           node --check public/js/domain-manager-updates.js
           node --check public/js/domain-manager-workspace.js
           node --check public/js/domain-manager.js
+          node tests/Browser/update-feedback.cjs
+          node tests/Browser/restore-feedback.cjs
 
       - name: Lint PHP files
         run: find src contao tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l

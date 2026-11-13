@@ -181,6 +181,7 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
         $backupRestoreStatus = trim((string) $request->query->get('dm_backup_restore', ''));
         $backupDeleteStatus = trim((string) $request->query->get('dm_backup_delete', ''));
         $template->set('backup_result_message', $proEnabled ? $this->backupResultMessage($backupCreateStatus, $backupRestoreStatus, $backupDeleteStatus) : '');
+        $template->set('backup_result_notice', in_array($backupRestoreStatus, ['restore_running', 'maintenance_busy'], true));
         $template->set('backup_result_error', in_array($backupCreateStatus, ['error'], true)
             || in_array($backupRestoreStatus, ['error', 'confirmation_invalid'], true)
             || in_array($backupDeleteStatus, ['error', 'confirmation_invalid', 'backup_running', 'backup_in_use', 'maintenance_busy'], true));
@@ -279,6 +280,9 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
             return match ($restore) {
                 'success' => 'Wiederherstellung abgeschlossen. Die Installation wurde erneut synchronisiert.',
                 'success_sync_warning' => 'Wiederherstellung abgeschlossen. Die anschließende Synchronisation muss noch geprüft werden.',
+                'tracked_success' => 'Die bereits laufende Wiederherstellung wurde erfolgreich abgeschlossen.',
+                'restore_running' => 'Keine zweite Wiederherstellung gestartet. Eine Wiederherstellung läuft bereits.',
+                'maintenance_busy' => 'Wiederherstellung nicht gestartet. Auf der Zielinstallation ist eine Wartungssperre aktiv.',
                 'confirmation_invalid' => 'Wiederherstellung nicht gestartet: Domain-Bestätigung oder Sicherheitsbestätigung fehlt.',
                 'error' => 'Wiederherstellung nicht erfolgreich bestätigt. Der Zielzustand ist möglicherweise unvollständig. Bitte keine weitere Aktion starten und die Protokolle sowie den manuellen Notfallweg prüfen.',
                 default => '',
