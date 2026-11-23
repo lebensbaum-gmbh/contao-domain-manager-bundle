@@ -152,9 +152,16 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
             $installation['frontend_actions'] = $actions;
             $installation['frontend_metadata'] = $frontendMetadata;
             $installation['update_details'] = $updateDetails;
-            $installation['target_contao_version'] = $targetContaoVersion;
+            $updatePresentation = $this->workspacePresentation->updatePresentation(
+                $installation['contao_version'],
+                $targetContaoVersion,
+                true === ($updateDetails['relevant'] ?? false) ? count($updateDetails['operations'] ?? []) : 0
+            );
+            $installation['target_contao_version'] = $updatePresentation['target_version'];
             $installation['update_state'] = $updateState;
-            $installation['update_state_label'] = $this->updateStateLabel($updateState);
+            $installation['update_state_label'] = 'available' === $updateState
+                ? $updatePresentation['available_label']
+                : $this->updateStateLabel($updateState);
             $gap = $frontendMetadata['update_release_gap'] ?? null;
             $installation['update_release_gap'] = is_int($gap) && $gap >= 0 ? $gap : null;
             if (in_array($updateState, ['available', 'unknown', 'current'], true) && null !== $installation['update_release_gap'] && $gap >= 5) {

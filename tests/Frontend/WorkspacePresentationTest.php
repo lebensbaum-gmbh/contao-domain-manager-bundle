@@ -9,6 +9,30 @@ use PHPUnit\Framework\TestCase;
 
 final class WorkspacePresentationTest extends TestCase
 {
+    public function testPackageOnlyUpdateDoesNotSuggestReinstallingTheSameContaoVersion(): void
+    {
+        $presentation = (new WorkspacePresentation())->updatePresentation('5.7.17', '5.7.17', 1);
+        self::assertSame('', $presentation['target_version']);
+        self::assertSame('1 Paketänderung verfügbar', $presentation['available_label']);
+    }
+
+    public function testNewerContaoTargetRemainsVisible(): void
+    {
+        $presentation = (new WorkspacePresentation())->updatePresentation('5.7.15', 'v5.7.17', 10);
+        self::assertSame('5.7.17', $presentation['target_version']);
+        self::assertSame('Update verfügbar', $presentation['available_label']);
+    }
+
+    public function testOlderTargetAndInvalidVersionsDoNotProduceAnUpgradeArrow(): void
+    {
+        $presenter = new WorkspacePresentation();
+        foreach ([['5.7.17', '5.7.15'], ['v5.7.17', '5.7.17'], ['unknown', '5.7.17'], ['5.7.17', '']] as [$installed, $target]) {
+            self::assertSame('', $presenter->updatePresentation($installed, $target, 2)['target_version']);
+        }
+        self::assertSame('2 Paketänderungen verfügbar', $presenter->updatePresentation('5.7.17', '5.7.17', 2)['available_label']);
+        self::assertSame('Paketupdates verfügbar', $presenter->updatePresentation('5.7.17', '', 0)['available_label']);
+    }
+
     public function testFreeDoesNotAdvertiseOperationalAccess(): void
     {
         $features = (new WorkspacePresentation())->features([]);

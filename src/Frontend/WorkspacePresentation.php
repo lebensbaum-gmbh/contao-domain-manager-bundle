@@ -10,6 +10,26 @@ final class WorkspacePresentation
     {
     }
 
+    /** @return array{target_version:string,available_label:string} */
+    public function updatePresentation(string $installedVersion, string $targetVersion, int $operationCount): array
+    {
+        $installedVersion = ltrim(trim($installedVersion), 'vV');
+        $targetVersion = ltrim(trim($targetVersion), 'vV');
+        $versionPattern = '/\A\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?\z/';
+        $hasContaoUpgrade = 1 === preg_match($versionPattern, $installedVersion)
+            && 1 === preg_match($versionPattern, $targetVersion)
+            && version_compare($targetVersion, $installedVersion, '>');
+
+        return [
+            'target_version' => $hasContaoUpgrade ? $targetVersion : '',
+            'available_label' => $hasContaoUpgrade ? 'Update verfügbar' : match (true) {
+                1 === $operationCount => '1 Paketänderung verfügbar',
+                $operationCount > 1 => sprintf('%d Paketänderungen verfügbar', $operationCount),
+                default => 'Paketupdates verfügbar',
+            },
+        ];
+    }
+
     /** @param array<string, mixed> $features
      *  @return array{pro_available:bool,pro_enabled:bool,pro_url:string}
      */

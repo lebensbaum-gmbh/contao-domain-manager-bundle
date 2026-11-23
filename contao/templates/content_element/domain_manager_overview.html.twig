@@ -103,6 +103,9 @@
                         <span class="health-dot" aria-hidden="true"></span>
                         {{ domain.health.label }}{% if domain.health.issue_count > 0 %} · {{ domain.health.issue_count }}{% endif %}
                     </span>
+                    {% for message in domain.health.messages %}
+                        <span class="dm-workspace-summary-note">{{ message }}</span>
+                    {% endfor %}
                 </div>
 
                 {% if domain.target %}
@@ -244,7 +247,10 @@
                         {% endfor %}
                     </section>
                 {% else %}
-                    <div class="no-target">Für diese Hauptdomain ist kein aktuelles Ziel festgelegt.</div>
+                    <div class="no-target installation-health is-warning" role="status">
+                        <strong>Hinweis zur Hauptdomain</strong>
+                        <p>Für diese Hauptdomain ist kein aktuelles Ziel festgelegt. Der Status der einzelnen Installationen wird darunter separat angezeigt.</p>
+                    </div>
                 {% endif %}
 
                 {% if domain.others %}
