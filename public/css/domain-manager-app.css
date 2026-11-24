@@ -121,14 +121,14 @@ body.domainverwaltung-page h1 {
 .domain-manager-overview .domain-sync-button {
     border-color: var(--dm-accent);
     background: var(--dm-accent);
-    color: #fff;
+    color: var(--dm-on-emphasis, #fff);
 }
 
 .domain-manager-overview .domain-sync-button:hover,
 .domain-manager-overview .domain-sync-button:focus-visible {
     border-color: var(--dm-accent-hover);
     background: var(--dm-accent-hover);
-    color: #fff;
+    color: var(--dm-on-emphasis, #fff);
 }
 
 .domain-manager-overview .detail-action {
@@ -393,7 +393,7 @@ body.domainverwaltung-page .installation-featured.is-target .detail-kicker {
 body.domainverwaltung-page .installation-featured.is-target .status-badge.is-current {
     border-color: var(--dm-theme-text) !important;
     background: var(--dm-theme-text) !important;
-    color: #fff !important;
+    color: var(--dm-on-emphasis, #fff) !important;
 }
 
 
@@ -431,7 +431,7 @@ html body.domainverwaltung-page .domain-manager-overview .domain-summary::after 
 html body.domainverwaltung-page .domain-manager-overview .installation.installation-featured.is-target {
     border: 1px solid var(--dm-theme-border) !important;
     border-left: 4px solid var(--dm-theme-text) !important;
-    background: #f3f5f6 !important;
+    background: var(--dm-appearance-soft, #f3f5f6) !important;
     box-shadow: none !important;
 }
 

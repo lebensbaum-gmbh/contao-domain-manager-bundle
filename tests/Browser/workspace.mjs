@@ -10,6 +10,16 @@ try {
     const page = await browser.newPage({ viewport: { width: 1280, height: 1000 } });
     page.on('pageerror', error => failures.push(error.message));
     await page.goto(pathToFileURL(resolve('build/browser/free.html')).href);
+    const appearance = page.getByRole('button', { name: 'Dunkle Ansicht' });
+    assert.equal(await appearance.getAttribute('aria-pressed'), 'false');
+    await appearance.focus();
+    await page.keyboard.press('Space');
+    assert.equal(await appearance.getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.locator('body').getAttribute('data-dm-appearance'), 'dark');
+    await page.reload();
+    assert.equal(await appearance.getAttribute('aria-pressed'), 'true');
+    await appearance.click();
+    assert.equal(await appearance.getAttribute('aria-pressed'), 'false');
     assert.equal(await page.locator('[data-dm-update-row]').count(), 80);
     assert.equal(await page.locator('.dm-workspace-group:visible').count(), 10);
     assert.equal(await page.locator('.dm-workspace-group[open]').count(), 0);

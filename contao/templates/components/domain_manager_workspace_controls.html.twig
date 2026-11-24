@@ -1,11 +1,11 @@
 {% use "@Contao/component/_stylesheet.html.twig" %}
 {% add "domain_manager_workspace_css" to stylesheets %}
-    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-workspace.css') ~ '?v=agency-1'} %}
+    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-workspace.css') ~ '?v=appearance-1'} %}
         {{ block('stylesheet_component') }}
     {% endwith %}
 {% endadd %}
 {% add "domain_manager_workspace_js" to body %}
-    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-workspace.js') ~ '?v=agency-1' }}" defer></script>
+    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager-workspace.js') ~ '?v=appearance-1' }}" defer></script>
 {% endadd %}
 
 {% set locked_label = workspace.pro_available ? 'Gesperrt' : 'Pro' %}
@@ -34,6 +34,7 @@
     <div class="dm-workspace-views" role="group" aria-label="Darstellung">
         <button type="button" data-dm-workspace-view="list" aria-pressed="true">Liste</button>
         <button type="button" data-dm-workspace-view="tiles" aria-pressed="false">Kacheln</button>
+        <button type="button" data-dm-appearance aria-pressed="false" hidden>Dunkle Ansicht</button>
     </div>
 </div>
 <div class="dm-pro-hint" data-dm-pro-hint-panel role="status" hidden>

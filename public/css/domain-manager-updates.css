@@ -228,7 +228,7 @@
 .dm-update-actions .dm-updates-action.is-warning {
     border-color: var(--dm-u-primary);
     background: var(--dm-u-primary);
-    color: #fff;
+    color: var(--dm-on-emphasis, #fff);
     font-weight: 700;
 }
 
@@ -237,12 +237,12 @@
 .dm-update-actions .dm-updates-action.is-warning:hover {
     border-color: var(--dm-u-primary-hover);
     background: var(--dm-u-primary-hover);
-    color: #fff;
+    color: var(--dm-on-emphasis, #fff);
 }
 
 .dm-update-actions .dm-updates-action.is-primary {
     border-color: color-mix(in srgb, var(--dm-u-primary) 36%, var(--dm-u-border));
-    background: #fff;
+    background: var(--dm-u-surface);
     color: var(--dm-u-primary);
     font-weight: 700;
 }
@@ -391,7 +391,7 @@
     width: 100%;
     height: 10px;
     border-radius: 999px;
-    background: #e8e9eb;
+    background: var(--dm-appearance-line, #e8e9eb);
 }
 
 .dm-updates-progress-bar {
@@ -579,9 +579,9 @@
 }
 
 .dm-update-state.is-running {
-    border-color: #d9e1eb;
-    background: #eef3f8;
-    color: #52677d;
+    border-color: var(--dm-appearance-line, #d9e1eb);
+    background: var(--dm-appearance-soft, #eef3f8);
+    color: var(--dm-appearance-muted, #52677d);
 }
 
 .dm-update-state.is-locked,
@@ -1024,7 +1024,7 @@
 .dm-backup-create-form,.dm-backup-restore-form {margin:0}
 .dm-backup-button {padding:8px 12px;border:1px solid var(--dm-u-primary);border-radius:7px;font:inherit;font-size:.82rem;font-weight:650;cursor:pointer}
 .dm-backup-button.is-create {background:var(--dm-u-primary-soft);color:var(--dm-u-primary)}
-.dm-backup-button.is-destructive {width:fit-content;background:var(--dm-u-error);color:#fff;border-color:var(--dm-u-error)}
+.dm-backup-button.is-destructive {width:fit-content;background:var(--dm-u-error);color:var(--dm-on-emphasis, #fff);border-color:var(--dm-u-error)}
 .dm-backup-button:hover {filter:brightness(.97)}
 .dm-update-backup-empty {margin:12px 0 0;color:var(--dm-u-muted);font-size:.82rem}
 .dm-update-backup-list {display:grid;gap:8px;margin-top:12px}
