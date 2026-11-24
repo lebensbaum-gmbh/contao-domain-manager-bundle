@@ -10,7 +10,7 @@ try {
     const page = await browser.newPage({ viewport: { width: 1280, height: 1000 } });
     page.on('pageerror', error => failures.push(error.message));
     await page.goto(pathToFileURL(resolve('build/browser/free.html')).href);
-    const appearance = page.locator('[data-dm-appearance]');
+    const appearance = page.locator('button[data-dm-appearance]');
     assert.equal(await appearance.innerText(), 'Dunkle Ansicht');
     await appearance.focus();
     await page.keyboard.press('Space');

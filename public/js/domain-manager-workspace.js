@@ -179,7 +179,7 @@
     const get = root => { if (!instances.has(root)) instances.set(root, create(root)); return instances.get(root); };
     window.MaintendWorkspace = { priority, apply: root => get(root).apply(), begin: root => get(root).begin() };
     function initializeAppearance() {
-        const buttons = document.querySelectorAll('[data-dm-appearance]');
+        const buttons = document.querySelectorAll('button[data-dm-appearance]');
         if (!buttons.length) return;
 
         const key = 'maintend.workspace.appearance';
