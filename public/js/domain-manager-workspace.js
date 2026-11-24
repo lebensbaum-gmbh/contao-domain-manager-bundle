@@ -178,11 +178,40 @@
     };
     const get = root => { if (!instances.has(root)) instances.set(root, create(root)); return instances.get(root); };
     window.MaintendWorkspace = { priority, apply: root => get(root).apply(), begin: root => get(root).begin() };
+    function initializeAppearance() {
+        const buttons = document.querySelectorAll('button[data-dm-appearance]');
+        if (!buttons.length) return;
+
+        const key = 'maintend.workspace.appearance';
+        let dark = false;
+        try {
+            dark = localStorage.getItem(key) === 'dark';
+        } catch (_) { /* Storage is optional. */ }
+
+        function render() {
+            document.body.dataset.dmAppearance = dark ? 'dark' : 'light';
+            buttons.forEach(button => {
+                button.hidden = false;
+                button.textContent = dark ? 'Helle Ansicht' : 'Dunkle Ansicht';
+            });
+        }
+
+        buttons.forEach(button => button.addEventListener('click', () => {
+            dark = !dark;
+            render();
+            try {
+                localStorage.setItem(key, dark ? 'dark' : 'light');
+            } catch (_) { /* The selection still applies to the current page. */ }
+        }));
+        render();
+    }
+
     const initialize = () => document.querySelectorAll('[data-dm-workspace]').forEach(root => {
         // The update engine must collect all installation/form references first.
         if (root.dataset.dmWorkspace === 'updates' && root.dataset.dmUpdatesInitialized !== '1') return;
         get(root);
     });
+    initializeAppearance();
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialize, { once: true });
     else initialize();
 })();

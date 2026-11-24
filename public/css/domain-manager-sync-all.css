@@ -11,14 +11,14 @@
 .domain-manager-overview .domain-sync-all-button {
     border-color: var(--dm-accent);
     background: var(--dm-accent);
-    color: #fff;
+    color: var(--dm-on-emphasis, #fff);
 }
 
 .domain-manager-overview .domain-sync-all-button:hover,
 .domain-manager-overview .domain-sync-all-button:focus-visible {
     border-color: var(--dm-accent-hover);
     background: var(--dm-accent-hover);
-    color: #fff;
+    color: var(--dm-on-emphasis, #fff);
 }
 
 .domain-manager-overview .domain-sync-all-button:disabled {
