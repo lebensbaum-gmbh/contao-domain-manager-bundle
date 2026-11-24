@@ -101,7 +101,7 @@
         </div>
     {% endif %}
     {% if backup_result_message %}
-        <div class="dm-updates-result {{ backup_result_error ? 'is-error' : 'is-success' }}" role="status">
+        <div class="dm-updates-result{% if not backup_result_notice|default(false) %} {{ backup_result_error ? 'is-error' : 'is-success' }}{% endif %}" role="status">
             <strong>{{ backup_result_message }}</strong>
         </div>
     {% endif %}
@@ -324,7 +324,7 @@
                                         Sicherung wird erstellt … Datenbank und Projektdateien werden gesichert. Bitte warten.
                                     </div>
                                     {% if backup_result_message and installation.id == backup_result_installation_id %}
-                                        <div class="dm-backup-result{{ backup_result_error ? ' is-error' : ' is-success' }}" role="status" data-dm-backup-result>
+                                        <div class="dm-backup-result{% if not backup_result_notice|default(false) %}{{ backup_result_error ? ' is-error' : ' is-success' }}{% endif %}" role="status" data-dm-backup-result>
                                             {{ backup_result_message }}
                                         </div>
                                     {% endif %}

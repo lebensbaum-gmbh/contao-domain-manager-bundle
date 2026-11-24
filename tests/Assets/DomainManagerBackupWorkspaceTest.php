@@ -50,7 +50,7 @@ final class DomainManagerBackupWorkspaceTest extends TestCase
         self::assertStringContainsString('restoreRunning = statusUnknown', $script);
         self::assertStringContainsString("responseUrl.searchParams.get('dm_backup_create')", $script);
         self::assertStringContainsString("resultUrl.searchParams.get('dm_backup_restore')", $script);
-        self::assertStringContainsString("['success', 'success_sync_warning', 'error', 'confirmation_invalid']", $script);
+        self::assertStringContainsString("['success', 'success_sync_warning', 'error', 'confirmation_invalid', 'restore_running', 'maintenance_busy']", $script);
         self::assertStringContainsString("event.returnValue = '';", $script);
         self::assertStringContainsString('Der Wiederherstellungsstatus ist unklar.', $script);
         self::assertStringContainsString('Keine Updates, Sicherungen oder andere Aktionen starten', $script);
