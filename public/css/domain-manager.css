@@ -69,14 +69,14 @@
     padding: 10px 14px;
     border: 1px solid var(--dm-accent);
     background: var(--dm-accent);
-    color: #fff !important;
+    color: var(--dm-on-emphasis, #fff) !important;
 }
 
 .domain-manager-trakked-link:hover,
 .domain-manager-trakked-link:focus-visible {
     border-color: var(--dm-accent-hover);
     background: var(--dm-accent-hover);
-    color: #fff !important;
+    color: var(--dm-on-emphasis, #fff) !important;
 }
 
 .domain-manager-list {
@@ -222,7 +222,7 @@
 .domain-sync-button:hover,
 .domain-sync-button:focus-visible {
     background: var(--dm-accent);
-    color: #fff;
+    color: var(--dm-on-emphasis, #fff);
 }
 
 .installation-featured {
@@ -543,7 +543,7 @@
 .dm-filter-reset:hover,
 .dm-filter-reset:focus-visible {
     background: var(--dm-accent);
-    color: #fff;
+    color: var(--dm-on-emphasis, #fff);
 }
 
 .dm-filter-empty {
