@@ -192,7 +192,7 @@
             document.body.dataset.dmAppearance = dark ? 'dark' : 'light';
             buttons.forEach(button => {
                 button.hidden = false;
-                button.setAttribute('aria-pressed', String(dark));
+                button.textContent = dark ? 'Helle Ansicht' : 'Dunkle Ansicht';
             });
         }
 
