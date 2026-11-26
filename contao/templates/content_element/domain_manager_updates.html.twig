@@ -260,21 +260,21 @@
                             <details class="dm-update-plan" data-dm-update-plan>
                                 <summary>
                                     <span>
-                                        {{ detail.completed ? 'Letzter Paketplan (installiert)' : (detail.relevant ? 'Paketplan' : 'Vorheriger Paketplan') }}
-                                        <strong>{{ detail.operations|length }} Paketänderungen</strong>
+                                        {{ detail.completed ? 'Zuletzt installierte Paketänderungen' : (detail.relevant ? 'Paketplan' : 'Vorheriger Paketplan') }}
+                                        <strong>{{ detail.operations|length }} {{ detail.operations|length == 1 ? 'Paketänderung' : 'Paketänderungen' }}</strong>
                                     </span>
                                     <span class="dm-update-plan-expand">Details anzeigen</span>
                                 </summary>
                                 <p class="dm-update-plan-caption">
-                                    {{ detail.completed ? 'Plan der letzten abgeschlossenen Installation.' : (detail.relevant ? 'In der letzten Composer-Prüfung ermittelte Änderungen. Vor dem Installieren wird der Plan erneut überprüft.' : 'Historischer Paketplan. Für den aktuellen Stand bitte erneut prüfen.') }}
+                                    {{ detail.completed ? 'Änderungen der letzten erfolgreich abgeschlossenen Installation.' : (detail.relevant ? 'In der letzten Composer-Prüfung ermittelte Änderungen. Vor dem Installieren wird der Plan erneut überprüft.' : 'Historischer Paketplan. Für den aktuellen Stand bitte erneut prüfen.') }}
                                 </p>
                                 <div class="dm-update-plan-scroll">
                                     <table>
                                         <thead>
                                             <tr>
                                                 <th scope="col">Paket</th>
-                                                <th scope="col">Bisher</th>
-                                                <th scope="col">Geplant</th>
+                                                <th scope="col">{{ detail.completed ? 'Vorher' : 'Bisher' }}</th>
+                                                <th scope="col">{{ detail.completed ? 'Nachher' : 'Geplant' }}</th>
                                                 <th scope="col">Aktion</th>
                                             </tr>
                                         </thead>
@@ -286,13 +286,13 @@
                                                 <td>{{ change.to ?: '—' }}</td>
                                                 <td>
                                                     {% if change.direction == 'downgrade' %}
-                                                        <span class="dm-update-change is-downgrade">Downgrade</span>
+                                                        <span class="dm-update-change is-downgrade">{{ detail.completed ? 'Herabgestuft' : 'Downgrade' }}</span>
                                                     {% elseif change.type == 'install' %}
-                                                        <span class="dm-update-change">Neu</span>
+                                                        <span class="dm-update-change">{{ detail.completed ? 'Installiert' : 'Neu' }}</span>
                                                     {% elseif change.type == 'remove' %}
-                                                        <span class="dm-update-change is-removal">Entfernung</span>
+                                                        <span class="dm-update-change is-removal">{{ detail.completed ? 'Entfernt' : 'Entfernung' }}</span>
                                                     {% else %}
-                                                        <span class="dm-update-change">Update</span>
+                                                        <span class="dm-update-change">{{ detail.completed ? 'Aktualisiert' : 'Update' }}</span>
                                                     {% endif %}
                                                 </td>
                                             </tr>
