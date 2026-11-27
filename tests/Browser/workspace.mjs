@@ -124,6 +124,33 @@ try {
     assert.equal(await page.locator('button[data-dm-workspace-view="list"]').isDisabled(), false);
     assert.equal(await page.locator('[data-dm-progress-title]').innerText(), 'Update-Prüfung abgeschlossen');
 
+    // Completion colors must follow the result, even with a red theme primary.
+    for (const dark of [false, true]) {
+        for (const [classes, token] of [
+            ['', '--dm-u-success'], ['has-warnings', '--dm-u-warning'],
+            ['has-errors', '--dm-u-error'], ['has-warnings has-errors', '--dm-u-error'],
+        ]) {
+            const colors = await page.evaluate(({ dark, classes, token }) => {
+                document.body.setAttribute('data-dm-appearance', dark ? 'dark' : 'light');
+                const root = document.querySelector('[data-dm-updates]');
+                root.style.setProperty('--dm-theme-primary', '#b40010');
+                const progress = root.querySelector('[data-dm-update-progress]');
+                progress.className = 'dm-updates-progress is-complete ' + classes;
+                const bar = progress.querySelector('[data-dm-progress-bar]');
+                bar.style.transition = 'none';
+                const reference = document.createElement('span');
+                reference.style.background = `var(${token})`;
+                root.append(reference);
+                const expected = getComputedStyle(reference).backgroundColor;
+                reference.remove();
+                return [expected, getComputedStyle(bar).backgroundColor,
+                    getComputedStyle(progress.querySelector('[data-dm-progress-track]')).backgroundColor];
+            }, { dark, classes, token });
+            assert.equal(colors[1], colors[0], 'bar color for ' + classes);
+            assert.equal(colors[2], colors[0], 'track color for ' + classes);
+        }
+    }
+
     // A failed single check must never end with a success message or an installation error.
     for (const outcome of ['check_failed', 'transport_error', 'http_error', 'blocked', 'current', 'available']) {
         await page.goto(pathToFileURL(resolve('build/browser/pro.html')).href);
@@ -278,3 +305,4 @@ try {
 } finally {
     await browser.close();
 }
+

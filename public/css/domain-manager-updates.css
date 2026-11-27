@@ -407,8 +407,27 @@
     border-color: color-mix(in srgb, var(--dm-u-success) 28%, var(--dm-u-border));
 }
 
+.dm-updates .dm-updates-progress.is-complete:not(.has-warnings):not(.has-errors) .dm-updates-progress-track,
+.dm-updates .dm-updates-progress.is-complete:not(.has-warnings):not(.has-errors) .dm-updates-progress-bar {
+    background: var(--dm-u-success);
+}
+
+.dm-updates-progress.has-warnings {
+    border-color: color-mix(in srgb, var(--dm-u-warning) 28%, var(--dm-u-border));
+}
+
+.dm-updates .dm-updates-progress.is-complete.has-warnings .dm-updates-progress-track,
+.dm-updates .dm-updates-progress.is-complete.has-warnings .dm-updates-progress-bar {
+    background: var(--dm-u-warning);
+}
+
 .dm-updates-progress.has-errors {
     border-color: color-mix(in srgb, var(--dm-u-error) 28%, var(--dm-u-border));
+}
+
+.dm-updates .dm-updates-progress.is-complete.has-errors .dm-updates-progress-track,
+.dm-updates .dm-updates-progress.is-complete.has-errors .dm-updates-progress-bar {
+    background: var(--dm-u-error);
 }
 
 .dm-updates-list {
@@ -1134,3 +1153,4 @@
 @media (prefers-reduced-motion: reduce) {
     .dm-backup-progress.is-running::before { animation: none; }
 }
+

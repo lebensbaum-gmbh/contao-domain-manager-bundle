@@ -9,7 +9,7 @@
 {% endadd %}
 
 {% add "domain_manager_updates_css" to stylesheets %}
-    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-updates.css') ~ '?v=maintend-8'} %}
+    {% with {file: asset('bundles/contaodomainmanager/css/domain-manager-updates.css') ~ '?v=maintend-9'} %}
         {{ block('stylesheet_component') }}
     {% endwith %}
 {% endadd %}
@@ -423,4 +423,5 @@
     <p class="dm-updates-empty" data-dm-update-empty hidden>Keine Installationen entsprechen dem gewählten Filter.</p>
 </div>
 {% endblock %}
+
 
