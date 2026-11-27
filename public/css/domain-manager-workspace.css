@@ -138,3 +138,54 @@ body[data-dm-appearance="dark"] .dm-workspace {
 body[data-dm-appearance="dark"] .dm-workspace-nav__brand img {
     filter: brightness(0) invert(1);
 }
+
+/* Older Contao themes set these detail colors independently of the workspace palette. */
+body[data-dm-appearance="dark"] .domain-manager-overview :is(
+    .domain-details, .other-installations, .installation-item, .installation-row,
+    .target-notes, .installation-detail-notes p, .environment-badge
+) {
+    background-color: var(--dm-appearance-surface);
+    color: var(--dm-appearance-text);
+    border-color: var(--dm-appearance-line);
+}
+
+body[data-dm-appearance="dark"] .domain-manager-overview :is(
+    .installations-head, .installation-detail-body, .installation-featured.is-target
+) {
+    background-color: var(--dm-appearance-soft);
+    color: var(--dm-appearance-text);
+    border-color: var(--dm-appearance-line);
+}
+
+body[data-dm-appearance="dark"] .domain-manager-overview :is(
+    .installation-item[open] > .installation-row, .installation-row:hover, .installation-row:focus-visible
+) {
+    background-color: var(--dm-appearance-tint);
+}
+
+body[data-dm-appearance="dark"] .domain-manager-overview :is(
+    .target-column h4, .other-installations > h3, .detail-list dd, .installation-detail-list dd,
+    .installation-domain, .installation-contao, .installation-php
+) {
+    color: var(--dm-appearance-text);
+}
+
+body[data-dm-appearance="dark"] .domain-manager-overview :is(
+    .detail-list dt, .installation-detail-list dt, .installation-environment,
+    .installation-detail-notes > strong, .no-notes, .installations-head > span
+) {
+    color: var(--dm-appearance-muted);
+}
+
+body[data-dm-appearance="dark"] .domain-manager-overview .target-column {
+    border-color: var(--dm-appearance-line);
+}
+
+body[data-dm-appearance="dark"] .domain-manager-overview :is(.installation-domain a, .installation-toggle) {
+    color: var(--dm-appearance-accent);
+}
+
+body[data-dm-appearance="dark"] .domain-manager-overview .installation-domain a:is(:hover, :focus-visible) {
+    color: var(--dm-theme-primary-hover);
+    text-decoration: underline;
+}
