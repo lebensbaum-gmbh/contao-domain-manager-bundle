@@ -396,6 +396,55 @@
         };
 
         const applyInstallResponse = async (row, response) => {
+            if (response.status === 202) {
+                const accepted = await response.json();
+                const expectedId = String(row.dataset.installationId || '');
+                const statusUrl = new URL(response.url, window.location.href);
+                const completionUrl = new URL(accepted.completion_url, window.location.href);
+                if (String(accepted.installation_id) !== expectedId
+                    || accepted.installation_status !== 'running'
+                    || statusUrl.origin !== window.location.origin
+                    || completionUrl.origin !== window.location.origin
+                    || statusUrl.pathname !== completionUrl.pathname
+                    || !statusUrl.pathname.endsWith(`/${expectedId}/${accepted.preparation_id}`)) {
+                    throw new Error('Der laufende Auftrag gehört nicht zur erwarteten Installation.');
+                }
+                statusUrl.search = '';
+                const deadline = Date.now() + 15 * 60 * 1000;
+                let failures = 0;
+                while (Date.now() < deadline) {
+                    await new Promise(resolve => window.setTimeout(resolve, 2000));
+                    try {
+                        const poll = await fetch(statusUrl.href, {
+                            credentials: 'same-origin', cache: 'no-store',
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                        });
+                        if (!poll.ok) throw new Error(`HTTP ${poll.status}`);
+                        const data = await poll.json();
+                        const phase = data.update_progress;
+                        if (typeof phase?.message === 'string' && progressCurrent) {
+                            progressCurrent.textContent = phase.message.slice(0, 300);
+                        }
+                        if (['success', 'error'].includes(data.installation_status)
+                            || (phase?.status === 'success' && phase.phase === 'completed')
+                            || (phase?.status === 'error' && phase.phase === 'error')) {
+                            // A new kernel verifies and synchronizes the result
+                            // after the worker has finished replacing its cache.
+                            const completed = await fetch(completionUrl.href, {
+                                credentials: 'same-origin', cache: 'no-store',
+                                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                            });
+                            return await applyInstallResponse(row, completed);
+                        }
+                        failures = 0;
+                    } catch (error) {
+                        // The central application's own kernel may be rebuilt.
+                        // Observe the same job; never repeat the install POST.
+                        if (++failures >= 30) throw error;
+                    }
+                }
+                throw new Error('Das Update-Ergebnis konnte noch nicht bestätigt werden.');
+            }
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
             }
@@ -1206,3 +1255,4 @@
         initialize();
     }
 })();
+

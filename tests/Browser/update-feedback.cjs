@@ -29,7 +29,7 @@ async function run(scenario, action = 'update-install', bulk = false) {
         };
         const makeForm = name => ({
             dataset: { dmAction: name },
-            action: new URL('/' + name + '/' + id, base).href,
+            action: new URL('/' + name + '/' + id + '/18', base).href,
             matches: () => false,
             closest: selector => selector === '.dm-updates-action-form' ? makeForm(name)
                 : selector === '[data-dm-update-row]' ? row : null,
@@ -56,11 +56,28 @@ async function run(scenario, action = 'update-install', bulk = false) {
         },
         window: {
             location: base, addEventListener() {},
+            setTimeout: callback => setImmediate(callback),
             confirm(message) { confirmations.push(message); return true; },
         },
         document: { querySelector: () => root },
         async fetch(url, options) {
             requests.push([url, options.method]);
+            if (scenario.startsWith('async')) {
+                const statusUrl = new URL('/update-install/2/18', base).href;
+                if (options.method === 'POST') return {
+                    ok: true, status: 202, url: statusUrl,
+                    json: async () => ({ installation_status: 'running', installation_id: scenario === 'async-wrong-job' ? 3 : 2,
+                        preparation_id: 18, completion_url: statusUrl + '?complete=1' }),
+                };
+                if (!url.includes('complete=1')) {
+                    if (requests.length === 2) return { ok: false, status: 503 };
+                    return { ok: true, json: async () => ({ installation_status: 'running',
+                        update_progress: { phase: 'completed', status: 'success', message: 'Installed' } }) };
+                }
+                assert.equal(requests.length, 4, 'Finalization must be a fresh request after completion.');
+                if (scenario === 'async-error') return { ok: true, status: 200,
+                    url: base.href + '?dm_update_install=error&dm_installation=2', text: async () => '' };
+            }
             if (scenario === 'network') throw new TypeError('Failed to fetch');
             if (scenario === 'unavailable') return { ok: false, status: 503 };
             if (scenario === 'login') return { ok: true, status: 200, redirected: true, url: new URL('/login', base).href, text: async () => '' };
@@ -78,18 +95,19 @@ async function run(scenario, action = 'update-install', bulk = false) {
         const first = fixtures[0];
         const form = action === 'update-install' ? first.install : first.check;
         for (const handler of handlers) handler({ target: form, preventDefault() {} });
-        for (let tick = 0; root.dataset.dmWorkspaceBusy === '1' && tick < 10; tick++) {
+        for (let tick = 0; root.dataset.dmWorkspaceBusy === '1' && tick < 30; tick++) {
             await new Promise(resolve => setImmediate(resolve));
         }
     }
     assert.equal(root.dataset.dmWorkspaceBusy, '0');
-    assert.equal(requests.length, 1);
+    assert.equal(requests.length, ['async', 'async-error'].includes(scenario) ? 4 : 1);
     assert.equal(requests[0][1], 'POST');
+    assert.equal(requests.filter(([, method]) => method === 'POST').length, 1, 'Never restart the install while polling.');
     return { fixtures, confirmations, summary: elements.get('[data-dm-progress-summary]').textContent };
 }
 
 (async () => {
-    for (const scenario of ['network', 'unavailable', 'login', 'wrong-installation']) {
+    for (const scenario of ['network', 'unavailable', 'login', 'wrong-installation', 'async-wrong-job']) {
         const { fixtures: [row], confirmations, summary } = await run(scenario);
         assert.equal(row.row.dataset.updateState, 'warning');
         assert.equal(row.badge.textContent, 'Update-Ergebnis nicht bestätigt');
@@ -97,7 +115,7 @@ async function run(scenario, action = 'update-install', bulk = false) {
         assert.match(confirmations[0], /Domainübersicht selbst wird aktualisiert/);
         assert.match(summary, /erneut anmelden/);
     }
-    for (const [scenario, expected] of [['confirmed-error', 'error'], ['success', 'current'], ['lost-html', 'current']]) {
+    for (const [scenario, expected] of [['confirmed-error', 'error'], ['success', 'current'], ['lost-html', 'current'], ['async', 'current'], ['async-error', 'error']]) {
         const { fixtures: [row] } = await run(scenario);
         assert.equal(row.row.dataset.updateState, expected);
     }
@@ -112,3 +130,4 @@ async function run(scenario, action = 'update-install', bulk = false) {
     console.error(error);
     process.exitCode = 1;
 });
+
