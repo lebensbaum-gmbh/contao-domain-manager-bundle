@@ -235,7 +235,7 @@ body.domainverwaltung-error-page a:focus-visible {
     border: 1px solid var(--dm-theme-primary);
     border-radius: 6px;
     background: var(--dm-theme-primary);
-    color: #fff;
+    color: var(--dm-on-emphasis, #fff);
     font: inherit;
     font-weight: 650;
     cursor: pointer;
@@ -312,7 +312,7 @@ body.domainverwaltung-page .domainverwaltung-login.logout .submit {
 body.domainverwaltung-page .domainverwaltung-login.logout .submit:hover,
 body.domainverwaltung-page .domainverwaltung-login.logout .submit:focus-visible {
     background: var(--dm-theme-primary);
-    color: #fff;
+    color: var(--dm-on-emphasis, #fff);
 }
 
 /* Make the domain accordion visibly interactive. */

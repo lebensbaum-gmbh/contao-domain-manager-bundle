@@ -279,7 +279,7 @@ final class SetupInstaller
             'alias' => 'index',
             'pageTitle' => 'Domainübersicht',
             'protected' => 1,
-            'groups' => serialize([$memberGroupId]),
+            '`groups`' => serialize([$memberGroupId]),
             'cssClass' => 'domainverwaltung-page',
             'published' => 1,
         ]);
@@ -304,7 +304,7 @@ final class SetupInstaller
             'alias' => 'updates',
             'pageTitle' => 'Updates',
             'protected' => 1,
-            'groups' => serialize([$memberGroupId]),
+            '`groups`' => serialize([$memberGroupId]),
             'cssClass' => 'domainverwaltung-page',
             'published' => 1,
         ]);
@@ -383,7 +383,7 @@ final class SetupInstaller
     private function ensureWorkspacePageConfiguration(int $pageId, int $memberGroupId, int $timestamp): void
     {
         $row = $this->connection->fetchAssociative(
-            'SELECT cssClass, groups FROM tl_page WHERE id = ? LIMIT 1',
+            'SELECT cssClass, `groups` FROM tl_page WHERE id = ? LIMIT 1',
             [$pageId]
         );
 
@@ -407,7 +407,7 @@ final class SetupInstaller
 
         $this->connection->update('tl_page', [
             'protected' => 1,
-            'groups' => serialize(array_values($groups)),
+            '`groups`' => serialize(array_values($groups)),
             'cssClass' => implode(' ', array_values(array_unique($classes))),
             'published' => 1,
             'tstamp' => $timestamp,
@@ -827,3 +827,4 @@ final class SetupInstaller
         }
     }
 }
+

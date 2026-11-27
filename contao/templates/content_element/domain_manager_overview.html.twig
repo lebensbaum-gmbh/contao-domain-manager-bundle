@@ -47,12 +47,13 @@
 {% endadd %}
 
 {% add "domain_manager_js" to body %}
-    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager.js') }}" defer></script>
+    <script src="{{ asset('bundles/contaodomainmanager/js/domain-manager.js') ~ '?v=agency-1' }}" defer></script>
 {% endadd %}
 
 {% block content %}
 {% include "@Contao/components/domain_manager_workspace_navigation.html.twig" %}
-<div class="domain-manager-overview" data-domain-manager-overview>
+<div class="domain-manager-overview dm-workspace" data-domain-manager-overview data-dm-workspace="overview" data-dm-workspace-default="all">
+    {% include "@Contao/components/domain_manager_workspace_controls.html.twig" with {workspace_mode: "overview"} %}
     {% if frontend_bulk_actions %}
         <form id="domain-manager-bulk-actions-form" class="domain-manager-bulk-form" method="post">
             <input type="hidden" name="REQUEST_TOKEN" value="{{ contao.request_token }}">
@@ -80,6 +81,11 @@
         <details
             class="domain-entry"
             data-dm-domain
+            data-dm-attention="{{ domain.workspace_counts.attention }}"
+            data-dm-available="{{ domain.workspace_counts.updates }}"
+            data-dm-errors="{{ domain.workspace_counts.problems }}"
+            data-dm-running="{{ domain.workspace_counts.running }}"
+            data-dm-health="{{ domain.health.status }}"
             data-search="{{ domain.search|e('html_attr') }}"
             {% if domain.sync_result %}open{% endif %}
         >
@@ -92,6 +98,7 @@
 
                 <div class="domain-ident">
                     <strong class="domain-name">{{ domain.domain }}</strong>
+                    <span class="dm-workspace-summary-note">{{ domain.installations|length }} {{ domain.installations|length == 1 ? 'Installation' : 'Installationen' }}</span>
                     <span class="health-badge is-{{ domain.health.status }}">
                         <span class="health-dot" aria-hidden="true"></span>
                         {{ domain.health.label }}{% if domain.health.issue_count > 0 %} · {{ domain.health.issue_count }}{% endif %}
@@ -187,11 +194,12 @@
                                     <span class="status-badge is-current">Aktuelles Ziel</span>
                                 </div>
 
-                                {% if installation.backend_url or installation.manager_url or installation.frontend_actions %}
+                                {% set overview_actions = installation.frontend_actions|filter(action => action.name not in ['update-check', 'update-install']) %}
+                                {% if installation.backend_url or installation.manager_url or overview_actions %}
                                     <div class="detail-actions">
                                         {% if installation.backend_url %}<a class="detail-action" href="{{ installation.backend_url }}" target="_blank" rel="noopener noreferrer">Contao-Backend <span aria-hidden="true">↗</span></a>{% endif %}
                                         {% if installation.manager_url %}<a class="detail-action" href="{{ installation.manager_url }}" target="_blank" rel="noopener noreferrer">Contao-Manager <span aria-hidden="true">↗</span></a>{% endif %}
-                                        {{ dm.frontend_actions(installation.frontend_actions, contao.request_token) }}
+                                        {{ dm.frontend_actions(overview_actions, contao.request_token) }}
                                     </div>
                                 {% endif %}
                             </div>
@@ -312,11 +320,12 @@
                                         {% if installation.notes %}<p>{{ installation.notes|nl2br }}</p>{% else %}<p class="no-notes">Keine Bemerkungen hinterlegt.</p>{% endif %}
                                     </div>
 
-                                    {% if installation.backend_url or installation.manager_url or installation.frontend_actions %}
+                                    {% set overview_actions = installation.frontend_actions|filter(action => action.name not in ['update-check', 'update-install']) %}
+                                    {% if installation.backend_url or installation.manager_url or overview_actions %}
                                         <div class="installation-detail-actions">
                                             {% if installation.backend_url %}<a class="detail-action" href="{{ installation.backend_url }}" target="_blank" rel="noopener noreferrer">Contao-Backend <span aria-hidden="true">↗</span></a>{% endif %}
                                             {% if installation.manager_url %}<a class="detail-action" href="{{ installation.manager_url }}" target="_blank" rel="noopener noreferrer">Contao-Manager <span aria-hidden="true">↗</span></a>{% endif %}
-                                            {{ dm.frontend_actions(installation.frontend_actions, contao.request_token) }}
+                                            {{ dm.frontend_actions(overview_actions, contao.request_token) }}
                                         </div>
                                     {% endif %}
 

@@ -7,8 +7,8 @@ $GLOBALS['TL_LANG']['tl_domain_manager_settings']['health_legend'] = 'Status & W
 $GLOBALS['TL_LANG']['tl_domain_manager_settings']['links_legend'] = 'Externe Dienste';
 
 $GLOBALS['TL_LANG']['tl_domain_manager_settings']['sync_member_groups'] = [
-    'Berechtigte Mitgliedergruppen',
-    'Nur angemeldete Frontend-Mitglieder aus mindestens einer dieser Gruppen dürfen „Systemdaten aktualisieren“ ausführen. Ohne Auswahl ist die Synchronisation im Frontend deaktiviert.',
+    'Mitgliedergruppen mit Bedienrechten',
+    'Diese Gruppen dürfen Systemdaten aktualisieren und mit installiertem Pro Updates prüfen, installieren und Sicherungen verwalten. Ohne Auswahl sind diese Frontend-Aktionen gesperrt. Der Zugriff auf die Seiten wird separat in der Seitenstruktur vergeben.',
 ];
 $GLOBALS['TL_LANG']['tl_domain_manager_settings']['stale_sync_days'] = [
     'Synchronisationswarnung nach Tagen',

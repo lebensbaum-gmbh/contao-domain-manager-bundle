@@ -82,6 +82,10 @@ final class DomainManagerBackupWorkspaceTest extends TestCase
         self::assertStringContainsString('nicht gestartet', $method->invoke($controller, '', 'confirmation_invalid', ''));
         self::assertStringContainsString('Zielinstallation gelöscht', $method->invoke($controller, '', '', 'success'));
         self::assertStringContainsString('nicht gelöscht', $method->invoke($controller, '', '', 'confirmation_invalid'));
+        self::assertStringContainsString('gerade erstellt', $method->invoke($controller, '', '', 'backup_running'));
+        self::assertStringContainsString('für eine Wiederherstellung verwendet', $method->invoke($controller, '', '', 'backup_in_use'));
+        self::assertStringContainsString('Wartungsaktion', $method->invoke($controller, '', '', 'maintenance_busy'));
+        self::assertSame('', $method->invoke($controller, '', '', 'unknown_private_detail'));
         self::assertStringContainsString('möglicherweise unvollständig', $method->invoke($controller, '', 'error', ''));
         self::assertStringContainsString('Sicherung erstellt', $method->invoke($controller, 'success', '', ''));
     }

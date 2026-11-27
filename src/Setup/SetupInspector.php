@@ -296,7 +296,7 @@ final class SetupInspector
 
         try {
             $members = $this->connection->fetchAllAssociative(
-                'SELECT id, username, groups, login, disable, start, stop FROM tl_member ORDER BY id'
+                'SELECT id, username, `groups`, login, disable, start, stop FROM tl_member ORDER BY id'
             );
         } catch (Throwable) {
             return ['ready' => false, 'member_id' => null, 'username' => null];
@@ -370,3 +370,4 @@ final class SetupInspector
         return $id > 0 ? $id : null;
     }
 }
+

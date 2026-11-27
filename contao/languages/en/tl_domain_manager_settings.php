@@ -7,8 +7,8 @@ $GLOBALS['TL_LANG']['tl_domain_manager_settings']['health_legend'] = 'Status & w
 $GLOBALS['TL_LANG']['tl_domain_manager_settings']['links_legend'] = 'External services';
 
 $GLOBALS['TL_LANG']['tl_domain_manager_settings']['sync_member_groups'] = [
-    'Allowed member groups',
-    'Only authenticated front end members in at least one of these groups may run system data synchronization. With no group selected, front end synchronization is disabled.',
+    'Member groups with operating permissions',
+    'These groups may synchronize system data and, with Pro installed, check and install updates and manage backups. With no group selected, these front end actions are blocked. Page access is granted separately in the site structure.',
 ];
 $GLOBALS['TL_LANG']['tl_domain_manager_settings']['stale_sync_days'] = [
     'Synchronization warning after days',

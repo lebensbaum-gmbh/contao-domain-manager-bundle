@@ -12,7 +12,9 @@ use Contao\FilesModel;
 use Contao\PageModel;
 use Doctrine\DBAL\Connection;
 use Lebensbaum\ContaoDomainManagerBundle\Event\InstallationFrontendExtensionEvent;
+use Lebensbaum\ContaoDomainManagerBundle\Event\OverviewFrontendExtensionEvent;
 use Lebensbaum\ContaoDomainManagerBundle\Frontend\FrontendWorkspaceNavigation;
+use Lebensbaum\ContaoDomainManagerBundle\Frontend\WorkspacePresentation;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -30,6 +32,7 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
         private readonly Connection $connection,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly FrontendWorkspaceNavigation $workspaceNavigation,
+        private readonly WorkspacePresentation $workspacePresentation,
     ) {
     }
 
@@ -48,7 +51,10 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
         );
 
         $installations = [];
-        $proEnabled = false;
+        $featuresEvent = new OverviewFrontendExtensionEvent([]);
+        $this->eventDispatcher->dispatch($featuresEvent);
+        $workspace = $this->workspacePresentation->features($featuresEvent->getMetadata());
+        $proEnabled = $workspace['pro_enabled'];
         $availableCount = 0;
         $currentCount = 0;
         $errorCount = 0;
@@ -72,6 +78,7 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
                 'php_version' => trim((string) ($row['php_version'] ?? '')),
                 'last_sync' => (int) ($row['last_sync'] ?? 0),
                 'status' => trim((string) ($row['status'] ?? '')),
+                'frontend_workspace' => 'updates',
             ];
             $installation['environment_label'] = $this->environmentLabel($installation['environment']);
 
@@ -92,6 +99,14 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
             $proEnabled = $proEnabled || $hasCheckAction;
 
             $updateState = $hasInstallAction ? 'available' : ($hasCheckAction ? 'unknown' : 'locked');
+            if ($hasCheckAction && true === ($updateDetails['relevant'] ?? false)) {
+                if ('up_to_date' === ($updateDetails['check_status'] ?? '')) {
+                    $updateState = 'current';
+                }
+                if ('running' === ($updateDetails['status'] ?? '')) {
+                    $updateState = 'running';
+                }
+            }
 
             // A failed Composer check is not the same as a failed installation.
             // Both remain visible, but get different severity and counts.
@@ -104,7 +119,7 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
                     : 'check_failed';
             }
 
-            if ($installation['id'] === $resultInstallationId && '' !== $checkStatus) {
+            if ($hasCheckAction && $installation['id'] === $resultInstallationId && '' !== $checkStatus) {
                 if ('ready' === $checkStatus) {
                     $updateState = 'available';
                 } elseif ('up_to_date' === $checkStatus) {
@@ -114,7 +129,7 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
                 }
             }
 
-            if ($installation['id'] === $resultInstallationId && '' !== $installStatus) {
+            if ($hasCheckAction && $installation['id'] === $resultInstallationId && '' !== $installStatus) {
                 if ('success' === $installStatus) {
                     $updateState = 'current';
                 } elseif ('success_sync_warning' === $installStatus) {
@@ -140,11 +155,19 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
             $installation['target_contao_version'] = $targetContaoVersion;
             $installation['update_state'] = $updateState;
             $installation['update_state_label'] = $this->updateStateLabel($updateState);
+            $gap = $frontendMetadata['update_release_gap'] ?? null;
+            $installation['update_release_gap'] = is_int($gap) && $gap >= 0 ? $gap : null;
+            if (in_array($updateState, ['available', 'unknown', 'current'], true) && null !== $installation['update_release_gap'] && $gap >= 5) {
+                $installation['update_state_label'] = sprintf('Wartungsrückstand · %d Versionen', $gap);
+            }
             $installations[] = $installation;
         }
 
         $template->set('installations', $installations);
         $template->set('pro_enabled', $proEnabled);
+        $template->set('workspace', $workspace);
+        $template->set('workspace_counts', $this->workspacePresentation->summarize($installations));
+        $template->set('workspace_groups', count(array_unique(array_column($installations, 'pid'))));
         $template->set('available_count', $availableCount);
         $template->set('current_count', $currentCount);
         $template->set('error_count', $errorCount);
@@ -153,14 +176,14 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
         $template->set('result_installation_id', $resultInstallationId);
         $template->set('check_status', $checkStatus);
         $template->set('install_status', $installStatus);
-        $template->set('result_message', $this->resultMessage($checkStatus, $installStatus));
+        $template->set('result_message', $proEnabled ? $this->resultMessage($checkStatus, $installStatus) : '');
         $backupCreateStatus = trim((string) $request->query->get('dm_backup_create', ''));
         $backupRestoreStatus = trim((string) $request->query->get('dm_backup_restore', ''));
         $backupDeleteStatus = trim((string) $request->query->get('dm_backup_delete', ''));
-        $template->set('backup_result_message', $this->backupResultMessage($backupCreateStatus, $backupRestoreStatus, $backupDeleteStatus));
+        $template->set('backup_result_message', $proEnabled ? $this->backupResultMessage($backupCreateStatus, $backupRestoreStatus, $backupDeleteStatus) : '');
         $template->set('backup_result_error', in_array($backupCreateStatus, ['error'], true)
             || in_array($backupRestoreStatus, ['error', 'confirmation_invalid'], true)
-            || in_array($backupDeleteStatus, ['error', 'confirmation_invalid'], true));
+            || in_array($backupDeleteStatus, ['error', 'confirmation_invalid', 'backup_running', 'backup_in_use', 'maintenance_busy'], true));
         $template->set('backup_result_installation_id', $request->query->getInt('dm_backup_installation'));
         $page = $request->attributes->get('pageModel');
         $pageId = $page instanceof PageModel ? (int) $page->id : (is_numeric($page) ? (int) $page : 0);
@@ -218,6 +241,7 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
             'check_failed' => 'Prüfung fehlgeschlagen',
             'warning' => 'Installiert · Synchronisation prüfen',
             'locked' => 'Pro-Funktion',
+            'running' => 'Wartung läuft',
             default => 'Noch nicht geprüft',
         };
     }
@@ -243,6 +267,9 @@ final class DomainManagerUpdatesController extends AbstractContentElementControl
             return match ($delete) {
                 'success' => 'Sicherung auf der Zielinstallation gelöscht und aus der Historie entfernt.',
                 'confirmation_invalid' => 'Sicherung nicht gelöscht: Die Löschbestätigung fehlt.',
+                'backup_running' => 'Sicherung nicht gelöscht: Sie wird gerade erstellt. Bitte den Abschluss der Sicherung abwarten.',
+                'backup_in_use' => 'Sicherung nicht gelöscht: Sie wird gerade für eine Wiederherstellung verwendet. Bitte den Abschluss der Wiederherstellung abwarten.',
+                'maintenance_busy' => 'Sicherung nicht gelöscht: Auf der Zielinstallation läuft eine Wartungsaktion. Bitte deren Abschluss abwarten.',
                 'error' => 'Sicherung konnte nicht gelöscht werden. Die Dateien oder der Historieneintrag sind möglicherweise noch vorhanden.',
                 default => '',
             };
