@@ -109,7 +109,7 @@
                 </div>
 
                 {% if domain.target %}
-                    <span class="domain-target">→ {{ domain.target.domain }}</span>
+                    <span class="domain-target">{{ domain.live_status == 'error' ? 'Zuletzt zugeordnet: ' : '→ ' }}{{ domain.target.domain }}</span>
                     <span class="domain-version">Contao {{ domain.target.contao_version }}</span>
                     <span class="domain-php">PHP {{ domain.target.php_version }}</span>
                 {% else %}
@@ -137,7 +137,8 @@
                                 {% elseif result.live_status == 'unchanged' and result.live_domain %}
                                     <br>Aktuelles Ziel bestätigt: <strong>{{ result.live_domain }}</strong>.
                                 {% elseif result.live_status == 'error' %}
-                                    <br>Das aktuelle Ziel konnte nicht eindeutig ermittelt werden.
+                                    <br>Das aktuelle Ziel konnte nicht eindeutig ermittelt werden. Eine vorhandene Zuordnung bleibt unbestätigt.
+                                    {% if domain.live_error %}<br>{{ domain.live_error }}{% endif %}
                                 {% endif %}
                             {% endif %}
                         </div>
@@ -181,7 +182,7 @@
                                         aria-label="{{ installation.domain }} auswählen"
                                     >
                                 {% endif %}
-                                <span class="detail-kicker">Aktuelles Ziel</span>
+                                <span class="detail-kicker">{{ domain.live_status == 'error' ? 'Zuletzt zugeordnetes Ziel' : 'Aktuelles Ziel' }}</span>
                                 <h3 class="target-domain">
                                     <a href="{{ installation.frontend_url }}" target="_blank" rel="noopener">{{ installation.domain }}</a>
                                 </h3>
@@ -194,7 +195,7 @@
                                         {{ installation.health.label }}{% if installation.health.issue_count > 0 %} · {{ installation.health.issue_count }}{% endif %}
                                     </span>
                                     {% if installation.environment_label %}<span class="environment-badge">{{ installation.environment_label }}</span>{% endif %}
-                                    <span class="status-badge is-current">Aktuelles Ziel</span>
+                                    <span class="status-badge{{ domain.live_status == 'error' ? '' : ' is-current' }}">{{ domain.live_status == 'error' ? 'Ziel nicht bestätigt' : 'Aktuelles Ziel' }}</span>
                                 </div>
 
                                 {% set overview_actions = installation.frontend_actions|filter(action => action.name not in ['update-check', 'update-install']) %}
@@ -350,3 +351,4 @@
 </div>
 
 {% endblock %}
+

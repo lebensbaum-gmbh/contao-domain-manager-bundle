@@ -13,6 +13,26 @@ final class InstallationHealthEvaluatorTest extends TestCase
     private const VERSION_NOW = 1_787_140_800; // 19.08.2026, 12:00 UTC
     private const SYSTEM_ID = '0123456789abcdef0123456789abcdef';
 
+    public function testFailedTargetDetectionDoesNotConfirmStoredAssignment(): void
+    {
+        $health = $this->evaluator()->summarize([['status' => 'ok', 'issue_count' => 0]], true, 'error');
+
+        self::assertSame('warning', $health['status']);
+        self::assertSame(1, $health['issue_count']);
+        self::assertSame(['Die letzte Zielerkennung ist fehlgeschlagen. Die bisherige Zuordnung ist nicht bestätigt.'], $health['messages']);
+    }
+
+    public function testSuccessfulTargetDetectionRetiresWarningWithoutHidingInstallationError(): void
+    {
+        $healthy = $this->evaluator()->summarize([['status' => 'ok', 'issue_count' => 0]], true, 'success');
+        self::assertSame('ok', $healthy['status']);
+        self::assertSame([], $healthy['messages']);
+
+        $failed = $this->evaluator()->summarize([['status' => 'error', 'issue_count' => 2]], true, 'error');
+        self::assertSame('error', $failed['status']);
+        self::assertSame(3, $failed['issue_count']);
+    }
+
     public function testHealthyInstallationIsOk(): void
     {
         $health = $this->evaluator()->evaluate([
@@ -212,3 +232,4 @@ final class InstallationHealthEvaluatorTest extends TestCase
         return new InstallationHealthEvaluator();
     }
 }
+

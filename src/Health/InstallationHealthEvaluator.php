@@ -111,7 +111,7 @@ final class InstallationHealthEvaluator
      * @param list<array{status:string,label?:string,messages?:list<string>,issue_count?:int}> $healthStates
      * @return array{status:string,label:string,messages:list<string>,issue_count:int}
      */
-    public function summarize(array $healthStates, bool $hasCurrentTarget): array
+    public function summarize(array $healthStates, bool $hasCurrentTarget, string $targetDetectionStatus = ''): array
     {
         $status = self::STATUS_OK;
         $messages = [];
@@ -123,7 +123,13 @@ final class InstallationHealthEvaluator
             $status = $this->worstStatus($status, $healthStatus);
         }
 
-        if (!$hasCurrentTarget) {
+        if ('error' === $targetDetectionStatus) {
+            $status = $this->worstStatus($status, self::STATUS_WARNING);
+            $messages[] = $hasCurrentTarget
+                ? 'Die letzte Zielerkennung ist fehlgeschlagen. Die bisherige Zuordnung ist nicht bestätigt.'
+                : 'Die letzte Zielerkennung ist fehlgeschlagen. Es ist kein aktuelles Ziel bestätigt.';
+            ++$issueCount;
+        } elseif (!$hasCurrentTarget) {
             $status = $this->worstStatus($status, self::STATUS_WARNING);
             $messages[] = 'Für diese Hauptdomain ist kein aktuelles Ziel festgelegt.';
             ++$issueCount;
@@ -271,3 +277,4 @@ final class InstallationHealthEvaluator
         };
     }
 }
+

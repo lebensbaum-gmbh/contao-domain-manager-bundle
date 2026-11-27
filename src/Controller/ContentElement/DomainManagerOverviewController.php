@@ -147,7 +147,8 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
                     static fn (array $installation): array => $installation['health'],
                     $installations
                 ),
-                null !== $targetInstallation
+                null !== $targetInstallation,
+                trim((string) ($domainRow['dm_live_status'] ?? ''))
             );
 
             $syncResult = null;
@@ -471,3 +472,4 @@ final class DomainManagerOverviewController extends AbstractContentElementContro
             ->format('d.m.Y, H.i \\U\\h\\r');
     }
 }
+
